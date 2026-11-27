@@ -1,0 +1,28 @@
+/**
+ * 英雄专属符卡三段式精炼文案表
+ */
+
+import type { SpellCopyEntry } from './types';
+
+export const SPELL_CARD_COPY_CATALOG: Record<string, SpellCopyEntry> = {
+  reimu_fantasy_nature: {
+    summary: '展开朱金阴阳大结界的博丽秘仪。',
+    effect: '持续 3 回合：我方全军擦弹 +25%、防御 +25%、幸运 +2 并回复少量生命，敌方攻击 -15%。',
+    flavor: '“飘浮在现实之外，连重力与弹幕都追不上她的衣角。”',
+  },
+  marisa_master_spark: {
+    summary: '以迷你八卦炉全力倾泻的极彩魔炮。',
+    effect: '沿指定直线贯穿 14 格轰击路径全部敌军，并在 2 回合内使我方攻击 +20%、法强 +4、敌方防御 -15%。',
+    flavor: '“所谓弹幕就是火力，一炮轰过去就完事了。”',
+  },
+  eirin_astronomical_entombing: {
+    summary: '将战场笼罩于伪月星轨中的月都秘术。',
+    effect: '持续 3 回合：我方全军法强 +3、防御 +18%、魔抗 +12%，敌军主动性 -2、移速 -1，并回复全队生命与施法单位 4 点灵力。',
+    flavor: '“在密闭的假月之下，连星辰运转的轨迹都在我的掌心之中。”',
+  },
+  remilia_gungnir: {
+    summary: '红魔馆之主投掷命运鲜红魔枪的必杀符卡。',
+    effect: '沿指定直线贯穿 14 格敌军并按总伤害 30% 汲取自身生命、单次最高回复 75 点，同时展开 3 回合红雾领域，使我方攻击 +15%、擦弹 +12%、幸运 +2 且敌方防御 -15%。',
+    flavor: '“这么美丽的红月之夜，不稍微染红一下大地怎么行呢？”',
+  },
+};

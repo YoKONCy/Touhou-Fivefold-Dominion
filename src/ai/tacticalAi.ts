@@ -7,7 +7,7 @@
  *    - 直线贯穿符卡（如魔理沙《极限火花》）自动遍历全图角度寻找贯穿敌军价值最高射线
  *    - 结界领域符卡（如灵梦《梦想天生》）在敌军逼近或远程威胁下果断展开
  * 3. 完整评估 H4 两阶段同时反击的得失比（不会拿脆皮无脑撞高反击前排）
- * 4. 优先抢占高地（+25% 压制）与保持远程清晰视线
+ * 4. 优先抢占高台（减少 25% 低处远程伤害并提升施法距离）与保持远程清晰视线
  */
 
 import {
@@ -71,7 +71,7 @@ export function chooseTacticalAiCommand(
         return { type: 'USE_POTION', unitId: unit.id, potionId: healPot.potionId };
       }
     }
-    if ((unit.spellCardCharge ?? 0) >= 65 && (unit.spellCardCharge ?? 0) < 100) {
+    if ((unit.spellCardCharge ?? 0) >= 85 && (unit.spellCardCharge ?? 0) < 100) {
       const manaPot = unit.potions.find(
         (p) => p.charges > 0 && catalog.potions[p.potionId]?.effectType === 'mana_charge',
       );

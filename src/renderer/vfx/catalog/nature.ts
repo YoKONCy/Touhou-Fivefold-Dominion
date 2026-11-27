@@ -1,0 +1,207 @@
+/**
+ * 自然派系法术 VFX 编排表（32 术，全 16 种式神召请按物种元素完全差异化）
+ */
+
+import type { SpellVfxChoreography } from './types';
+
+export const NATURE_SPELL_VFX_CATALOG: Record<string, SpellVfxChoreography> = {
+  nature_pathfinding: {
+    impactFx: 'leaf_storm', impactPalette: 'nature_emerald',
+    sound: 'spell_buff', shake: 1.5,
+  },
+  nature_speed: {
+    casterFx: 'summon_elemental_wind', casterPalette: 'nature_emerald',
+    impactFx: 'tornado', impactPalette: 'nature_emerald',
+    secondaryFx: 'status_haste', secondaryPalette: 'spring_dew',
+    sound: 'move_fly_whoosh', shake: 2.5, light: 1.35,
+  },
+  nature_stoneskin: {
+    casterFx: 'summon_elemental_earth', casterPalette: 'earth_amber',
+    impactFx: 'summon_elemental_earth', impactPalette: 'earth_amber',
+    secondaryFx: 'shield_block', secondaryPalette: 'earth_amber',
+    sound: 'stance_defend', shake: 3.2, light: 1.35,
+  },
+  nature_summon_sprite: {
+    casterFx: 'summon_fairy_ring', casterPalette: 'celestial_jade',
+    impactFx: 'summon_fairy_ring', impactPalette: 'spring_dew',
+    secondaryFx: 'butterfly', secondaryPalette: 'frost_cyan',
+    sound: 'spell_heal', shake: 2.4, light: 1.42,
+  },
+  nature_summon_wolf: {
+    casterFx: 'summon_beast_totem', casterPalette: 'pure_white',
+    impactFx: 'summon_beast_totem', impactPalette: 'pure_white',
+    secondaryFx: 'claw_swipe', secondaryPalette: 'frost_cyan',
+    sound: 'spell_buff', shake: 3.0, light: 1.42,
+  },
+  nature_summon_leprechaun: {
+    casterFx: 'shrine_bell_ripple', casterPalette: 'shrine_gold',
+    impactFx: 'summon_fairy_ring', impactPalette: 'shrine_gold',
+    secondaryFx: 'firework_burst', secondaryPalette: 'nature_emerald',
+    sound: 'spell_buff', shake: 2.4, light: 1.45,
+  },
+  nature_terrain_walk: {
+    casterFx: 'summon_flora_bloom', casterPalette: 'nature_emerald',
+    impactFx: 'leaf_storm', impactPalette: 'spring_dew',
+    secondaryFx: 'status_haste', secondaryPalette: 'nature_emerald',
+    sound: 'spell_buff', shake: 2.0, light: 1.3,
+  },
+  nature_fortune: {
+    casterFx: 'shrine_bell_ripple', casterPalette: 'shrine_gold',
+    impactFx: 'shrine_bell_ripple', impactPalette: 'nature_emerald',
+    secondaryFx: 'firework_burst', secondaryPalette: 'shrine_gold',
+    sound: 'spell_buff', shake: 2.5, light: 1.45,
+  },
+  nature_giant_strength: {
+    casterFx: 'summon_elemental_earth', casterPalette: 'earth_amber',
+    impactFx: 'quake', impactPalette: 'earth_amber',
+    secondaryFx: 'status_rage', secondaryPalette: 'nature_emerald',
+    sound: 'attack_melee_heavy', shake: 4.0, light: 1.45,
+  },
+  nature_quicksand: {
+    casterFx: 'quake', casterPalette: 'earth_amber',
+    travel: 'ofuda_arc', travelColor: 0xe6bd6b,
+    impactFx: 'whirlpool', impactPalette: 'earth_amber',
+    secondaryFx: 'quake', secondaryPalette: 'earth_amber',
+    sound: 'spell_debuff', shake: 4.0, light: 1.35,
+  },
+  nature_snake_strike: {
+    casterFx: 'healing_bloom', casterPalette: 'celestial_jade',
+    impactFx: 'snake', impactPalette: 'pure_white',
+    secondaryFx: 'thrust', secondaryPalette: 'spring_dew',
+    sound: 'attack_melee_slash', shake: 2.8, light: 1.4,
+  },
+  nature_summon_elf: {
+    casterFx: 'leaf_storm', casterPalette: 'nature_emerald',
+    impactFx: 'summon_flora_bloom', impactPalette: 'nature_emerald',
+    secondaryFx: 'leaf_storm', secondaryPalette: 'spring_dew',
+    sound: 'spell_buff', shake: 2.8, light: 1.42,
+  },
+  nature_summon_satyr: {
+    casterFx: 'water_orb', casterPalette: 'celestial_jade',
+    impactFx: 'summon_elemental_water', impactPalette: 'celestial_jade',
+    secondaryFx: 'geyser', secondaryPalette: 'frost_cyan',
+    sound: 'spell_buff', shake: 3.0, light: 1.42,
+  },
+  nature_summon_white_tiger: {
+    casterFx: 'snowflake_burst', casterPalette: 'pure_white',
+    impactFx: 'summon_beast_totem', impactPalette: 'frost_cyan',
+    secondaryFx: 'frost_prison_shatter', secondaryPalette: 'pure_white',
+    sound: 'attack_melee_slash', shake: 3.5, light: 1.48,
+  },
+  nature_wasp_swarm: {
+    casterFx: 'spore_burst', casterPalette: 'marisa_starlight',
+    travel: 'bolt', travelColor: 0xffe047,
+    impactFx: 'butterfly', impactPalette: 'marisa_starlight',
+    secondaryFx: 'spore_burst', secondaryPalette: 'nature_emerald',
+    sound: 'spell_debuff', shake: 3.0, light: 1.4,
+  },
+  nature_anti_magic: {
+    casterFx: 'ward_dome_prism', casterPalette: 'black_void',
+    impactFx: 'force_field', impactPalette: 'nature_emerald',
+    secondaryFx: 'ward_dome_prism', secondaryPalette: 'black_void',
+    sound: 'spell_buff', shake: 3.8, light: 1.55,
+  },
+  nature_mass_speed: {
+    casterFx: 'summon_elemental_wind', casterPalette: 'nature_emerald',
+    travel: 'screen_weather',
+    impactFx: 'summon_elemental_wind', impactPalette: 'nature_emerald',
+    perTargetFx: 'status_haste', perTargetPalette: 'spring_dew',
+    weatherFx: 'leaf_storm', weatherPalette: 'reimu_crimson',
+    sound: 'move_fly_whoosh', shake: 4.0, light: 1.5,
+  },
+  nature_necromancy_ward: {
+    casterFx: 'summon_flora_bloom', casterPalette: 'spring_dew',
+    travel: 'screen_weather',
+    impactFx: 'root_snare', impactPalette: 'nature_emerald',
+    weatherFx: 'aurora', weatherPalette: 'celestial_jade',
+    sound: 'spell_heal', shake: 3.8, light: 1.55,
+  },
+  nature_summon_air_elemental: {
+    casterFx: 'tornado', casterPalette: 'frost_cyan',
+    impactFx: 'summon_elemental_wind', impactPalette: 'frost_cyan',
+    secondaryFx: 'blizzard_vortex', secondaryPalette: 'pure_white',
+    sound: 'move_fly_whoosh', shake: 3.8, light: 1.52,
+  },
+  nature_summon_earth_elemental: {
+    casterFx: 'quake', casterPalette: 'earth_amber',
+    impactFx: 'summon_elemental_earth', impactPalette: 'earth_amber',
+    secondaryFx: 'earth_spike', secondaryPalette: 'earth_amber',
+    sound: 'attack_melee_heavy', shake: 5.0, light: 1.48,
+  },
+  nature_summon_fire_elemental: {
+    casterFx: 'flame_pillar', casterPalette: 'hell_inferno',
+    impactFx: 'summon_elemental_fire', impactPalette: 'hell_inferno',
+    secondaryFx: 'fire_tornado', secondaryPalette: 'phoenix_flame',
+    sound: 'spell_aoe', shake: 4.5, light: 1.62,
+  },
+  nature_summon_water_elemental: {
+    casterFx: 'geyser', casterPalette: 'frost_cyan',
+    impactFx: 'summon_elemental_water', impactPalette: 'order_lunar',
+    secondaryFx: 'geyser', secondaryPalette: 'frost_cyan',
+    sound: 'spell_heal', shake: 4.0, light: 1.52,
+  },
+  nature_mass_fortune: {
+    casterFx: 'shrine_bell_ripple', casterPalette: 'shrine_gold',
+    travel: 'screen_weather',
+    impactFx: 'firework_burst', impactPalette: 'shrine_gold',
+    perTargetFx: 'shrine_bell_ripple', perTargetPalette: 'nature_emerald',
+    weatherFx: 'shooting_stars', weatherPalette: 'shrine_gold',
+    sound: 'spell_buff', shake: 3.8, light: 1.55,
+  },
+  nature_mass_snake_strike: {
+    casterFx: 'snake', casterPalette: 'celestial_jade',
+    travel: 'screen_weather',
+    impactFx: 'snake', impactPalette: 'pure_white',
+    perTargetFx: 'thrust', perTargetPalette: 'spring_dew',
+    sound: 'spell_buff', shake: 3.8, light: 1.5,
+  },
+  nature_summon_griffin: {
+    casterFx: 'summon_elemental_wind', casterPalette: 'shrine_gold',
+    impactFx: 'bird', impactPalette: 'reimu_crimson',
+    secondaryFx: 'summon_elemental_wind', secondaryPalette: 'shrine_gold',
+    sound: 'move_fly_whoosh', shake: 4.2, light: 1.55,
+  },
+  nature_summon_unicorn: {
+    casterFx: 'sunburst', casterPalette: 'spring_dew',
+    impactFx: 'summon_flora_bloom', impactPalette: 'pure_white',
+    secondaryFx: 'holy_pillar', secondaryPalette: 'celestial_jade',
+    sound: 'spell_heal', shake: 4.5, light: 1.62,
+  },
+  nature_summon_waspwort: {
+    casterFx: 'thorns', casterPalette: 'nature_emerald',
+    impactFx: 'thorns', impactPalette: 'nature_emerald',
+    secondaryFx: 'summon_flora_bloom', secondaryPalette: 'shrine_gold',
+    sound: 'spell_buff', shake: 4.0, light: 1.5,
+  },
+  nature_dragon_strength: {
+    casterFx: 'summon_elemental_earth', casterPalette: 'nature_emerald',
+    impactFx: 'holy_pillar', impactPalette: 'nature_emerald',
+    secondaryFx: 'fire_breath', secondaryPalette: 'shrine_gold',
+    sound: 'spellcard_declare', shake: 6.2, hitStop: 0.08, light: 1.7,
+  },
+  nature_summon_faerie_dragon: {
+    casterFx: 'star_danmaku_spiral', casterPalette: 'gap_violet',
+    impactFx: 'summon_fairy_ring', impactPalette: 'gap_violet',
+    secondaryFx: 'star_fall', secondaryPalette: 'spring_dew',
+    sound: 'spellcard_declare', shake: 5.5, light: 1.68,
+  },
+  nature_summon_mantis: {
+    casterFx: 'leaf_storm', casterPalette: 'nature_emerald',
+    impactFx: 'summon_beast_totem', impactPalette: 'nature_emerald',
+    secondaryFx: 'double_slash', secondaryPalette: 'spring_dew',
+    sound: 'attack_melee_slash', shake: 5.5, light: 1.65,
+  },
+  nature_summon_phoenix: {
+    casterFx: 'summon_elemental_fire', casterPalette: 'phoenix_flame',
+    impactFx: 'summon_elemental_fire', impactPalette: 'phoenix_flame',
+    secondaryFx: 'feather_burst', secondaryPalette: 'hell_inferno',
+    weatherFx: 'fire_tornado', weatherPalette: 'phoenix_flame',
+    sound: 'spellcard_declare', shake: 6.8, hitStop: 0.08, light: 1.75,
+  },
+  nature_haste: {
+    casterFx: 'leaf_storm', casterPalette: 'nature_emerald',
+    impactFx: 'healing_bloom', impactPalette: 'nature_emerald',
+    secondaryFx: 'status_haste', secondaryPalette: 'spring_dew',
+    sound: 'spell_buff', shake: 2.2, light: 1.35,
+  },
+};

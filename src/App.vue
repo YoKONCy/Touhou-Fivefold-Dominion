@@ -4,6 +4,7 @@ import { soundEngine } from '@audio/index';
 import { BattleStage } from '@renderer/battleStage';
 import { useBattleStore } from '@ui/battleStore';
 import AttackPreviewTooltip from '@ui/components/AttackPreviewTooltip.vue';
+import OrientationGuard from '@ui/components/OrientationGuard.vue';
 import OrnamentalFrame from '@ui/components/OrnamentalFrame.vue';
 import RightCommandSidebar from '@ui/components/RightCommandSidebar.vue';
 import SecondaryDrawerHud from '@ui/components/SecondaryDrawerHud.vue';
@@ -11,9 +12,12 @@ import SpellbookModal from '@ui/components/SpellbookModal.vue';
 import SpellCardBanner from '@ui/components/SpellCardBanner.vue';
 import TacticalCursor from '@ui/components/TacticalCursor.vue';
 import TopTurnBar from '@ui/components/TopTurnBar.vue';
+import TouchActionBar from '@ui/components/TouchActionBar.vue';
 import UnitDetailModal from '@ui/components/UnitDetailModal.vue';
+import { useViewportInput } from '@ui/composables/useViewportInput';
 
 const store = useBattleStore();
+const { isTouchMode, isCompactLandscape, sidebarWidthPx } = useViewportInput();
 const stageHostRef = ref<HTMLElement | null>(null);
 let stage: BattleStage | null = null;
 
@@ -50,6 +54,9 @@ onMounted(async () => {
     onHoverHex: (hex, clientPos, virtualPos) => store.handleHoverHex(hex, clientPos, virtualPos),
     onClickHex: (hex) => store.handleClickHex(hex),
     onRightClickHex: (hex, clientPos) => store.handleRightClickHex(hex, clientPos),
+    onTouchTapHex: (hex, clientPos, virtualPos) => store.handleTouchTapHex(hex, clientPos, virtualPos),
+    onTouchScrubEnd: (hex, clientPos, virtualPos) => store.handleTouchScrubEnd(hex, clientPos, virtualPos),
+    onLongPressHex: (hex, clientPos) => store.handleLongPressHex(hex, clientPos),
     onSpellCardBanner: (info) => store.showSpellCardBanner(info),
   });
   await stage.init(store.battleState);
@@ -66,9 +73,9 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <!-- 原版 HoMM4 经典左右布局：左侧极大化纯净暗夜战场 + 右侧 96px 幽夜木刻挂轴柱 -->
+  <!-- 原版 HoMM4 经典左右布局：左侧极大化纯净暗夜战场 + 右侧自适应幽夜木刻挂轴柱 -->
   <main
-    class="flex h-screen w-screen overflow-hidden bg-[#08060a]"
+    class="safe-area-shell flex h-[100dvh] w-[100vw] overflow-hidden bg-[#08060a]"
     @contextmenu="handleContextMenu"
   >
     <!-- 左侧主战场舞台区 -->
@@ -76,25 +83,27 @@ onBeforeUnmount(() => {
       <div
         ref="stageHostRef"
         class="h-full w-full"
-        :class="store.tacticalCursor.kind !== 'default' ? 'cursor-none' : 'cursor-pointer'"
+        :class="!isTouchMode && store.tacticalCursor.kind !== 'default' ? 'cursor-none' : 'cursor-pointer'"
       />
 
       <TopTurnBar />
       <SecondaryDrawerHud />
+      <TouchActionBar />
       <SpellCardBanner />
 
-      <!-- 底部漆木提示笺 -->
+      <!-- 底部漆木提示笺（触控确认栏展开时自动上移避让，防止重叠） -->
       <transition name="fade">
         <div
           v-if="store.toastMessage"
-          class="urushi-slip font-display pointer-events-none absolute bottom-5 left-1/2 z-40 -translate-x-1/2 border-[#cfa75b] px-4 py-1.5 text-xs tracking-wider text-[#f5df9e]"
+          class="urushi-slip font-display pointer-events-none absolute left-1/2 z-40 max-w-[92%] -translate-x-1/2 truncate border-[#cfa75b] px-4 py-1.5 text-xs tracking-wider text-[#f5df9e]"
+          :class="store.touchActionSummary ? 'bottom-16' : 'bottom-4'"
         >
           {{ store.toastMessage }}
         </div>
       </transition>
     </div>
 
-    <!-- 右侧 96px 幽夜木刻挂轴指令柱 -->
+    <!-- 右侧幽夜木刻挂轴指令与战术情报栏（桌面 256px / 移动端横屏紧凑且可折叠） -->
     <RightCommandSidebar />
 
     <!-- 居中双轨单位详情大窗、和风线装魔导折本、算伤令笺与动态像素指针 -->
@@ -102,13 +111,15 @@ onBeforeUnmount(() => {
     <SpellbookModal />
     <AttackPreviewTooltip />
     <TacticalCursor />
+    <OrientationGuard />
 
     <!-- 终局胜负裁决御览窗 -->
     <div
       v-if="store.battleState.phase === 'finished'"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/72 lg:pr-[96px]"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/72 p-3"
+      :style="!isCompactLandscape ? { paddingRight: `${sidebarWidthPx}px` } : undefined"
     >
-      <div class="urushi-frame relative w-full max-w-md px-7 py-6 text-center">
+      <div class="urushi-frame touch-scroll relative max-h-[92dvh] w-full max-w-md overflow-y-auto px-5 py-4 text-center sm:px-7 sm:py-6">
         <OrnamentalFrame variant="corners" />
 
         <div class="relative z-10 flex flex-col items-center">

@@ -5,6 +5,7 @@
  * - 原版 HoMM4 极简和风卷轴右侧栏 + 4 类按需展开二级 HUD（术式符卡 / 药水 / 战报 / 设置）
  * - 原版 HoMM4 右键任意单位弹出单位详情卡（UnitDetailModal）
  * - 光标跟随预估伤害范围与兵力折损浮标 + 6 态像素动画战术指针
+ * - 悬停选位、施法诊断、指针计算与舞台高亮构建已拆分至 src/ui/store/*
  */
 
 import { defineStore } from 'pinia';
@@ -13,19 +14,14 @@ import { chooseTacticalAiCommand } from '@ai/tacticalAi';
 import { soundEngine, type AudioSettings } from '@audio/index';
 import {
   canModifyHeroClassOrBuild,
-  canPlaceFootprintAt,
   checkRangedCapability,
-  checkSpellLineOfSight,
   dispatchCombatCommand,
   findCorpseTargetAtHex,
   findUnitAtHex,
-  getAvailableCorpseHp,
   getEffectiveSpellManaCost,
-  getEffectiveSpellRange,
-  getUnitMinDistance,
+  getTerrainTacticalInfo,
   getUnitOccupiedHexes,
   getUnitReachableMap,
-  getValidMeleeApproachAnchors,
   isEngagedInMelee,
   previewAttack,
   selectHeroAdvancedClass,
@@ -33,18 +29,7 @@ import {
   setHeroSecondarySkillRank,
   syncHeroDerivedState,
 } from '@core/combatEngine';
-import { validateSpellUnitTarget } from '@core/h4SpellExecutor';
-import {
-  getFootprintHexes,
-  hexDistance,
-  hexEquals,
-  hexKey,
-  hexToPixel,
-  minHexSetDistance,
-  reconstructHexPath,
-  type FootprintSize,
-  type HexCoord,
-} from '@core/hex';
+import { getFootprintHexes, hexEquals, hexKey, type HexCoord, type HexTile } from '@core/hex';
 import {
   computeUnitStats,
   resolveActiveArtifactSets,
@@ -52,14 +37,13 @@ import {
   resolveEligibleAdvancedClasses,
 } from '@core/modifiers';
 import type {
-  AttackPreview,
   BattleState,
   BattleUnit,
   CombatCommand,
   PrimarySkillId,
-  RangedPenaltyTier,
   SecondarySkillId,
   SkillRank,
+  SpellDef,
 } from '@core/types';
 import {
   createReimuVsMarisaBattle,
@@ -67,133 +51,35 @@ import {
   type LineupVariant,
   type PlayableFactionId,
 } from '@data/battlePresets';
+import type { BattleStage, GridVisibilityMode, StageOverlayHints } from '@renderer/battleStage';
+import { useViewportInput } from '@ui/composables/useViewportInput';
+import { buildBattleOverlayHints } from './store/overlayHints';
 import {
-  STAGE_PROJECTION,
-  type BattleStage,
-  type GridVisibilityMode,
-  type StageOverlayHints,
-} from '@renderer/battleStage';
+  computeHoverSpellContext,
+  computeTacticalCursor,
+  pickDirectionalMeleeApproach,
+} from './store/targeting';
+import type {
+  HoverAttackContext,
+  HoverSpellContext,
+  SecondaryDrawerType,
+  SpellCardBannerState,
+  TacticalCursorKind,
+  TacticalCursorState,
+  TouchActionSummary,
+  UnitDetailModalState,
+} from './store/types';
 
-export type SecondaryDrawerType = 'none' | 'spells' | 'potions' | 'logs' | 'settings';
-
-export type TacticalCursorKind =
-  | 'default'
-  | 'move'
-  | 'fly_move'
-  | 'melee'
-  | 'ranged'
-  | 'ranged_penalty'
-  | 'spell'
-  | 'blocked'
-  | 'inspect';
-
-export interface TacticalCursorState {
-  kind: TacticalCursorKind;
-  angleDeg: number;
-  label?: string;
-  /** 远程射击时的 HoMM4 原版距离/遮挡衰减档位（默认 full / 1/2 / 最低 1/4） */
-  rangedPenaltyTier?: RangedPenaltyTier;
-}
-
-export interface SpellCardBannerState {
-  visible: boolean;
-  name: string;
-  subtitle: string;
-  themeColor: string;
-  accentColor: string;
-  casterBlueprintId?: string;
-}
-
-export interface UnitDetailModalState {
-  unitId: string;
-  x: number;
-  y: number;
-}
-
-export interface HoverAttackContext {
-  attacker: BattleUnit;
-  defender: BattleUnit;
-  preview: AttackPreview;
-  isCurrentTurnAttacker: boolean;
-  chosenApproachHex: HexCoord | null;
-  candidateApproachHexes: HexCoord[];
-}
-
-function angleDiffAbs(a: number, b: number): number {
-  let d = a - b;
-  while (d > Math.PI) d -= Math.PI * 2;
-  while (d < -Math.PI) d += Math.PI * 2;
-  return Math.abs(d);
-}
-
-/** 计算多格锚点在虚拟舞台中的中心像素 */
-function footprintCenterVirtual(
-  state: BattleState,
-  anchor: HexCoord,
-  footprint: FootprintSize,
-): { x: number; y: number } {
-  const hexes = getFootprintHexes(anchor, footprint);
-  let sx = 0;
-  let sy = 0;
-  for (const h of hexes) {
-    const pt = hexToPixel(h, STAGE_PROJECTION, state.tiles[hexKey(h)]?.elevation ?? 1);
-    sx += pt.x;
-    sy += pt.y;
-  }
-  const n = Math.max(1, hexes.length);
-  return { x: sx / n, y: sy / n };
-}
-
-/**
- * 原版 HoMM4 多格近战方位落脚选位算法
- */
-function pickDirectionalMeleeApproach(
-  state: BattleState,
-  attacker: BattleUnit,
-  defender: BattleUnit,
-  virtualPos: { x: number; y: number } | null,
-): { chosen: HexCoord | null; candidates: HexCoord[] } {
-  const rawCandidates = getValidMeleeApproachAnchors(state, attacker, defender, TOUHOU_CATALOG);
-  if (rawCandidates.length === 0) return { chosen: null, candidates: [] };
-
-  // H4 长武器（镇守狛犬）悬停选位优化：对非长手目标优先锁定隔 1 格（distance === 2）免反击突刺环，防止误走贴脸吃反击！
-  let candidates = rawCandidates;
-  if (attacker.abilities.longWeapon && !defender.abilities.longWeapon && !defender.abilities.noMelee) {
-    const defHexes = getUnitOccupiedHexes(defender);
-    const safeDist2 = rawCandidates.filter(
-      (c) => minHexSetDistance(getFootprintHexes(c, attacker.footprint), defHexes) === 2,
-    );
-    if (safeDist2.length > 0) {
-      candidates = safeDist2;
-    }
-  }
-
-  if (candidates.length === 1 || !virtualPos) {
-    return { chosen: candidates[0], candidates };
-  }
-
-  const defCenter = footprintCenterVirtual(state, defender.pos, defender.footprint);
-  const dx = virtualPos.x - defCenter.x;
-  const dy = virtualPos.y - defCenter.y;
-  const refPt =
-    Math.hypot(dx, dy) >= 3
-      ? virtualPos
-      : footprintCenterVirtual(state, attacker.pos, attacker.footprint);
-  const mouseAngle = Math.atan2(refPt.y - defCenter.y, refPt.x - defCenter.x);
-
-  let best = candidates[0];
-  let bestDiff = Infinity;
-  for (const cand of candidates) {
-    const cPt = footprintCenterVirtual(state, cand, attacker.footprint);
-    const candAngle = Math.atan2(cPt.y - defCenter.y, cPt.x - defCenter.x);
-    const diff = angleDiffAbs(mouseAngle, candAngle);
-    if (diff < bestDiff) {
-      bestDiff = diff;
-      best = cand;
-    }
-  }
-  return { chosen: best, candidates };
-}
+export type {
+  HoverAttackContext,
+  HoverSpellContext,
+  SecondaryDrawerType,
+  SpellCardBannerState,
+  TacticalCursorKind,
+  TacticalCursorState,
+  TouchActionSummary,
+  UnitDetailModalState,
+};
 
 export const useBattleStore = defineStore('battle', () => {
   const mode = ref<'vs_ai' | 'hotseat'>('vs_ai');
@@ -201,7 +87,7 @@ export const useBattleStore = defineStore('battle', () => {
   const lineupVariant = ref<LineupVariant>('A');
   const leftFaction = ref<PlayableFactionId>('death');
   const rightFaction = ref<PlayableFactionId>('life');
-  const gridMode = ref<GridVisibilityMode>('subtle');
+  const gridMode = ref<GridVisibilityMode>('hidden');
   const audioSettings = ref<AudioSettings>(soundEngine.getSettings());
 
   const battleState = shallowRef<BattleState>(
@@ -215,10 +101,15 @@ export const useBattleStore = defineStore('battle', () => {
   );
   const stateVersion = ref(1);
 
+  const { isTouchMode } = useViewportInput();
   const isAnimating = ref(false);
   const hoveredHex = ref<HexCoord | null>(null);
   const pointerPos = ref<{ x: number; y: number } | null>(null);
   const hoverVirtualPos = ref<{ x: number; y: number } | null>(null);
+  /** 触控模式下已轻触锁定的预览六边形（二段确认：首触预览，再触或点确认执行） */
+  const touchPreviewHex = ref<HexCoord | null>(null);
+  /** 触控/手动指定的近战落脚格（支持点选高亮金格或点击「换位」按钮切换方向） */
+  const manualApproachHex = ref<HexCoord | null>(null);
   const inspectedUnitId = ref<string | null>(null);
   const selectedSpellId = ref<string | null>(null);
   /** 二步法术（如瞬息传送 unit_to_hex、殉道替伤/血祭复生 ally_to_ally）已选定的第一位单位 ID */
@@ -242,8 +133,8 @@ export const useBattleStore = defineStore('battle', () => {
   });
 
   let stageRef: BattleStage | null = null;
-  let toastTimer: number | null = null;
-  let bannerTimer: number | null = null;
+  let toastTimer: ReturnType<typeof setTimeout> | null = null;
+  let bannerTimer: ReturnType<typeof setTimeout> | null = null;
 
   const activeUnit = computed<BattleUnit | null>(() => {
     void stateVersion.value;
@@ -291,10 +182,7 @@ export const useBattleStore = defineStore('battle', () => {
     return forceMeleeMode.value || Boolean(rangedBlockedReason.value) ? 'melee' : 'ranged';
   });
 
-  /**
-   * 按回合缓存当前行动单位的可达六边形图与可攻击敌军列表：
-   * 仅在战局版本号、当前行动者、攻击模式或动画状态变化时重算，彻底消灭鼠标移动期间每秒数十次的重复 Dijkstra 寻路卡顿！
-   */
+  /** 按回合缓存当前行动单位的可达六边形图与可攻击敌军列表 */
   const activeReachableMap = computed(() => {
     void stateVersion.value;
     const st = battleState.value;
@@ -435,10 +323,7 @@ export const useBattleStore = defineStore('battle', () => {
     return result;
   });
 
-  /**
-   * 选中单位 hover 敌方单位（支持悬停在多格单位的任意占据格！）时的交锋预估上下文
-   * 铁律：只要当前是人类行动回合，悬停敌方单位时永远无条件优先以当前行动单位 activeUnit 为攻击者！
-   */
+  /** 悬停敌方单位时的交锋预估上下文 */
   const hoverAttackContext = computed<HoverAttackContext | null>(() => {
     void stateVersion.value;
     if (
@@ -455,27 +340,25 @@ export const useBattleStore = defineStore('battle', () => {
     if (!hex) return null;
 
     const st = battleState.value;
-    const hoveredUnit = findUnitAtHex(st, hex, false);
-    if (!hoveredUnit) return null;
+    const targetUnit = findUnitAtHex(st, hex, false);
+    if (!targetUnit) return null;
 
     let attacker: BattleUnit | null = null;
-    // 1. 人类行动回合优先锁定当前可操控单位，防止右键查详情或点选友军后丢失攻击指示！
     if (
       isHumanTurn.value &&
       activeUnit.value &&
       activeUnit.value.status === 'alive' &&
-      activeUnit.value.side !== hoveredUnit.side
+      activeUnit.value.side !== targetUnit.side
     ) {
       attacker = activeUnit.value;
     } else {
-      // 2. 非行动方（如 AI 回合期间）允许用用户查看的单位做假设推演预览
       const insp = inspectedUnit.value;
-      if (insp && insp.status === 'alive' && insp.side !== hoveredUnit.side) {
+      if (insp && insp.status === 'alive' && insp.side !== targetUnit.side) {
         attacker = insp;
       } else if (
         activeUnit.value &&
         activeUnit.value.status === 'alive' &&
-        activeUnit.value.side !== hoveredUnit.side
+        activeUnit.value.side !== targetUnit.side
       ) {
         attacker = activeUnit.value;
       }
@@ -484,20 +367,27 @@ export const useBattleStore = defineStore('battle', () => {
 
     const isCurrentTurnAttacker = attacker.id === st.activeUnitId && isHumanTurn.value;
     const useForceMelee = isCurrentTurnAttacker && canToggleAttackMode.value && forceMeleeMode.value;
-    const rangedCap = checkRangedCapability(st, attacker, hoveredUnit, TOUHOU_CATALOG);
+    const rangedCap = checkRangedCapability(st, attacker, targetUnit, TOUHOU_CATALOG);
     let chosenApproachHex: HexCoord | null = null;
     let candidateApproachHexes: HexCoord[] = [];
 
     if (useForceMelee || !rangedCap.canRanged) {
-      const pick = pickDirectionalMeleeApproach(st, attacker, hoveredUnit, hoverVirtualPos.value);
-      chosenApproachHex = pick.chosen;
+      const pick = pickDirectionalMeleeApproach(st, attacker, targetUnit, hoverVirtualPos.value);
       candidateApproachHexes = pick.candidates;
+      if (
+        manualApproachHex.value &&
+        candidateApproachHexes.some((c) => hexEquals(c, manualApproachHex.value!))
+      ) {
+        chosenApproachHex = manualApproachHex.value;
+      } else {
+        chosenApproachHex = pick.chosen;
+      }
     }
 
     const preview = previewAttack(
       st,
       attacker.id,
-      hoveredUnit.id,
+      targetUnit.id,
       TOUHOU_CATALOG,
       chosenApproachHex ?? undefined,
       useForceMelee,
@@ -505,7 +395,7 @@ export const useBattleStore = defineStore('battle', () => {
 
     return {
       attacker,
-      defender: hoveredUnit,
+      defender: targetUnit,
       preview,
       isCurrentTurnAttacker,
       chosenApproachHex: preview.valid && !preview.isRanged ? chosenApproachHex : null,
@@ -513,185 +403,305 @@ export const useBattleStore = defineStore('battle', () => {
     };
   });
 
-  const tacticalCursor = computed<TacticalCursorState>(() => {
+  const selectedSpell = computed<SpellDef | null>(() => {
+    if (!selectedSpellId.value) return null;
+    return TOUHOU_CATALOG.spells[selectedSpellId.value] ?? null;
+  });
+
+  /** 当前鼠标悬停的战场单位（含倒地英雄，供舞台临时置顶与右侧信息区实时联动） */
+  const hoveredUnit = computed<BattleUnit | null>(() => {
     void stateVersion.value;
-    const st = battleState.value;
+    const hex = hoveredHex.value;
+    if (!hex || detailModal.value) return null;
+    return findUnitAtHex(battleState.value, hex, true);
+  });
+
+  /** 当前鼠标悬停的六边形地格及其战术情报 */
+  const hoveredTile = computed<HexTile | null>(() => {
+    void stateVersion.value;
+    const hex = hoveredHex.value;
+    if (!hex || detailModal.value) return null;
+    return battleState.value.tiles[hexKey(hex)] ?? null;
+  });
+
+  const hoveredTileInfo = computed(() => {
+    const tile = hoveredTile.value;
+    return tile ? getTerrainTacticalInfo(tile) : null;
+  });
+
+  /** 施法瞄准状态下的实时悬停诊断（委托纯函数子系统） */
+  const hoverSpellContext = computed<HoverSpellContext | null>(() => {
+    void stateVersion.value;
+    if (
+      isAnimating.value ||
+      battleState.value.phase !== 'active' ||
+      detailModal.value ||
+      activeDrawer.value === 'spells' ||
+      !isHumanTurn.value
+    ) {
+      return null;
+    }
+    const spell = selectedSpell.value;
     const act = activeUnit.value;
     const hex = hoveredHex.value;
+    if (!spell || !act || !hex) return null;
 
+    return computeHoverSpellContext({
+      state: battleState.value,
+      activeUnit: act,
+      spell,
+      hoveredHex: hex,
+      pendingSpellFirstUnitId: pendingSpellFirstUnitId.value,
+    });
+  });
+
+  /** 6 态像素战术指针状态（委托纯函数子系统；触控模式下自动隐藏桌面像素光标） */
+  const tacticalCursor = computed<TacticalCursorState>(() => {
+    void stateVersion.value;
+    if (isTouchMode.value) {
+      return { kind: 'default', angleDeg: 0 };
+    }
+    return computeTacticalCursor({
+      state: battleState.value,
+      activeUnit: activeUnit.value,
+      isHumanTurn: isHumanTurn.value,
+      hoveredHex: hoveredHex.value,
+      pointerPos: pointerPos.value,
+      isAnimating: isAnimating.value,
+      detailModalOpen: Boolean(detailModal.value),
+      spellsDrawerOpen: activeDrawer.value === 'spells',
+      declaringSpellCard: declaringSpellCard.value,
+      selectedSpellId: selectedSpellId.value,
+      hoverSpellContext: hoverSpellContext.value,
+      hoverAttackContext: hoverAttackContext.value,
+      activeReachableHexKeys: activeReachableHexKeys.value,
+    });
+  });
+
+  /** 触控底部战术确认栏实时摘要（无 Hover/右键环境下的二段确认与详情/换位入口） */
+  const touchActionSummary = computed<TouchActionSummary | null>(() => {
+    void stateVersion.value;
     if (
-      !pointerPos.value ||
-      !hex ||
+      !isTouchMode.value ||
+      battleState.value.phase !== 'active' ||
       isAnimating.value ||
-      st.phase !== 'active' ||
       detailModal.value ||
       activeDrawer.value === 'spells'
     ) {
-      return { kind: 'default', angleDeg: 0 };
+      return null;
     }
 
+    const previewHex = touchPreviewHex.value;
+    const isTargeting = Boolean(selectedSpellId.value || declaringSpellCard.value);
+    if (!previewHex && !isTargeting) return null;
+
+    const st = battleState.value;
+    const act = activeUnit.value;
+
+    // 1. 符卡直线宣言态
     if (declaringSpellCard.value && act && isHumanTurn.value) {
-      if (getUnitOccupiedHexes(act).some((h) => hexEquals(h, hex))) {
-        return { kind: 'blocked', angleDeg: 0 };
+      const card = act.signatureSpellCardId ? TOUHOU_CATALOG.spellCards[act.signatureSpellCardId] : null;
+      const cardName = card?.name ?? '专属符卡';
+      const onSelf = Boolean(previewHex && getUnitOccupiedHexes(act).some((h) => hexEquals(h, previewHex)));
+      if (previewHex && !onSelf) {
+        return {
+          mode: 'spell_card',
+          title: `符卡 · ${cardName}`,
+          detail: '已锁定展开方位 · 再次轻触或点确认立即宣言',
+          badgeText: '符卡',
+          badgeTone: 'gold',
+          canConfirm: true,
+          confirmLabel: '宣言符卡',
+          inspectUnitId: null,
+          approachCount: 0,
+          approachIndex: 0,
+          isTargeting: true,
+        };
       }
-      return { kind: 'spell', angleDeg: 0, label: '符卡宣言' };
+      return {
+        mode: 'targeting_idle',
+        title: `符卡 · ${cardName}`,
+        detail: '轻触棋盘择定符卡展开方位（长按任意处亦可取消）',
+        badgeText: '符卡选向',
+        badgeTone: 'gold',
+        canConfirm: false,
+        confirmLabel: '宣言符卡',
+        inspectUnitId: null,
+        approachCount: 0,
+        approachIndex: 0,
+        isTargeting: true,
+      };
     }
 
+    // 2. 魔导术式选点态
     if (selectedSpellId.value && act && isHumanTurn.value) {
-      const spell = TOUHOU_CATALOG.spells[selectedSpellId.value];
-      if (!spell) return { kind: 'default', angleDeg: 0 };
-      const effRange = getEffectiveSpellRange(st, act, spell);
-
-      if (spell.targetType === 'hex_aoe') {
-        if (effRange > 0 && hexDistance(act.pos, hex) > effRange) {
-          return { kind: 'blocked', angleDeg: 0, label: '超出射程' };
-        }
-        if (!spell.ignoreLos && !checkSpellLineOfSight(st, act, [hex]).canCast) {
-          return { kind: 'blocked', angleDeg: 0, label: '视线受阻' };
-        }
-        return { kind: 'spell', angleDeg: 0, label: spell.name };
-      }
-
-      if (spell.targetType === 'hex_empty') {
-        if (effRange > 0 && hexDistance(act.pos, hex) > effRange) {
-          return { kind: 'blocked', angleDeg: 0, label: '超出射程' };
-        }
-        const tmpl = spell.summonTemplateId ? TOUHOU_CATALOG.creatures[spell.summonTemplateId] : undefined;
-        const canDrop = canPlaceFootprintAt(st, hex, tmpl?.footprint ?? '1x1', undefined, Boolean(tmpl?.abilities.flying));
-        return canDrop
-          ? { kind: 'spell', angleDeg: 0, label: `召唤·${tmpl?.name ?? spell.name}` }
-          : { kind: 'blocked', angleDeg: 0, label: '落点受阻' };
-      }
-
-      if (spell.targetType === 'corpse_unit') {
-        if (st.battleSpellFlags?.necromancyWardActive) {
-          return { kind: 'blocked', angleDeg: 0, label: '净土封冥封印' };
-        }
-        const corpse = findCorpseTargetAtHex(st, hex, TOUHOU_CATALOG);
-        if (corpse) {
-          if (effRange > 0 && getUnitMinDistance(act, corpse) > effRange) {
-            return { kind: 'blocked', angleDeg: 0, label: '超出射程' };
-          }
-          return { kind: 'spell', angleDeg: 0, label: `招魂·${corpse.name}` };
-        }
-        return { kind: 'blocked', angleDeg: 0, label: '请选择阵亡/战损兵种' };
-      }
-
-      if (spell.targetType === 'unit_to_hex') {
-        if (!pendingSpellFirstUnitId.value) {
-          const t = findUnitAtHex(st, hex, false);
-          if (t && t.side === act.side && !t.abilities.magicImmune) {
-            if (effRange > 0 && getUnitMinDistance(act, t) > effRange) {
-              return { kind: 'blocked', angleDeg: 0, label: '超出射程' };
-            }
-            return { kind: 'spell', angleDeg: 0, label: '① 选择传送友军' };
-          }
-          return { kind: 'blocked', angleDeg: 0, label: '请选择己方友军' };
-        }
-        const firstUnit = st.units[pendingSpellFirstUnitId.value];
-        if (firstUnit && canPlaceFootprintAt(st, hex, firstUnit.footprint, firstUnit.id, Boolean(firstUnit.abilities.flying))) {
-          return { kind: 'spell', angleDeg: 0, label: '② 传送至此' };
-        }
-        return { kind: 'blocked', angleDeg: 0, label: '落点不可通行' };
-      }
-
-      if (spell.targetType === 'ally_to_ally') {
-        const t = findUnitAtHex(st, hex, false);
-        if (!pendingSpellFirstUnitId.value) {
-          if (t && t.side === act.side && !t.abilities.magicImmune && !(spell.specialEffect === 'sacrifice' && t.kind === 'hero')) {
-            if (effRange > 0 && getUnitMinDistance(act, t) > effRange) {
-              return { kind: 'blocked', angleDeg: 0, label: '超出射程' };
-            }
-            return { kind: 'spell', angleDeg: 0, label: spell.specialEffect === 'sacrifice' ? '① 选择献祭友兵' : '① 选择替身友军' };
-          }
-          return { kind: 'blocked', angleDeg: 0, label: '请选择己方友军' };
-        }
-        if (t && t.side === act.side && t.id !== pendingSpellFirstUnitId.value && !t.abilities.magicImmune) {
-          if (effRange > 0 && getUnitMinDistance(act, t) > effRange) {
-            return { kind: 'blocked', angleDeg: 0, label: '超出射程' };
-          }
-          return { kind: 'spell', angleDeg: 0, label: spell.specialEffect === 'sacrifice' ? '② 选择复生友军' : '② 选择被庇护者' };
-        }
-        return { kind: 'blocked', angleDeg: 0, label: '请选择另一名友军' };
-      }
-
-      const targetUnit = findUnitAtHex(st, hex, false);
-      if (targetUnit) {
-        const validCheck = validateSpellUnitTarget(spell, act, targetUnit, st, TOUHOU_CATALOG, false);
-        if (!validCheck.ok) {
-          return { kind: 'blocked', angleDeg: 0, label: validCheck.shortLabel };
-        }
-        if (effRange > 0 && getUnitMinDistance(act, targetUnit) > effRange) {
-          return { kind: 'blocked', angleDeg: 0, label: '超出射程' };
-        }
-        if (!spell.ignoreLos && !checkSpellLineOfSight(st, act, getUnitOccupiedHexes(targetUnit), targetUnit).canCast) {
-          return { kind: 'blocked', angleDeg: 0, label: '视线受阻' };
-        }
-        return { kind: 'spell', angleDeg: 0, label: spell.name };
-      }
-      return { kind: 'blocked', angleDeg: 0 };
-    }
-
-    const hoveredUnit = findUnitAtHex(st, hex, false);
-    if (hoveredUnit && act && isHumanTurn.value) {
-      if (hoveredUnit.side === act.side) {
-        return { kind: 'inspect', angleDeg: 0, label: '查看友军' };
-      }
-      const ctx = hoverAttackContext.value;
-      if (ctx && ctx.isCurrentTurnAttacker) {
-        if (!ctx.preview.valid) {
-          return { kind: 'blocked', angleDeg: 0, label: '不可攻击' };
-        }
-        if (ctx.preview.isRanged) {
-          const tier = ctx.preview.rangedPenaltyTier;
-          const label =
-            tier === 'full'
-              ? '远程射击'
-              : tier === 'half'
-                ? '远程 1/2'
-                : tier === 'quarter'
-                  ? '远程 1/4'
-                  : '远程 1/8';
-          return {
-            kind: tier === 'full' ? 'ranged' : 'ranged_penalty',
-            angleDeg: 0,
-            rangedPenaltyTier: tier,
-            label,
-          };
-        }
-        const fromAnchor = ctx.chosenApproachHex ?? act.pos;
-        const pFrom = footprintCenterVirtual(st, fromAnchor, act.footprint);
-        const pTo = footprintCenterVirtual(st, hoveredUnit.pos, hoveredUnit.footprint);
-        const angleDeg = (Math.atan2(pTo.y - pFrom.y, pTo.x - pFrom.x) * 180) / Math.PI;
+      const sp = selectedSpell.value;
+      const spCtx = hoverSpellContext.value;
+      if (sp && previewHex && spCtx) {
+        const isFirstStep =
+          (sp.targetType === 'unit_to_hex' || sp.targetType === 'ally_to_ally') &&
+          !pendingSpellFirstUnitId.value;
+        const targetName = spCtx.targetUnit ? `目标：${spCtx.targetUnit.name} · ` : '';
         return {
-          kind: 'melee',
-          angleDeg,
-          label: ctx.preview.isLongWeaponPoke ? '长手隔格' : '近战突击',
+          mode: 'spell',
+          title: `术式 · ${sp.name}`,
+          detail: spCtx.canCast
+            ? `${targetName}-${spCtx.manaCost} MP · ${isFirstStep ? '锁定首位目标' : '再触或点确认施放'}`
+            : spCtx.reason ?? spCtx.shortLabel,
+          badgeText: spCtx.canCast ? `${spCtx.manaCost} MP` : '无法施放',
+          badgeTone: spCtx.canCast ? 'mana' : 'danger',
+          canConfirm: spCtx.canCast,
+          confirmLabel: isFirstStep ? '锁定第1步' : '确认施放',
+          inspectUnitId: spCtx.targetUnit?.id ?? null,
+          approachCount: 0,
+          approachIndex: 0,
+          isTargeting: true,
         };
       }
+      return {
+        mode: 'targeting_idle',
+        title: `术式 · ${sp?.name ?? '施法'}`,
+        detail: pendingSpellFirstUnitId.value
+          ? '【第2步】请轻触棋盘择定第二目标'
+          : '轻触棋盘目标以预览范围与视线，再点确认施放',
+        badgeText: '术式选点',
+        badgeTone: 'mana',
+        canConfirm: false,
+        confirmLabel: '确认施放',
+        inspectUnitId: null,
+        approachCount: 0,
+        approachIndex: 0,
+        isTargeting: true,
+      };
     }
 
-    if (act && isHumanTurn.value && !hoveredUnit) {
-      if (activeReachableHexKeys.value.has(hexKey(hex)) && !hexEquals(hex, act.pos)) {
+    if (!previewHex) return null;
+
+    // 3. 敌军交锋预览态
+    const atk = hoverAttackContext.value;
+    if (atk && atk.isCurrentTurnAttacker) {
+      const p = atk.preview;
+      if (p.valid) {
+        const penaltyLabel = !p.isRanged
+          ? p.isLongWeaponPoke
+            ? '长手免反'
+            : '近战'
+          : p.rangedPenaltyTier === 'full'
+            ? '全伤'
+            : p.rangedPenaltyTier === 'half'
+              ? '1/2伤'
+              : p.rangedPenaltyTier === 'quarter'
+                ? '1/4伤'
+                : '1/8伤';
+        const killStr =
+          atk.defender.kind === 'creature' ? ` · 折损 ${p.expectedMinKills}–${p.expectedMaxKills}` : '';
+        const retStr = p.willRetaliate
+          ? ` · 反击 ${p.retaliationMinDamage}–${p.retaliationMaxDamage}`
+          : ' · 无反击';
+        const approachCount = p.isRanged ? 0 : atk.candidateApproachHexes.length;
+        const approachIndex =
+          approachCount > 0 && atk.chosenApproachHex
+            ? Math.max(
+                0,
+                atk.candidateApproachHexes.findIndex((c) => hexEquals(c, atk.chosenApproachHex!)),
+              )
+            : 0;
         return {
-          kind: act.abilities.flying ? 'fly_move' : 'move',
-          angleDeg: 0,
-          label: act.abilities.flying ? '漂浮移动' : '移动',
+          mode: 'attack',
+          title: `${p.isRanged ? '射击' : p.isLongWeaponPoke ? '长手突刺' : '近战'} · ${atk.defender.name}`,
+          detail: `预计 ${p.expectedMinDamage}–${p.expectedMaxDamage} 伤${killStr}${retStr}`,
+          badgeText: penaltyLabel,
+          badgeTone:
+            !p.isRanged
+              ? p.isLongWeaponPoke
+                ? 'jade'
+                : 'gold'
+              : p.rangedPenaltyTier === 'full'
+                ? 'jade'
+                : 'warn',
+          canConfirm: true,
+          confirmLabel: p.isRanged ? '确认射击' : '确认攻击',
+          inspectUnitId: atk.defender.id,
+          approachCount,
+          approachIndex,
+          isTargeting: false,
         };
       }
-      return { kind: 'blocked', angleDeg: 0, label: '不可通行' };
+      return {
+        mode: 'blocked',
+        title: atk.defender.name,
+        detail: p.reason ?? '目标暂不可攻击',
+        badgeText: '无法命中',
+        badgeTone: 'danger',
+        canConfirm: false,
+        confirmLabel: '无法攻击',
+        inspectUnitId: atk.defender.id,
+        approachCount: 0,
+        approachIndex: 0,
+        isTargeting: false,
+      };
     }
 
-    if (hoveredUnit) {
-      return { kind: 'inspect', angleDeg: 0, label: '查看单位' };
+    // 4. 友军 / 倒地单位 / 敌回合检视态
+    const unitAtHex = findUnitAtHex(st, previewHex, true);
+    if (unitAtHex) {
+      const isSelf = unitAtHex.id === act?.id;
+      return {
+        mode: 'inspect',
+        title: `${unitAtHex.name}${unitAtHex.kind === 'creature' ? ` ×${unitAtHex.count}` : ` Lv.${unitAtHex.level}`}`,
+        detail: isSelf ? '当前行动单位 · 点「详情」或长按查完整档案' : '轻触「详情」或长按棋子查完整档案',
+        badgeText: isSelf ? '当前行动' : unitAtHex.side === (act?.side ?? 'left') ? '友军' : '敌军',
+        badgeTone: isSelf ? 'gold' : unitAtHex.side === (act?.side ?? 'left') ? 'jade' : 'danger',
+        canConfirm: false,
+        confirmLabel: '详情',
+        inspectUnitId: unitAtHex.id,
+        approachCount: 0,
+        approachIndex: 0,
+        isTargeting: false,
+      };
     }
-    return { kind: 'default', angleDeg: 0 };
+
+    // 5. 空地移动预览态
+    if (act && isHumanTurn.value && activeReachableHexKeys.value.has(hexKey(previewHex)) && !hexEquals(previewHex, act.pos)) {
+      const tileInfo = hoveredTileInfo.value;
+      return {
+        mode: 'move',
+        title: act.abilities.flying ? '飞行至目标格' : '移动至目标格',
+        detail: tileInfo
+          ? `${tileInfo.name}（${tileInfo.elevationLabel}）· 再触或点确认执行`
+          : '再次轻触同一格或点确认执行移动',
+        badgeText: act.abilities.flying ? '飞行' : '移动',
+        badgeTone: 'jade',
+        canConfirm: true,
+        confirmLabel: act.abilities.flying ? '确认飞行' : '确认移动',
+        inspectUnitId: null,
+        approachCount: 0,
+        approachIndex: 0,
+        isTargeting: false,
+      };
+    }
+
+    // 6. 不可通行空地/障碍地形检视态
+    const tileInfo = hoveredTileInfo.value;
+    return {
+      mode: 'blocked',
+      title: tileInfo ? `地形 · ${tileInfo.name}` : '不可通行',
+      detail: tileInfo ? `${tileInfo.moveDesc} · ${tileInfo.losDesc}` : '超出本巡移动力或受障碍阻挡',
+      badgeText: tileInfo?.elevationLabel ?? '地形',
+      badgeTone: 'warn',
+      canConfirm: false,
+      confirmLabel: '确认',
+      inspectUnitId: null,
+      approachCount: 0,
+      approachIndex: 0,
+      isTargeting: false,
+    };
   });
 
   function showToast(msg: string): void {
     toastMessage.value = msg;
-    if (toastTimer) window.clearTimeout(toastTimer);
-    toastTimer = window.setTimeout(() => {
+    if (toastTimer) globalThis.clearTimeout(toastTimer);
+    toastTimer = globalThis.setTimeout(() => {
       toastMessage.value = null;
     }, 2400);
   }
@@ -704,8 +714,8 @@ export const useBattleStore = defineStore('battle', () => {
     casterBlueprintId?: string;
   }): void {
     spellCardBanner.value = { visible: true, ...info };
-    if (bannerTimer) window.clearTimeout(bannerTimer);
-    bannerTimer = window.setTimeout(() => {
+    if (bannerTimer) globalThis.clearTimeout(bannerTimer);
+    bannerTimer = globalThis.setTimeout(() => {
       spellCardBanner.value.visible = false;
     }, 2100);
   }
@@ -729,6 +739,8 @@ export const useBattleStore = defineStore('battle', () => {
 
   function toggleDrawer(drawer: SecondaryDrawerType): void {
     detailModal.value = null;
+    touchPreviewHex.value = null;
+    manualApproachHex.value = null;
     const next = activeDrawer.value === drawer ? 'none' : drawer;
     activeDrawer.value = next;
     if (next === 'none') {
@@ -748,6 +760,8 @@ export const useBattleStore = defineStore('battle', () => {
   }
 
   function openUnitDetail(unitId: string, clientPos: { x: number; y: number }): void {
+    touchPreviewHex.value = null;
+    manualApproachHex.value = null;
     detailModal.value = { unitId, x: clientPos.x, y: clientPos.y };
     soundEngine.play('ui_panel_open');
   }
@@ -879,166 +893,23 @@ export const useBattleStore = defineStore('battle', () => {
   }
 
   function buildOverlayHints(): StageOverlayHints {
-    const st = battleState.value;
-    const act = activeUnit.value;
-    const emptySet = new Set<string>();
-    const baseEmpty: StageOverlayHints = {
-      activeUnitId: st.activeUnitId,
-      selectedUnitId: inspectedUnitId.value,
+    return buildBattleOverlayHints({
+      state: battleState.value,
+      activeUnit: activeUnit.value,
+      inspectedUnitId: inspectedUnitId.value,
       hoveredHex: hoveredHex.value,
-      reachableHexKeys: emptySet,
-      attackableUnitIds: emptySet,
-      attackPreview: null,
-      movePathPreview: null,
-      meleeCandidateHexes: [],
-      meleeApproachHex: null,
-      meleeTargetHex: null,
-      targetingMode: 'normal',
-      spellRange: 0,
-      aoeRadius: 0,
-      lineLength: 0,
-      validSpellUnitIds: emptySet,
-    };
-
-    if (!act || !isHumanTurn.value || isAnimating.value || st.phase !== 'active') {
-      return baseEmpty;
-    }
-
-    if (declaringSpellCard.value && act.signatureSpellCardId) {
-      const card = TOUHOU_CATALOG.spellCards[act.signatureSpellCardId];
-      if (card?.targetType === 'hex_line') {
-        return {
-          ...baseEmpty,
-          targetingMode: 'spell_card_line',
-          lineLength: card.lineLength ?? 14,
-        };
-      }
-    }
-
-    if (selectedSpellId.value) {
-      const spell = TOUHOU_CATALOG.spells[selectedSpellId.value];
-      if (spell) {
-        const effRange = getEffectiveSpellRange(st, act, spell);
-        if (spell.targetType === 'hex_aoe') {
-          return {
-            ...baseEmpty,
-            targetingMode: 'spell_aoe',
-            spellRange: effRange,
-            aoeRadius: spell.aoeRadius ?? 1,
-          };
-        }
-        if (spell.targetType === 'hex_empty') {
-          const tmpl = spell.summonTemplateId ? TOUHOU_CATALOG.creatures[spell.summonTemplateId] : undefined;
-          const emptyKeys = new Set<string>();
-          for (const tile of Object.values(st.tiles)) {
-            if (
-              hexDistance(act.pos, tile) <= effRange &&
-              canPlaceFootprintAt(st, tile, tmpl?.footprint ?? '1x1', undefined, Boolean(tmpl?.abilities.flying))
-            ) {
-              emptyKeys.add(hexKey(tile));
-            }
-          }
-          return {
-            ...baseEmpty,
-            targetingMode: 'spell_empty_hex',
-            spellRange: effRange,
-            validEmptyHexKeys: emptyKeys,
-          };
-        }
-        if (spell.targetType === 'unit_to_hex' && pendingSpellFirstUnitId.value) {
-          const firstUnit = st.units[pendingSpellFirstUnitId.value];
-          const emptyKeys = new Set<string>();
-          if (firstUnit) {
-            for (const tile of Object.values(st.tiles)) {
-              if (canPlaceFootprintAt(st, tile, firstUnit.footprint, firstUnit.id, Boolean(firstUnit.abilities.flying))) {
-                emptyKeys.add(hexKey(tile));
-              }
-            }
-          }
-          return {
-            ...baseEmpty,
-            targetingMode: 'spell_empty_hex',
-            spellRange: 99,
-            validEmptyHexKeys: emptyKeys,
-          };
-        }
-        if (spell.targetType === 'corpse_unit') {
-          const validIds = new Set<string>();
-          if (!st.battleSpellFlags?.necromancyWardActive) {
-            for (const u of Object.values(st.units)) {
-              if (u.kind !== 'creature' || u.statusEffects?.disintegrated) continue;
-              if (effRange > 0 && getUnitMinDistance(act, u) > effRange) continue;
-              if (getAvailableCorpseHp(st, u, TOUHOU_CATALOG) > 0) {
-                validIds.add(u.id);
-              }
-            }
-          }
-          return {
-            ...baseEmpty,
-            targetingMode: 'spell_unit',
-            spellRange: effRange,
-            validSpellUnitIds: validIds,
-          };
-        }
-
-        const validIds = new Set<string>();
-        for (const u of Object.values(st.units)) {
-          if (u.status !== 'alive') continue;
-          if (spell.targetType === 'unit_to_hex') {
-            if (
-              u.side === act.side &&
-              !u.abilities.magicImmune &&
-              !u.statusEffects?.sanctuary &&
-              (effRange <= 0 || getUnitMinDistance(act, u) <= effRange)
-            ) {
-              validIds.add(u.id);
-            }
-            continue;
-          }
-          if (spell.targetType === 'ally_to_ally') {
-            if (u.side !== act.side || u.abilities.magicImmune || u.statusEffects?.sanctuary) continue;
-            if (effRange > 0 && getUnitMinDistance(act, u) > effRange) continue;
-            if (!pendingSpellFirstUnitId.value && spell.specialEffect === 'sacrifice' && u.kind === 'hero') continue;
-            if (pendingSpellFirstUnitId.value && u.id === pendingSpellFirstUnitId.value) continue;
-            validIds.add(u.id);
-            continue;
-          }
-          if (!validateSpellUnitTarget(spell, act, u, st, TOUHOU_CATALOG, false).ok) continue;
-          if (
-            (effRange <= 0 || getUnitMinDistance(act, u) <= effRange) &&
-            (spell.ignoreLos || checkSpellLineOfSight(st, act, getUnitOccupiedHexes(u), u).canCast)
-          ) {
-            validIds.add(u.id);
-          }
-        }
-        return {
-          ...baseEmpty,
-          targetingMode: 'spell_unit',
-          spellRange: effRange,
-          validSpellUnitIds: validIds,
-        };
-      }
-    }
-
-    const reachable = activeReachableMap.value;
-    const hoverCtx = hoverAttackContext.value;
-    const isActAttacking = Boolean(hoverCtx && hoverCtx.isCurrentTurnAttacker && hoverCtx.preview.valid);
-
-    let movePathPreview: HexCoord[] | null = null;
-    if (!hoverCtx && hoveredHex.value && reachable && reachable.costs.has(hexKey(hoveredHex.value))) {
-      movePathPreview = reconstructHexPath(reachable, hoveredHex.value);
-    }
-
-    return {
-      ...baseEmpty,
-      reachableHexKeys: activeReachableHexKeys.value,
-      attackableUnitIds: activeAttackableUnitIds.value,
-      attackPreview: isActAttacking ? hoverCtx!.preview : null,
-      movePathPreview,
-      meleeCandidateHexes: isActAttacking ? hoverCtx!.candidateApproachHexes : [],
-      meleeApproachHex: isActAttacking ? hoverCtx!.chosenApproachHex : null,
-      meleeTargetHex: isActAttacking && hoverCtx!.chosenApproachHex ? hoverCtx!.defender.pos : null,
-    };
+      hoveredUnitId: hoveredUnit.value?.id ?? null,
+      isHumanTurn: isHumanTurn.value,
+      isAnimating: isAnimating.value,
+      declaringSpellCard: declaringSpellCard.value,
+      selectedSpellId: selectedSpellId.value,
+      pendingSpellFirstUnitId: pendingSpellFirstUnitId.value,
+      hoverSpellContext: hoverSpellContext.value,
+      hoverAttackContext: hoverAttackContext.value,
+      activeReachableMap: activeReachableMap.value,
+      activeReachableHexKeys: activeReachableHexKeys.value,
+      activeAttackableUnitIds: activeAttackableUnitIds.value,
+    });
   }
 
   function refreshStageOverlay(): void {
@@ -1067,6 +938,8 @@ export const useBattleStore = defineStore('battle', () => {
     selectedSpellId.value = null;
     pendingSpellFirstUnitId.value = null;
     declaringSpellCard.value = false;
+    touchPreviewHex.value = null;
+    manualApproachHex.value = null;
     refreshStageOverlay();
   }
 
@@ -1082,11 +955,16 @@ export const useBattleStore = defineStore('battle', () => {
     selectedSpellId.value = null;
     pendingSpellFirstUnitId.value = null;
     declaringSpellCard.value = false;
+    manualApproachHex.value = null;
     soundEngine.play('ui_click');
     showToast(
       forceMeleeMode.value
-        ? '已切换为【近战突击】模式（按 M 可切回远程）'
-        : '已切换为【远程射击】模式（按 M 可切换近战）',
+        ? isTouchMode.value
+          ? '已切换为【近战突击】模式'
+          : '已切换为【近战突击】模式（按 M 可切回远程）'
+        : isTouchMode.value
+          ? '已切换为【远程射击】模式'
+          : '已切换为【远程射击】模式（按 M 可切换近战）',
     );
     refreshStageOverlay();
   }
@@ -1103,6 +981,8 @@ export const useBattleStore = defineStore('battle', () => {
     }
 
     clearTargeting();
+    hoveredHex.value = null;
+    pointerPos.value = null;
     closeUnitDetail();
     if (cmd.type !== 'USE_POTION') {
       forceMeleeMode.value = false;
@@ -1157,6 +1037,7 @@ export const useBattleStore = defineStore('battle', () => {
 
     if (hexChanged) {
       hoveredHex.value = hex;
+      manualApproachHex.value = null;
       // 鼠标移入新的可达或可攻击六边形时，轻敲一声极柔和的漆木子微响（带 55ms 冷却）
       if (hex && isHumanTurn.value && !isAnimating.value && !detailModal.value) {
         const k = hexKey(hex);
@@ -1196,6 +1077,193 @@ export const useBattleStore = defineStore('battle', () => {
       closeUnitDetail();
       if (activeDrawer.value !== 'none') closeDrawer();
     }
+  }
+
+  /** 触控长按交互（420ms 等效桌面右键）：取消施法瞄准或直接弹出完整单位档案 */
+  function handleLongPressHex(hex: HexCoord | null, clientPos: { x: number; y: number }): void {
+    touchPreviewHex.value = null;
+    manualApproachHex.value = null;
+    if (selectedSpellId.value || declaringSpellCard.value) {
+      clearTargeting();
+      hoveredHex.value = null;
+      soundEngine.play('ui_panel_close');
+      showToast('已取消术式选点');
+      return;
+    }
+    if (hex) {
+      handleRightClickHex(hex, clientPos);
+    } else {
+      closeUnitDetail();
+      if (activeDrawer.value !== 'none') closeDrawer();
+    }
+  }
+
+  /** 取消当前触控预览态（或在施法/符卡瞄准态下直接退出瞄准） */
+  function cancelTouchPreview(): void {
+    if (selectedSpellId.value || declaringSpellCard.value) {
+      clearTargeting();
+      hoveredHex.value = null;
+      pointerPos.value = null;
+      soundEngine.play('ui_panel_close');
+      return;
+    }
+    touchPreviewHex.value = null;
+    manualApproachHex.value = null;
+    hoveredHex.value = null;
+    pointerPos.value = null;
+    soundEngine.play('ui_click');
+    refreshStageOverlay();
+  }
+
+  /** 触控循环切换近战多向落脚位（等效桌面绕敌移动鼠标选攻击方向） */
+  function cycleMeleeApproach(): void {
+    const atk = hoverAttackContext.value;
+    if (!atk || !atk.isCurrentTurnAttacker || !atk.preview.valid || atk.preview.isRanged) return;
+    const cands = atk.candidateApproachHexes;
+    if (cands.length <= 1) return;
+    const curIdx = atk.chosenApproachHex
+      ? cands.findIndex((c) => hexEquals(c, atk.chosenApproachHex!))
+      : 0;
+    const nextIdx = (curIdx + 1) % cands.length;
+    manualApproachHex.value = cands[nextIdx];
+    soundEngine.play('ui_click');
+    refreshStageOverlay();
+  }
+
+  /** 触控确认执行当前已预览锁定的行动（移动 / 攻击 / 施法 / 符卡） */
+  function confirmTouchAction(): void {
+    const targetHex = touchPreviewHex.value;
+    if (!targetHex) return;
+    const prevPendingFirst = pendingSpellFirstUnitId.value;
+    handleClickHex(targetHex);
+    // 二步法术完成第 1 步选定后清空预览格，准备迎接第 2 步轻触
+    if (!prevPendingFirst && pendingSpellFirstUnitId.value) {
+      touchPreviewHex.value = null;
+      hoveredHex.value = null;
+      refreshStageOverlay();
+    }
+  }
+
+  /** 触控拖动滑览抬手后锁定最后预览的目标格，避免误执行并保留底部确认条 */
+  function handleTouchScrubEnd(
+    hex: HexCoord | null,
+    clientPos: { x: number; y: number },
+    virtualPos: { x: number; y: number } | null,
+  ): void {
+    if (detailModal.value || isAnimating.value) return;
+    if (!hex) return;
+    touchPreviewHex.value = hex;
+    hoveredHex.value = hex;
+    pointerPos.value = clientPos;
+    hoverVirtualPos.value = virtualPos;
+    const u = findUnitAtHex(battleState.value, hex, true);
+    if (u && (!isHumanTurn.value || u.side === activeUnit.value?.side)) {
+      inspectedUnitId.value = u.id;
+    }
+    refreshStageOverlay();
+  }
+
+  /**
+   * 触控轻触六边形（二段确认机制）：
+   * - 首次轻触：锁定目标并展示路径/弹道/攻防预测与底部操作条
+   * - 若已锁定近战敌军且点击其周围金色候选落脚格：直接切换攻击落脚方位
+   * - 二次轻触同一目标（含多格生物同体不同格）：若操作合法则立即执行
+   */
+  function handleTouchTapHex(
+    hex: HexCoord | null,
+    clientPos: { x: number; y: number },
+    virtualPos: { x: number; y: number } | null,
+  ): void {
+    if (detailModal.value) {
+      closeUnitDetail();
+      return;
+    }
+    if (isAnimating.value) return;
+    if (activeDrawer.value !== 'none' && activeDrawer.value !== 'spells') {
+      closeDrawer();
+    }
+    if (!hex) {
+      if (!selectedSpellId.value && !declaringSpellCard.value) {
+        cancelTouchPreview();
+      }
+      return;
+    }
+
+    const st = battleState.value;
+    const act = activeUnit.value;
+
+    // 1. 若当前已锁定近战敌军，且玩家轻触其周围高亮的金色候选落脚格，则切换至该落脚方位
+    if (
+      act &&
+      isHumanTurn.value &&
+      !selectedSpellId.value &&
+      !declaringSpellCard.value &&
+      touchPreviewHex.value &&
+      hoverAttackContext.value &&
+      hoverAttackContext.value.isCurrentTurnAttacker &&
+      hoverAttackContext.value.preview.valid &&
+      !hoverAttackContext.value.preview.isRanged &&
+      hoverAttackContext.value.candidateApproachHexes.length > 1
+    ) {
+      const defHexes = getUnitOccupiedHexes(hoverAttackContext.value.defender);
+      const tappedDefender = defHexes.some((h) => hexEquals(h, hex));
+      if (!tappedDefender) {
+        const cands = hoverAttackContext.value.candidateApproachHexes;
+        const exactMatch = cands.find((c) => hexEquals(c, hex));
+        const footprintMatch =
+          exactMatch ?? cands.find((c) => getFootprintHexes(c, act.footprint).some((h) => hexEquals(h, hex)));
+        if (footprintMatch) {
+          manualApproachHex.value = footprintMatch;
+          soundEngine.play('ui_click');
+          refreshStageOverlay();
+          return;
+        }
+      }
+    }
+
+    // 2. 判断是否二次轻触同一预览目标（对多格单位自动归一化至同一单位 ID）
+    const prevHex = touchPreviewHex.value;
+    let isSameTarget = false;
+    if (prevHex) {
+      if (hexEquals(prevHex, hex)) {
+        isSameTarget = true;
+      } else {
+        const prevUnit = findUnitAtHex(st, prevHex, true);
+        const curUnit = findUnitAtHex(st, hex, true);
+        if (prevUnit && curUnit && prevUnit.id === curUnit.id) {
+          isSameTarget = true;
+        }
+      }
+    }
+
+    if (isSameTarget) {
+      const summary = touchActionSummary.value;
+      if (summary?.canConfirm) {
+        confirmTouchAction();
+        return;
+      }
+      if (summary?.mode === 'blocked') {
+        soundEngine.play('ui_blocked');
+        if (summary.detail) showToast(summary.detail);
+        return;
+      }
+      return;
+    }
+
+    // 3. 首次轻触新目标：进入预览态，渲染路径/弹道/攻防预测与底部触控确认栏
+    manualApproachHex.value = null;
+    touchPreviewHex.value = hex;
+    hoveredHex.value = hex;
+    pointerPos.value = clientPos;
+    hoverVirtualPos.value = virtualPos;
+
+    const tappedUnit = findUnitAtHex(st, hex, true);
+    if (tappedUnit && (!isHumanTurn.value || tappedUnit.side === act?.side)) {
+      inspectedUnitId.value = tappedUnit.id;
+    }
+
+    soundEngine.play('ui_click');
+    refreshStageOverlay();
   }
 
   function handleClickHex(hex: HexCoord): void {
@@ -1523,8 +1591,11 @@ export const useBattleStore = defineStore('battle', () => {
     isAnimating,
     hoveredHex,
     pointerPos,
+    touchPreviewHex,
+    touchActionSummary,
     inspectedUnitId,
     selectedSpellId,
+    selectedSpell,
     declaringSpellCard,
     forceMeleeMode,
     canToggleAttackMode,
@@ -1536,6 +1607,9 @@ export const useBattleStore = defineStore('battle', () => {
     spellCardBanner,
     activeUnit,
     isHumanTurn,
+    hoveredUnit,
+    hoveredTile,
+    hoveredTileInfo,
     inspectedUnit,
     inspectedStats,
     inspectedAdvancedClass,
@@ -1549,11 +1623,18 @@ export const useBattleStore = defineStore('battle', () => {
     isPreBattlePrep,
     turnStripUnits,
     hoverAttackContext,
+    hoverSpellContext,
     tacticalCursor,
     attachStage,
     handleHoverHex,
     handleClickHex,
     handleRightClickHex,
+    handleTouchTapHex,
+    handleTouchScrubEnd,
+    handleLongPressHex,
+    confirmTouchAction,
+    cycleMeleeApproach,
+    cancelTouchPreview,
     openUnitDetail,
     closeUnitDetail,
     adjustHeroPrimarySkill,

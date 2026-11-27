@@ -19,6 +19,8 @@ import { useBattleStore } from '@ui/battleStore';
 import HudHoverTooltip from '@ui/components/HudHoverTooltip.vue';
 import OrnamentalFrame from '@ui/components/OrnamentalFrame.vue';
 import PixelBadgeIcon from '@ui/components/PixelBadgeIcon.vue';
+import RichSemanticText from '@ui/components/RichSemanticText.vue';
+import { useViewportInput } from '@ui/composables/useViewportInput';
 import {
   buildSpellCardTooltipPayload,
   buildSpellTooltipPayload,
@@ -35,6 +37,7 @@ import {
 type MagicSchool = Exclude<Alignment, 'might'>;
 
 const store = useBattleStore();
+const { isTouchMode, isCompactLandscape, isTinyHeight, sidebarWidthPx } = useViewportInput();
 const schoolFilter = ref<'all' | MagicSchool>('all');
 const levelFilter = ref<0 | 1 | 2 | 3 | 4 | 5>(0);
 const polarityFilter = ref<'all' | SpellPolarityKind>('all');
@@ -43,6 +46,10 @@ let animTimer: number | null = null;
 
 const hoverTip = ref<HudTooltipPayload | null>(null);
 const tipPos = ref({ x: 0, y: 0 });
+const tipPinned = ref(false);
+/** 触控端二段预览：首触展示内嵌术式/符卡详述条，再触或点击确认按钮施放 */
+const previewedSpellId = ref<string | null>(null);
+const previewedSpellCard = ref(false);
 
 const LEVEL_KANJI = ['全', '壱', '弐', '参', '肆', '伍'];
 const ROMAN_RANK = ['—', 'I', 'II', 'III', 'IV', 'V'];
@@ -56,21 +63,42 @@ const SCHOOL_ORDER: Record<Alignment, number> = {
 };
 
 function showTip(payload: HudTooltipPayload, e: MouseEvent): void {
+  if (isTouchMode.value) return;
+  tipPinned.value = false;
   hoverTip.value = payload;
   tipPos.value = { x: e.clientX, y: e.clientY };
 }
 
 function moveTip(e: MouseEvent): void {
-  if (!hoverTip.value) return;
+  if (tipPinned.value || !hoverTip.value) return;
   tipPos.value = { x: e.clientX, y: e.clientY };
 }
 
 function hideTip(): void {
+  if (tipPinned.value) return;
   hoverTip.value = null;
 }
 
+function forceHideTip(): void {
+  tipPinned.value = false;
+  hoverTip.value = null;
+}
+
+function tapTip(payload: HudTooltipPayload, e: MouseEvent): void {
+  if (!isTouchMode.value) return;
+  if (tipPinned.value && hoverTip.value?.title === payload.title) {
+    forceHideTip();
+    return;
+  }
+  tipPinned.value = true;
+  hoverTip.value = payload;
+  tipPos.value = { x: e.clientX, y: e.clientY };
+}
+
 function closeBook(): void {
-  hideTip();
+  forceHideTip();
+  previewedSpellId.value = null;
+  previewedSpellCard.value = false;
   store.closeDrawer();
 }
 
@@ -104,9 +132,19 @@ watch(
     schoolFilter.value = 'all';
     levelFilter.value = 0;
     polarityFilter.value = 'all';
-    hideTip();
+    previewedSpellId.value = null;
+    previewedSpellCard.value = false;
+    forceHideTip();
   },
 );
+
+watch(isOpen, (open) => {
+  if (!open) {
+    previewedSpellId.value = null;
+    previewedSpellCard.value = false;
+    forceHideTip();
+  }
+});
 
 const portraitUrl = computed(() => {
   if (!hero.value) return '';
@@ -268,15 +306,100 @@ const spellCardTooltip = computed<HudTooltipPayload | null>(() => {
   });
 });
 
+const previewedSpell = computed<SpellDef | null>(() => {
+  if (!previewedSpellId.value) return null;
+  return allKnownSpells.value.find((s) => s.id === previewedSpellId.value) ?? null;
+});
+
+const touchInspector = computed<{
+  kind: 'spell' | 'card';
+  payload: HudTooltipPayload;
+  canAct: boolean;
+  actionLabel: string;
+  spell?: SpellDef;
+} | null>(() => {
+  if (!isTouchMode.value) return null;
+  if (previewedSpellCard.value && signatureCard.value && spellCardTooltip.value) {
+    const h = hero.value;
+    const manaLack = (h?.mana ?? 0) < signatureCard.value.manaCost;
+    const chargeLack = (h?.spellCardCharge ?? 0) < signatureCard.value.chargeCost;
+    return {
+      kind: 'card',
+      payload: spellCardTooltip.value,
+      canAct: canFireSpellCard.value,
+      actionLabel: canFireSpellCard.value ? '宣言符卡' : chargeLack ? '充能未满' : manaLack ? '灵力不足' : '暂不可用',
+    };
+  }
+  const sp = previewedSpell.value;
+  if (!sp) return null;
+  const castable = canCastSpell(sp);
+  const isAdv = Boolean(sp.isAdventureOnly || sp.targetType === 'adventure');
+  return {
+    kind: 'spell',
+    payload: buildSpellTooltip(sp),
+    canAct: castable,
+    actionLabel: castable ? '施放此术' : isAdv ? '大地图专用' : '灵力不足',
+    spell: sp,
+  };
+});
+
 function pickSpell(sp: SpellDef): void {
   if (!canCastSpell(sp)) return;
-  hideTip();
+  forceHideTip();
+  previewedSpellId.value = null;
+  previewedSpellCard.value = false;
   store.selectSpell(sp.id);
 }
 
+function handleSpellTileClick(sp: SpellDef): void {
+  if (!isTouchMode.value) {
+    pickSpell(sp);
+    return;
+  }
+  forceHideTip();
+  if (previewedSpellId.value === sp.id) {
+    if (canCastSpell(sp)) {
+      pickSpell(sp);
+    } else {
+      soundEngine.play('ui_blocked');
+    }
+    return;
+  }
+  previewedSpellCard.value = false;
+  previewedSpellId.value = sp.id;
+  soundEngine.play('ui_click');
+}
+
 function fireCard(): void {
-  hideTip();
+  forceHideTip();
+  previewedSpellId.value = null;
+  previewedSpellCard.value = false;
   store.triggerSpellCard();
+}
+
+function handleSpellCardClick(): void {
+  if (!isTouchMode.value) {
+    fireCard();
+    return;
+  }
+  forceHideTip();
+  if (previewedSpellCard.value && canFireSpellCard.value) {
+    fireCard();
+    return;
+  }
+  previewedSpellId.value = null;
+  previewedSpellCard.value = true;
+  soundEngine.play('ui_click');
+}
+
+function confirmTouchInspector(): void {
+  const ins = touchInspector.value;
+  if (!ins || !ins.canAct) return;
+  if (ins.kind === 'card') {
+    fireCard();
+  } else if (ins.spell) {
+    pickSpell(ins.spell);
+  }
 }
 </script>
 
@@ -284,24 +407,38 @@ function fireCard(): void {
   <transition name="book-modal-fade">
     <div
       v-if="isOpen && hero"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/72 lg:pr-[96px]"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/72 px-2 py-1.5"
+      :style="!isCompactLandscape ? { paddingRight: `${Math.min(sidebarWidthPx, 128)}px` } : undefined"
       @click="closeBook()"
       @contextmenu.prevent.stop="closeBook()"
       @mousemove="moveTip"
     >
-      <!-- 外层定位包装（承载顶部垂落的五系燕尾丝绸书签） -->
+      <!-- 外层定位包装（承载顶部垂落的五系燕尾丝绸书签，自适应短高横屏无裁切） -->
       <div
-        class="relative w-[792px] max-w-[96vw] pt-7 select-none"
-        @click.stop
+        class="relative flex max-h-[95dvh] w-[792px] max-w-[97vw] flex-col select-none"
+        :class="isTinyHeight ? 'pt-6' : 'pt-7'"
+        @click.stop="tipPinned && forceHideTip()"
         @contextmenu.prevent.stop="closeBook()"
       >
         <!-- 顶部悬垂燕尾五系丝绸书签（含每系已习得术数微标） -->
-        <div class="absolute right-8 top-0 z-20 flex items-start gap-1.5">
+        <div
+          class="absolute top-0 z-20 flex items-start"
+          :class="isTinyHeight ? 'right-4 gap-1' : 'right-8 gap-1.5'"
+        >
           <button
             v-for="tab in schoolTabs"
             :key="tab.id"
-            class="silk-bookmark font-display flex w-10 flex-col items-center justify-start border-x border-t pt-1 text-[11px] font-bold"
-            :class="schoolFilter === tab.id ? 'h-11 translate-y-0 brightness-115' : 'h-9 translate-y-1 opacity-78 hover:translate-y-0.5 hover:opacity-100'"
+            class="silk-bookmark font-display flex flex-col items-center justify-start border-x border-t pt-1 font-bold"
+            :class="[
+              isTinyHeight ? 'w-8.5 text-[10px]' : 'w-10 text-[11px]',
+              schoolFilter === tab.id
+                ? isTinyHeight
+                  ? 'h-9 translate-y-0 brightness-115'
+                  : 'h-11 translate-y-0 brightness-115'
+                : isTinyHeight
+                  ? 'h-7.5 translate-y-1 opacity-78'
+                  : 'h-9 translate-y-1 opacity-78 hover:translate-y-0.5 hover:opacity-100',
+            ]"
             :style="{
               backgroundColor: tab.ribbonBg,
               borderColor: schoolFilter === tab.id ? '#f5df9e' : tab.ribbonEdge,
@@ -311,18 +448,26 @@ function fireCard(): void {
             @click="schoolFilter = tab.id; soundEngine.play('ui_book_tab')"
           >
             <span class="leading-none">{{ tab.label }}</span>
-            <span class="font-num mt-0.5 text-[8.5px] leading-none opacity-85">{{ schoolCounts[tab.id] }}</span>
+            <span class="font-num mt-0.5 text-[8px] leading-none opacity-85">{{ schoolCounts[tab.id] }}</span>
           </button>
         </div>
 
         <!-- 硬壳玄漆金边古书封皮 -->
-        <section class="grimoire-cover relative p-3.5 text-xs">
-          <OrnamentalFrame variant="corners" />
+        <section
+          class="grimoire-cover relative flex min-h-0 flex-1 flex-col overflow-hidden text-xs"
+          :class="isTinyHeight ? 'p-2' : 'p-3.5'"
+        >
+          <OrnamentalFrame variant="corners" :compact="isTinyHeight" />
 
-          <!-- 左右摊开的双页书体 + 中央四目线装书脊 -->
-          <div class="relative z-10 grid grid-cols-1 sm:grid-cols-[228px_14px_1fr]">
+          <!-- 左右摊开的双页书体 + 中央四目线装书脊（手机横屏亦保持精致对开页） -->
+          <div
+            class="relative z-10 grid min-h-0 flex-1 grid-cols-1 min-[560px]:grid-cols-[176px_10px_1fr] lg:grid-cols-[228px_14px_1fr]"
+          >
             <!-- ========== 左页：施法者铜镜、五系造诣印与竖式符卡札 ========== -->
-            <div class="grimoire-page-left relative flex flex-col justify-between gap-2.5 overflow-hidden px-4 py-4">
+            <div
+              class="grimoire-page-left touch-scroll relative flex min-h-0 flex-col justify-between overflow-y-auto"
+              :class="isTinyHeight ? 'gap-1.5 px-2.5 py-2' : 'gap-2.5 px-4 py-4'"
+            >
               <!-- 左页暗金罗盘法阵底纹 -->
               <svg
                 viewBox="0 0 180 180"
@@ -336,18 +481,26 @@ function fireCard(): void {
 
               <!-- 施法者肖像与灵力标尺 -->
               <div class="relative z-10 flex flex-col items-center">
-                <div class="sacred-mirror-frame h-[80px] w-[80px] overflow-hidden rounded-full">
+                <div
+                  class="sacred-mirror-frame overflow-hidden rounded-full"
+                  :class="isTinyHeight ? 'h-[54px] w-[54px]' : 'h-[80px] w-[80px]'"
+                >
                   <img :src="portraitUrl" :alt="hero.name" class="pixel-art h-full w-full object-cover" />
                 </div>
 
-                <div class="font-display mt-2 text-sm font-black text-[#f5edd8]">{{ hero.name }}</div>
-                <div class="font-num mt-0.5 text-[10px] tracking-wider text-[#9ec4ed]">
+                <div
+                  class="font-display font-black text-[#f5edd8]"
+                  :class="isTinyHeight ? 'mt-1 text-xs' : 'mt-2 text-sm'"
+                >
+                  {{ hero.name }}
+                </div>
+                <div class="font-num mt-0.5 text-[9.5px] tracking-wider text-[#9ec4ed]">
                   法强 SP {{ heroComputedStats?.spellPower ?? hero.baseStats.spellPower }}
                   <span v-if="store.battleState.battleSpellFlags?.manaFlareActive" class="ml-1 text-[#ffe082]">· 灵脉沸腾-2MP</span>
                 </div>
 
-                <!-- 五系魔法造诣条（灵梦全五系宗师 V 阶！） -->
-                <div v-if="heroMagicMasteries.length > 0" class="mt-2 grid w-full grid-cols-5 gap-1">
+                <!-- 五系魔法造诣条（点按在触控端弹出造诣详情笺） -->
+                <div v-if="heroMagicMasteries.length > 0" class="mt-1.5 grid w-full grid-cols-5 gap-1">
                   <div
                     v-for="m in heroMagicMasteries"
                     :key="m.id"
@@ -356,6 +509,7 @@ function fireCard(): void {
                     :style="{ borderColor: m.rank >= 5 ? '#f5df9e' : `${m.color}70` }"
                     @mouseenter="showTip(m.tooltip, $event)"
                     @mouseleave="hideTip"
+                    @click.stop="tapTip(m.tooltip, $event)"
                   >
                     <span class="font-display text-[9px] font-bold leading-none" :style="{ color: m.color }">{{ m.short }}</span>
                     <span
@@ -367,7 +521,7 @@ function fireCard(): void {
                   </div>
                 </div>
 
-                <div class="mt-2.5 w-full space-y-2 font-num text-[10px]">
+                <div class="w-full font-num text-[10px]" :class="isTinyHeight ? 'mt-1.5 space-y-1' : 'mt-2.5 space-y-2'">
                   <div>
                     <div class="flex justify-between text-[#a3c7f0]">
                       <span>灵力 MP</span>
@@ -406,15 +560,18 @@ function fireCard(): void {
               <!-- 专属符卡御札（传统神社符札竖式排版） -->
               <button
                 v-if="signatureCard"
-                class="relative z-10 flex flex-col items-center border p-2.5 text-center transition"
-                :class="
-                  canFireSpellCard
-                    ? 'animate-makie-ready border-[#f5df9e] bg-gradient-to-b from-[#4f1726] via-[#2c131d] to-[#261a12] hover:brightness-115'
-                    : 'border-[#99763a]/45 bg-[#151016]/90 opacity-80 hover:border-[#cfa75b]'
-                "
+                class="relative z-10 flex flex-col items-center border text-center transition"
+                :class="[
+                  isTinyHeight ? 'p-1.5' : 'p-2.5',
+                  previewedSpellCard
+                    ? 'border-[#fff2b8] bg-[#4a1f2d] ring-1 ring-[#f5df9e]'
+                    : canFireSpellCard
+                      ? 'animate-makie-ready border-[#f5df9e] bg-gradient-to-b from-[#4f1726] via-[#2c131d] to-[#261a12] hover:brightness-115'
+                      : 'border-[#99763a]/45 bg-[#151016]/90 opacity-80 hover:border-[#cfa75b]',
+                ]"
                 @mouseenter="spellCardTooltip && showTip(spellCardTooltip, $event)"
                 @mouseleave="hideTip"
-                @click="fireCard()"
+                @click.stop="handleSpellCardClick()"
               >
                 <span class="pointer-events-none absolute inset-1 border border-[#cfa75b]/30" />
 
@@ -425,27 +582,35 @@ function fireCard(): void {
                   </span>
                 </div>
 
-                <div class="my-1">
-                  <PixelBadgeIcon name="spell_card" size-class="h-7 w-7" />
+                <div :class="isTinyHeight ? 'my-0.5' : 'my-1'">
+                  <PixelBadgeIcon name="spell_card" :size-class="isTinyHeight ? 'h-5 w-5' : 'h-7 w-7'" />
                 </div>
 
-                <div class="font-display text-[11.5px] font-bold text-[#f7eedc]">
+                <div class="font-display text-[11px] font-bold text-[#f7eedc]">
                   {{ signatureCard.name }}
                 </div>
                 <div
                   class="font-display mt-0.5 text-[9px]"
                   :class="canFireSpellCard ? 'text-[#f5df9e]' : 'text-[#8c7e6c]'"
                 >
-                  {{ canFireSpellCard ? '印成 · 点击宣言' : '蓄势充能中' }}
+                  {{
+                    canFireSpellCard
+                      ? isTouchMode
+                        ? previewedSpellCard
+                          ? '再触立即宣言'
+                          : '印成 · 轻触预览'
+                        : '印成 · 点击宣言'
+                      : '蓄势充能中'
+                  }}
                 </div>
               </button>
             </div>
 
             <!-- ========== 中央四目线装和綴じ书脊（纯 SVG 折痕与金丝缝线） ========== -->
             <div
-              class="hidden flex-col items-center justify-between bg-gradient-to-r from-[#09070a] via-[#1c1518] to-[#09070a] py-4 sm:flex"
+              class="hidden flex-col items-center justify-between bg-gradient-to-r from-[#09070a] via-[#1c1518] to-[#09070a] py-3 min-[560px]:flex"
             >
-              <svg viewBox="0 0 14 280" class="h-full w-3.5" fill="none">
+              <svg viewBox="0 0 14 280" class="h-full w-3" fill="none">
                 <line x1="7" y1="0" x2="7" y2="280" stroke="#050406" stroke-width="2" />
                 <g stroke="#cfa75b" stroke-width="1.2">
                   <path d="M2 34H12M3 38H11" />
@@ -456,14 +621,23 @@ function fireCard(): void {
               </svg>
             </div>
 
-            <!-- ========== 右页：全 142 术式雕版封印阵（含等阶筛选与卷内滚动） ========== -->
-            <div class="grimoire-page-right flex min-h-[456px] flex-col justify-between px-4 py-3.5">
+            <!-- ========== 右页：全 142 术式雕版封印阵（含等阶筛选、卷内滚动与触控详述条） ========== -->
+            <div
+              class="grimoire-page-right flex min-h-0 flex-col justify-between overflow-hidden lg:min-h-[456px]"
+              :class="isTinyHeight ? 'px-2.5 py-2' : 'px-4 py-3.5'"
+            >
               <div class="flex min-h-0 flex-1 flex-col">
                 <!-- 书页天头版心标题 + 壱~伍阶快捷筛选 -->
-                <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#99763a]/45 pb-2">
-                  <div class="flex items-center gap-2">
+                <div
+                  class="flex flex-wrap items-center justify-between gap-1.5 border-b border-[#99763a]/45"
+                  :class="isTinyHeight ? 'pb-1.5' : 'pb-2'"
+                >
+                  <div class="flex items-center gap-1.5">
                     <span class="th-hanko-outline px-1.5 py-0.5 text-[9.5px]">巻</span>
-                    <h3 class="font-display text-sm font-bold text-[#f3ead8]">
+                    <h3
+                      class="font-display font-bold text-[#f3ead8]"
+                      :class="isTinyHeight ? 'text-xs' : 'text-sm'"
+                    >
                       魔导术式录 ·
                       <span
                         :style="{
@@ -494,9 +668,12 @@ function fireCard(): void {
                 </div>
 
                 <!-- 极性快筛条（全类 / 伤害 / 治愈 / 增益 / 减益 / 战术） -->
-                <div class="mt-2 flex flex-wrap items-center gap-1">
+                <div
+                  class="touch-scroll-x flex items-center gap-1 overflow-x-auto pb-0.5 sm:flex-wrap"
+                  :class="isTinyHeight ? 'mt-1.5' : 'mt-2'"
+                >
                   <button
-                    class="font-display inline-flex items-center gap-1 border px-1.5 py-0.5 text-[9.5px] font-bold transition"
+                    class="font-display inline-flex shrink-0 items-center gap-1 border px-1.5 py-0.5 text-[9.5px] font-bold transition"
                     :class="
                       polarityFilter === 'all'
                         ? 'border-[#f5df9e] bg-[#362716] text-[#fff2c2]'
@@ -510,7 +687,7 @@ function fireCard(): void {
                   <button
                     v-for="polId in ALL_SPELL_POLARITIES"
                     :key="polId"
-                    class="font-display inline-flex items-center gap-1 border px-1.5 py-0.5 text-[9.5px] font-bold transition"
+                    class="font-display inline-flex shrink-0 items-center gap-1 border px-1.5 py-0.5 text-[9.5px] font-bold transition"
                     :style="
                       polarityFilter === polId
                         ? {
@@ -532,26 +709,31 @@ function fireCard(): void {
                   </button>
                 </div>
 
-                <!-- 4 列独立滚动术式封印阵 -->
+                <!-- 独立滚动术式封印阵（自动填满可用高度，彻底杜绝短屏溢出） -->
                 <div
                   v-if="filteredSpells.length > 0"
-                  class="grimoire-scroll mt-2 grid max-h-[344px] grid-cols-2 gap-1.5 overflow-y-auto pr-1 sm:grid-cols-4"
+                  class="grimoire-scroll touch-scroll mt-1.5 grid min-h-0 flex-1 grid-cols-3 content-start gap-1.5 overflow-y-auto pr-1 sm:grid-cols-4"
                 >
                   <button
                     v-for="sp in filteredSpells"
                     :key="sp.id"
-                    class="enamel-crest group relative flex flex-col items-center justify-center overflow-hidden border px-1.5 pb-2.5 pt-2 transition disabled:cursor-not-allowed disabled:opacity-40"
+                    class="enamel-crest group relative flex flex-col items-center justify-center overflow-hidden border px-1.5 transition"
                     :class="[
-                      store.selectedSpellId === sp.id
-                        ? 'border-[#f5df9e] bg-[#2e2030] shadow-[0_0_12px_rgba(245,223,158,0.3)]'
-                        : canCastSpell(sp)
-                          ? 'border-[#99763a]/55 bg-[#151017]/95 hover:-translate-y-0.5 hover:border-[#f5df9e] hover:bg-[#221922]'
-                          : 'border-[#57462d]/40 bg-[#110d13]',
+                      isTinyHeight ? 'pb-1.5 pt-1.5' : 'pb-2.5 pt-2',
+                      !canCastSpell(sp) && !isTouchMode ? 'cursor-not-allowed opacity-40' : '',
+                      !canCastSpell(sp) && isTouchMode ? 'opacity-55' : '',
+                      previewedSpellId === sp.id
+                        ? 'border-[#fff2b8] bg-[#36243a] shadow-[0_0_12px_rgba(245,223,158,0.45)]'
+                        : store.selectedSpellId === sp.id
+                          ? 'border-[#f5df9e] bg-[#2e2030] shadow-[0_0_12px_rgba(245,223,158,0.3)]'
+                          : canCastSpell(sp)
+                            ? 'border-[#99763a]/55 bg-[#151017]/95 hover:-translate-y-0.5 hover:border-[#f5df9e] hover:bg-[#221922]'
+                            : 'border-[#57462d]/40 bg-[#110d13]',
                     ]"
-                    :disabled="!canCastSpell(sp)"
+                    :disabled="!isTouchMode && !canCastSpell(sp)"
                     @mouseenter="showTip(buildSpellTooltip(sp), $event)"
                     @mouseleave="hideTip"
-                    @click="pickSpell(sp)"
+                    @click.stop="handleSpellTileClick(sp)"
                   >
                     <!-- 左上和风阶位印（按派系高亮色着色） -->
                     <span
@@ -582,7 +764,7 @@ function fireCard(): void {
                       {{ getSpellCost(sp) }}
                     </span>
 
-                    <!-- 左下角法术极性微标（一眼区分伤害/治愈/增益/减益/战术） -->
+                    <!-- 左下角法术极性微标 -->
                     <span
                       class="absolute bottom-1.5 left-1 flex h-4 w-4 items-center justify-center border"
                       :style="{
@@ -599,9 +781,10 @@ function fireCard(): void {
                     <img
                       :src="getSpellIconDataUrl(sp.id)"
                       :alt="sp.name"
-                      class="pixel-art mt-1 h-[48px] w-[48px] shrink-0 transition-transform group-hover:scale-105"
+                      class="pixel-art mt-1 shrink-0 transition-transform group-hover:scale-105"
+                      :class="isTinyHeight ? 'h-[36px] w-[36px]' : 'h-[48px] w-[48px]'"
                     />
-                    <div class="font-display mt-1 max-w-full truncate text-[10.5px] font-bold text-[#f3ead8] group-hover:text-[#f5df9e]">
+                    <div class="font-display mt-1 max-w-full truncate text-[10px] font-bold text-[#f3ead8] group-hover:text-[#f5df9e]">
                       {{ sp.name }}
                     </div>
 
@@ -615,19 +798,71 @@ function fireCard(): void {
 
                 <div
                   v-else
-                  class="font-display flex h-48 items-center justify-center text-xs text-[#7a6c5d]"
+                  class="font-display flex flex-1 items-center justify-center text-xs text-[#7a6c5d]"
                 >
                   此系此阶尚无抄录术式
+                </div>
+
+                <!-- 触控专属：内嵌术式/符卡详述确认条（完美替代无 Hover 悬停查阅） -->
+                <div
+                  v-if="touchInspector"
+                  class="washi-recess mt-1.5 flex shrink-0 items-center justify-between gap-2 border-l-2 border-l-[#f5df9e] px-2.5 py-1.5"
+                >
+                  <div class="min-w-0 flex-1">
+                    <div class="flex flex-wrap items-center gap-1.5">
+                      <span
+                        class="font-display text-[11px] font-bold"
+                        :style="{ color: touchInspector.payload.accent ?? '#f5df9e' }"
+                      >
+                        {{ touchInspector.payload.title }}
+                      </span>
+                      <span
+                        v-if="touchInspector.payload.tag"
+                        class="font-num border border-[#99763a]/50 bg-[#1a141c] px-1 py-px text-[8.5px] text-[#e6d6b8]"
+                      >
+                        {{ touchInspector.payload.tag }}
+                      </span>
+                      <span
+                        v-for="(b, idx) in (touchInspector.payload.badges ?? []).slice(0, 2)"
+                        :key="idx"
+                        class="font-display inline-flex items-center gap-0.5 border px-1 py-px text-[8.5px]"
+                        :style="{ color: b.color, backgroundColor: b.bg, borderColor: b.border }"
+                      >
+                        {{ b.label }}
+                      </span>
+                    </div>
+                    <div class="mt-0.5 line-clamp-2 text-[10px] leading-snug text-[#d6cab7]">
+                      <RichSemanticText
+                        :text="touchInspector.payload.summary || touchInspector.payload.lines.join(' ')"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    class="font-display min-h-[30px] shrink-0 px-3 text-[11px] font-bold"
+                    :class="
+                      touchInspector.canAct
+                        ? 'jade-seal-btn text-[#eafff4]'
+                        : 'brass-action-btn opacity-55 text-[#cbbca6]'
+                    "
+                    :disabled="!touchInspector.canAct"
+                    @click.stop="confirmTouchInspector()"
+                  >
+                    {{ touchInspector.actionLabel }}
+                  </button>
                 </div>
               </div>
 
               <!-- 书页地脚：术数统计 + 合卷铜扣 -->
-              <div class="mt-2.5 flex items-center justify-between border-t border-[#99763a]/30 pt-2">
-                <span class="font-num text-[10px] text-[#9b8c78]">
-                  共展示 {{ filteredSpells.length }} / {{ allKnownSpells.length }} 术 · 悬停查全详述
+              <div
+                class="flex shrink-0 items-center justify-between border-t border-[#99763a]/30"
+                :class="isTinyHeight ? 'mt-1.5 pt-1.5' : 'mt-2.5 pt-2'"
+              >
+                <span class="font-num truncate text-[9.5px] text-[#9b8c78]">
+                  共展示 {{ filteredSpells.length }} / {{ allKnownSpells.length }} 术 ·
+                  {{ isTouchMode ? '轻触查详述 · 再触或点确认施放' : '悬停查全详述' }}
                 </span>
                 <button
-                  class="brass-action-btn font-display px-4 py-1 text-[11px] font-bold text-[#f5df9e]"
+                  class="brass-action-btn font-display shrink-0 px-3.5 py-1 text-[11px] font-bold text-[#f5df9e]"
                   @click="closeBook()"
                 >
                   合卷
@@ -638,7 +873,13 @@ function fireCard(): void {
         </section>
       </div>
 
-      <HudHoverTooltip :payload="hoverTip" :x="tipPos.x" :y="tipPos.y" />
+      <HudHoverTooltip
+        :payload="hoverTip"
+        :x="tipPos.x"
+        :y="tipPos.y"
+        :pinned="tipPinned"
+        @close="forceHideTip()"
+      />
     </div>
   </transition>
 </template>

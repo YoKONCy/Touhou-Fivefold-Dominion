@@ -7,9 +7,11 @@
 import { resolveUnitSummonKind } from '@core/types';
 import { getVoxelAvatarDataUrl } from '@renderer/voxelSprites';
 import { useBattleStore } from '@ui/battleStore';
+import { useViewportInput } from '@ui/composables/useViewportInput';
 import { SUMMON_KIND_HP_THEME } from '@ui/semanticFormat';
 
 const store = useBattleStore();
+const { isCompactLandscape, isTinyHeight, isTouchMode } = useViewportInput();
 
 function getSummonTheme(unit: Parameters<typeof resolveUnitSummonKind>[0]) {
   const kind = resolveUnitSummonKind(unit);
@@ -18,17 +20,26 @@ function getSummonTheme(unit: Parameters<typeof resolveUnitSummonKind>[0]) {
 </script>
 
 <template>
-  <header class="pointer-events-none absolute top-2 left-0 right-0 z-20 flex flex-col items-center gap-1.5 px-4 select-none">
+  <header
+    class="pointer-events-none absolute left-0 right-0 z-20 flex flex-col items-center select-none"
+    :class="isCompactLandscape ? 'top-1 gap-1 px-2' : 'top-2 gap-1.5 px-4'"
+  >
     <!-- 符札先手序列轨主体 -->
     <div class="relative flex max-w-full items-center">
       <!-- 左右两端装饰黄铜箭簇 -->
-      <svg viewBox="0 0 14 34" class="h-[34px] w-3.5 shrink-0" fill="none">
+      <svg
+        viewBox="0 0 14 34"
+        class="shrink-0"
+        :class="isTinyHeight ? 'h-[28px] w-2.5' : 'h-[34px] w-3.5'"
+        fill="none"
+      >
         <path d="M14 1H7L1 17L7 33H14" fill="#141016" stroke="#99763a" stroke-width="1.2" />
         <path d="M11 17L7 13L3 17L7 21Z" fill="#cfa75b" />
       </svg>
 
       <div
-        class="urushi-slip pointer-events-auto relative flex max-w-full items-center gap-1.5 overflow-x-auto border-x-0 px-2.5 py-1.5"
+        class="urushi-slip touch-scroll-x pointer-events-auto relative flex max-w-full items-center overflow-x-auto border-x-0"
+        :class="isTinyHeight ? 'gap-1 px-1.5 py-1' : 'gap-1.5 px-2.5 py-1.5'"
       >
         <!-- 贯穿队列背后的古金先手丝线 -->
         <div
@@ -39,7 +50,7 @@ function getSummonTheme(unit: Parameters<typeof resolveUnitSummonKind>[0]) {
           v-for="item in store.turnStripUnits.slice(0, 12)"
           :key="item.unit.id"
           class="group relative z-10 flex shrink-0 flex-col items-center transition-transform duration-150 hover:-translate-y-0.5"
-          :title="`${item.unit.name}${item.unit.kind === 'hero' ? ` Lv.${item.unit.level}` : ` ×${item.unit.count}`}${item.unit.roundMoraleState === 'good' ? ' · 高士气（先手梯队 / 伤害+25%）' : item.unit.roundMoraleState === 'bad' ? ' · 低士气（末位梯队 / 伤害-20%）' : ''}${item.isWaiting ? '（等待中）' : ''} · 点击或右击查看详情`"
+          :title="`${item.unit.name}${item.unit.kind === 'hero' ? ` Lv.${item.unit.level}` : ` ×${item.unit.count}`}${item.unit.roundMoraleState === 'good' ? ' · 高士气（先手梯队 / 伤害+25%）' : item.unit.roundMoraleState === 'bad' ? ' · 低士气（末位梯队 / 伤害-20%）' : ''}${item.isWaiting ? '（等待中）' : ''} · ${isTouchMode ? '轻触查看详情' : '点击或右击查看详情'}`"
           @click="store.openUnitDetail(item.unit.id, { x: $event.clientX, y: $event.clientY })"
           @contextmenu.prevent.stop="store.openUnitDetail(item.unit.id, { x: $event.clientX, y: $event.clientY })"
         >
@@ -58,8 +69,12 @@ function getSummonTheme(unit: Parameters<typeof resolveUnitSummonKind>[0]) {
             class="enamel-crest relative flex items-center justify-center overflow-hidden border transition"
             :class="[
               item.isCurrent
-                ? 'h-10 w-10 border-[#f5df9e] bg-[#2a1f24] shadow-[0_0_12px_rgba(245,223,158,0.45)]'
-                : 'h-8 w-8 border-[#99763a]/75 bg-[#151118] group-hover:border-[#f5df9e]',
+                ? isTinyHeight
+                  ? 'h-8 w-8 border-[#f5df9e] bg-[#2a1f24] shadow-[0_0_10px_rgba(245,223,158,0.45)]'
+                  : 'h-10 w-10 border-[#f5df9e] bg-[#2a1f24] shadow-[0_0_12px_rgba(245,223,158,0.45)]'
+                : isTinyHeight
+                  ? 'h-7 w-7 border-[#99763a]/75 bg-[#151118]'
+                  : 'h-8 w-8 border-[#99763a]/75 bg-[#151118] group-hover:border-[#f5df9e]',
               item.isWaiting ? 'opacity-65' : '',
             ]"
           >
@@ -104,7 +119,12 @@ function getSummonTheme(unit: Parameters<typeof resolveUnitSummonKind>[0]) {
         </button>
       </div>
 
-      <svg viewBox="0 0 14 34" class="h-[34px] w-3.5 shrink-0 -scale-x-100" fill="none">
+      <svg
+        viewBox="0 0 14 34"
+        class="shrink-0 -scale-x-100"
+        :class="isTinyHeight ? 'h-[28px] w-2.5' : 'h-[34px] w-3.5'"
+        fill="none"
+      >
         <path d="M14 1H7L1 17L7 33H14" fill="#141016" stroke="#99763a" stroke-width="1.2" />
         <path d="M11 17L7 13L3 17L7 21Z" fill="#cfa75b" />
       </svg>
@@ -113,30 +133,31 @@ function getSummonTheme(unit: Parameters<typeof resolveUnitSummonKind>[0]) {
     <!-- 激活中的符卡结界符札横幅 -->
     <div
       v-if="store.battleState.activeFieldAura"
-      class="urushi-slip pointer-events-auto flex items-center gap-2.5 whitespace-nowrap px-3.5 py-1 text-[11px]"
+      class="urushi-slip pointer-events-auto flex max-w-full items-center whitespace-nowrap"
+      :class="isTinyHeight ? 'gap-1.5 px-2.5 py-0.5 text-[10px]' : 'gap-2.5 px-3.5 py-1 text-[11px]'"
       :style="{ borderColor: store.battleState.activeFieldAura.themeColor }"
     >
-      <span class="th-hanko px-1.5 py-0.5 text-[9.5px]">结界</span>
+      <span class="th-hanko px-1.5 py-0.5 text-[9px]">结界</span>
       <span
-        class="font-display font-bold tracking-wider"
+        class="font-display truncate font-bold tracking-wider"
         :style="{ color: store.battleState.activeFieldAura.accentColor }"
       >
         {{ store.battleState.activeFieldAura.name }}
       </span>
-      <span class="font-num text-[10.5px] text-[#cabba2]">
+      <span class="font-num shrink-0 text-[10px] text-[#cabba2]">
         余 {{ store.battleState.activeFieldAura.remainingRounds }} 巡
       </span>
       <span
         v-if="!store.battleState.activeFieldAura.captured"
-        class="border-l border-[#cfa75b]/30 pl-2 text-[10px] text-[#f5df9e]"
+        class="shrink-0 border-l border-[#cfa75b]/30 pl-1.5 text-[9.5px] text-[#f5df9e]"
       >
-        击倒施法者可收取符卡
+        {{ isCompactLandscape ? '击倒可收' : '击倒施法者可收取符卡' }}
       </span>
     </div>
 
-    <!-- 施法 / 符卡瞄准态令条 -->
+    <!-- 施法 / 符卡瞄准态令条（触控模式下底部已有专属确认栏，此处仅在非触控或未锁定目标时精简展示） -->
     <div
-      v-if="store.selectedSpellId || store.declaringSpellCard"
+      v-if="(store.selectedSpellId || store.declaringSpellCard) && !isTouchMode"
       class="urushi-slip pointer-events-auto flex items-center gap-2.5 border-[#cfa75b] px-3.5 py-1 text-xs"
     >
       <span class="th-hanko px-1.5 py-0.5 text-[9.5px]">

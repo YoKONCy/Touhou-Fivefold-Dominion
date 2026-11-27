@@ -9,10 +9,13 @@
  */
 import { computed } from 'vue';
 import { useBattleStore } from '@ui/battleStore';
+import { useViewportInput } from '@ui/composables/useViewportInput';
 
 const store = useBattleStore();
+const { isTouchMode } = useViewportInput();
 
 const visible = computed(() => {
+  if (isTouchMode.value) return false;
   return Boolean(store.pointerPos && store.tacticalCursor.kind !== 'default');
 });
 

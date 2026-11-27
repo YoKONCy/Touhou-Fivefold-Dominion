@@ -125,7 +125,7 @@ export const HERO_TRAIT_REGISTRY: Record<string, HeroTraitDef> = {
       const maxP = ctx.killer.maxPowerPoints ?? 5;
       ctx.killer.powerPoints = Math.min(maxP, Number(((ctx.killer.powerPoints ?? 0) + 0.6).toFixed(2)));
       ctx.killer.mana = Math.min(ctx.killer.baseStats.maxMana, (ctx.killer.mana ?? 0) + 3);
-      ctx.killer.spellCardCharge = Math.min(100, (ctx.killer.spellCardCharge ?? 0) + 12);
+      ctx.killer.spellCardCharge = Math.min(100, (ctx.killer.spellCardCharge ?? 0) + 4);
     },
   },
 
@@ -187,7 +187,7 @@ export const HERO_TRAIT_REGISTRY: Record<string, HeroTraitDef> = {
     id: 'remilia_scarlet_destiny',
     name: '操纵命运',
     description:
-      '天生幸运 +2、擦弹率 +10%；神枪穿甲无视目标 20% 防御，对身负诅咒/剧毒/衰老等负面状态的敌军伤害 +20%；施放死亡与混沌法术威力 +12%。',
+      '天生幸运 +2、擦弹率 +10%；神枪穿甲无视目标 20% 防御，对身负诅咒/剧毒/衰老等负面状态的敌军伤害 +20%；施放死亡系与混沌系法术威力 +12%。',
     getPassiveModifiers: () => [
       {
         id: 'trait:remilia:luck',

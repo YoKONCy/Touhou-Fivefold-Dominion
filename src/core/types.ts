@@ -92,7 +92,7 @@ export interface UnitAbilities {
   shortRange?: boolean;           // 短程弹幕（超距衰减更严苛）
   noObstaclePenalty?: boolean;    // 无视障碍射击（穿透普通掩体不降级）
   unlimitedShots?: boolean;       // 无限弹药（射击与远程反击永不耗弹）
-  noMelee?: boolean;              // 近战禁手（永不发起近战或近战反击，但被贴身时仍可照常远程射击）
+  noMelee?: boolean;              // 近战禁手（正面特技：被贴身时主动攻击仍可照常发动远程射击，遭近战打击时仍会进行衰减近战反击）
   noRanged?: boolean;             // 远程禁手（封锁远程攻击与远程反击）
   noMeleePenalty?: boolean;       // 近战无衰减（射手贴身肉搏伤害不打折）
   flying?: boolean;               // 飞行（无视城墙以外地形、障碍与减速）
@@ -797,6 +797,7 @@ export interface StrikeReport {
   defenderLucky?: boolean;
   /** 防守方触发负面厄运破防（所受物理伤害 +25%） */
   defenderUnlucky?: boolean;
+  /** 是否触发高台掩护减伤（目标地势高于低处射手，远程伤害 -25%） */
   highGroundBonus: boolean;
   losStatus: 'clear' | 'partial' | 'blocked';
   traitNotes: string[];
@@ -911,10 +912,47 @@ export type CombatEvent =
 /** HoMM4 原版远程距离与普通障碍物综合衰减档位（默认全伤 1x / 1/2 / 1/4 / 叠加普通障碍最低 1/8） */
 export type RangedPenaltyTier = 'full' | 'half' | 'quarter' | 'eighth';
 
+/** 射线阻挡体明细（用于明确告知玩家被何种障碍或哪支单位阻挡） */
+export interface TrajectoryBlockerDetail {
+  hex: HexCoord;
+  kind: 'tall_obstacle' | 'partial_obstacle' | 'ally_unit' | 'enemy_unit' | 'out_of_bounds';
+  label: string;
+  unitId?: string;
+}
+
+/** 远程射击与施法瞄准统一飞行路径可视化模型 */
+export interface ProjectileTrajectoryPreview {
+  kind: 'ranged' | 'spell';
+  fromHex: HexCoord;
+  toHex: HexCoord;
+  /** 路径是否被完全阻挡或因规则限制无法命中 */
+  blocked: boolean;
+  /** 无法命中或衰减的具体中文说明 */
+  reason?: string;
+  /** 视线遮挡状态 */
+  losStatus: 'clear' | 'partial' | 'blocked';
+  /** 远程衰减档位（仅远程射击填充） */
+  rangedPenaltyTier?: RangedPenaltyTier;
+  /** 若因超出射程被截断，记录有效射程与当前实际格距 */
+  outOfRange?: { distance: number; maxRange: number };
+  /** 射线途经的全部中间格（不含起止点） */
+  intermediateHexes: HexCoord[];
+  /** 触发完全阻挡的首个格子（舞台绘制醒目红框与 ✕ 拦截标记） */
+  blockingHex?: HexCoord | null;
+  /** 触发半遮挡降档的普通障碍格（舞台绘制琥珀菱形提示） */
+  partialHexes: HexCoord[];
+  /** 阻挡体清单 */
+  blockers: TrajectoryBlockerDetail[];
+}
+
 /** 攻击预览（悬停敌方单位时展示精准同时反击与远程衰减估算） */
 export interface AttackPreview {
   valid: boolean;
   reason?: string;
+  /** 远程单位因受阻被迫转入近战或无法射击时的具体原因说明 */
+  rangedBlockReason?: string;
+  /** 远程飞行路径与阻挡诊断（畅通/半遮挡/彻底受阻时均填充，供战场与右侧情报区渲染） */
+  trajectory?: ProjectileTrajectoryPreview | null;
   isRanged: boolean;
   /** 是否触发 H4「长武器」隔格无反击突刺 */
   isLongWeaponPoke?: boolean;
@@ -939,6 +977,7 @@ export interface AttackPreview {
   retaliationMinKills: number;
   retaliationMaxKills: number;
   losStatus: 'clear' | 'partial' | 'blocked';
+  /** 是否触发高台掩护减伤（目标地势高于低处射手，远程伤害 -25%） */
   highGroundBonus: boolean;
   targetGrazeChance: number;
   notes: string[];

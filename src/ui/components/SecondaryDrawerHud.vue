@@ -12,8 +12,10 @@ import {
 import { useBattleStore } from '@ui/battleStore';
 import OrnamentalFrame from '@ui/components/OrnamentalFrame.vue';
 import PixelBadgeIcon from '@ui/components/PixelBadgeIcon.vue';
+import { useViewportInput } from '@ui/composables/useViewportInput';
 
 const store = useBattleStore();
+const { isCompactLandscape, isTinyHeight } = useViewportInput();
 
 const hero = computed(() => {
   const u = store.activeUnit;
@@ -58,15 +60,30 @@ const canShowDrawer = computed(() => {
 </script>
 
 <template>
+  <!-- 紧凑横屏下轻触战场空白处可一键收起抽屉 -->
+  <div
+    v-if="canShowDrawer && isCompactLandscape"
+    class="absolute inset-0 z-20 bg-black/32"
+    @click="store.closeDrawer()"
+  />
+
   <transition name="drawer-slide">
     <section
       v-if="canShowDrawer"
-      class="urushi-frame absolute right-3 top-14 z-30 flex max-h-[calc(100%-74px)] w-[328px] flex-col overflow-hidden p-4 text-xs"
+      class="urushi-frame absolute z-30 flex flex-col overflow-hidden text-xs"
+      :class="
+        isCompactLandscape
+          ? 'bottom-2 right-2 top-2 max-h-[calc(100%-16px)] w-[min(340px,calc(100%-16px))] p-2.5'
+          : 'right-3 top-14 max-h-[calc(100%-74px)] w-[328px] p-4'
+      "
     >
       <OrnamentalFrame variant="corners" compact />
 
       <!-- 卷匣顶匾 -->
-      <div class="relative z-10 flex items-center justify-between gap-2 pb-2.5">
+      <div
+        class="relative z-10 flex items-center justify-between gap-2"
+        :class="isTinyHeight ? 'pb-1.5' : 'pb-2.5'"
+      >
         <div class="flex items-center gap-2">
           <span class="th-hanko h-6 w-6 text-xs">{{ drawerMeta.stamp }}</span>
           <div>
@@ -80,7 +97,7 @@ const canShowDrawer = computed(() => {
           </div>
         </div>
         <button
-          class="brass-action-btn font-display px-2.5 py-0.5 text-[10.5px] text-[#d9c8a8]"
+          class="brass-action-btn font-display min-h-[28px] px-2.5 py-0.5 text-[10.5px] text-[#d9c8a8]"
           @click="store.closeDrawer()"
         >
           收卷
@@ -90,7 +107,10 @@ const canShowDrawer = computed(() => {
       <OrnamentalFrame variant="divider" />
 
       <!-- 可滚动主体内容 -->
-      <div class="relative z-10 mt-3 overflow-y-auto pr-0.5">
+      <div
+        class="touch-scroll relative z-10 min-h-0 flex-1 overflow-y-auto pr-0.5"
+        :class="isTinyHeight ? 'mt-2' : 'mt-3'"
+      >
         <!-- 页面 A：腰带秘药匣 -->
         <div v-if="store.activeDrawer === 'potions' && hero" class="space-y-2.5">
           <div

@@ -6,9 +6,23 @@
  */
 import { computed } from 'vue';
 import { useBattleStore } from '@ui/battleStore';
+import { useViewportInput } from '@ui/composables/useViewportInput';
 
 const store = useBattleStore();
-const ctx = computed(() => store.hoverAttackContext);
+const { isTouchMode, sidebarWidthPx } = useViewportInput();
+const ctx = computed(() => (isTouchMode.value ? null : store.hoverAttackContext));
+const spellCtx = computed(() => {
+  if (isTouchMode.value) return null;
+  const s = store.hoverSpellContext;
+  if (!s) return null;
+  // 施法态下：悬停在单位上、处于 AOE/召唤落点、或有明确阻挡/超距轨迹时显示简洁光标浮标
+  if (s.trajectory || s.targetUnit || !s.canCast) {
+    // 若仅悬停空地且提示“请将光标移至单位”则不弹多余浮标，保持画面清爽
+    if (!s.trajectory && !s.targetUnit && s.shortLabel.startsWith('请选择')) return null;
+    return s;
+  }
+  return null;
+});
 
 /** 远程反击被己方前卫挡箭替伤时的极简微标 */
 const interceptTag = computed(() => {
@@ -17,15 +31,42 @@ const interceptTag = computed(() => {
   return { text: '前卫替伤', cls: 'border-[#54d4a8] bg-[#10382e] text-[#a6ffdf]' };
 });
 
-/** 紧贴光标右下角定位，自动避让右侧挂轴柱与屏幕底边 */
+/** 施法受阻时的极简短因（同步阻挡体名称或超射程格数） */
+const spellShortReason = computed(() => {
+  const s = spellCtx.value;
+  if (!s || s.canCast) return '';
+  const traj = s.trajectory;
+  if (traj?.outOfRange) {
+    return `超出射程 (${traj.outOfRange.distance}/${traj.outOfRange.maxRange})`;
+  }
+  if (traj?.blocked && traj.blockers.length > 0) {
+    const primary = traj.blockers.find((b) => b.kind !== 'partial_obstacle') ?? traj.blockers[0];
+    if (primary) return `被${primary.label}阻挡`;
+  }
+  return s.shortLabel || s.reason || '无法施放';
+});
+
+/** 紧贴光标右下角定位，自动避让 256px 右侧栏与屏幕底边 */
 const tooltipStyle = computed(() => {
   const pos = store.pointerPos;
   if (!pos) {
     return { transform: 'translate3d(24px, 64px, 0)' };
   }
-  const estW = interceptTag.value ? 204 : 148;
+  let estW = 152;
+  if (spellCtx.value) {
+    const textLen = spellCtx.value.canCast
+      ? spellCtx.value.shortLabel.length + 4
+      : spellShortReason.value.length + 2;
+    estW = Math.min(260, Math.max(120, textLen * 11.5 + 32));
+  } else if (ctx.value) {
+    estW = !ctx.value.preview.valid
+      ? Math.min(250, Math.max(120, blockedLabel.value.length * 12 + 28))
+      : interceptTag.value
+        ? 204
+        : 152;
+  }
   const estH = 34;
-  const maxX = Math.max(12, window.innerWidth - 106 - estW);
+  const maxX = Math.max(12, window.innerWidth - sidebarWidthPx.value - 10 - estW);
   const maxY = Math.max(12, window.innerHeight - estH - 12);
 
   const left = pos.x + 22 <= maxX ? pos.x + 22 : Math.max(12, pos.x - estW - 16);
@@ -55,22 +96,55 @@ const penaltyTag = computed(() => {
   return null;
 });
 
-/** 不可攻击时的极简 4 字状态 */
+/** 不可攻击时的精准简短原因（直接指出具体阻挡物/贴身/弹药/范围，让玩家一秒明白为何无法命中） */
 const blockedLabel = computed(() => {
   const p = ctx.value?.preview;
   if (!p || p.valid) return '';
-  if (p.reason?.includes('弹药')) return '弹药耗尽';
-  if (p.reason?.includes('视线')) return '视线受阻';
+  const traj = p.trajectory;
+  if (traj?.blocked && traj.blockers.length > 0) {
+    const primary = traj.blockers.find((b) => b.kind !== 'partial_obstacle') ?? traj.blockers[0];
+    if (primary) {
+      return `被${primary.label}阻挡`;
+    }
+  }
+  if (p.reason?.includes('贴身')) return p.reason.replace('，无法远程射击', '');
+  if (p.reason?.includes('弹药')) return '弹药已耗尽';
+  if (p.reason?.includes('视线')) return p.reason;
   if (p.reason?.includes('禁手')) return '近战禁手';
-  return '超出范围';
+  if (p.reason?.includes('净域')) return '常世净域无敌';
+  return '超出移动与射程';
 });
 </script>
 
 <template>
   <!-- 脱离主舞台 flex 流，直接挂载至 body，绝不挤占战场宽度！ -->
   <Teleport to="body">
+    <!-- 施法瞄准浮标（直出可施放 / 精准阻挡体 / 超出射程格数） -->
     <div
-      v-if="ctx"
+      v-if="spellCtx"
+      class="urushi-slip pointer-events-none fixed left-0 top-0 z-50 flex items-center gap-2 px-2.5 py-1.5 will-change-transform"
+      :style="tooltipStyle"
+    >
+      <span
+        class="absolute inset-y-1 left-0 w-[2.5px]"
+        :style="{ backgroundColor: spellCtx.canCast ? '#b98cff' : '#e04b5a' }"
+      />
+      <template v-if="spellCtx.canCast">
+        <span class="font-display pl-0.5 text-[11px] font-bold text-[#e5d1ff]">
+          {{ spellCtx.shortLabel }}
+        </span>
+        <span class="font-num border border-[#6ca6e8]/55 bg-[#122238] px-1 py-px text-[9.5px] font-bold text-[#a8d5ff]">
+          {{ spellCtx.manaCost }} MP
+        </span>
+      </template>
+      <span v-else class="font-display pl-0.5 text-[11px] font-semibold text-[#ffb8c2]">
+        ✕ {{ spellShortReason }}
+      </span>
+    </div>
+
+    <!-- 常规远程 / 近战交锋浮标 -->
+    <div
+      v-else-if="ctx"
       class="urushi-slip pointer-events-none fixed left-0 top-0 z-50 flex items-center gap-2 px-2.5 py-1.5 will-change-transform"
       :style="tooltipStyle"
     >

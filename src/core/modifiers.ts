@@ -621,7 +621,7 @@ export function computeUnitStats(
     } else if (key === 'magicResistance') {
       finalVal = unit.abilities.magicImmune
         ? 1
-        : Math.max(0, Math.min(0.95, Number(finalVal.toFixed(3))));
+        : Math.max(-0.5, Math.min(0.95, Number(finalVal.toFixed(3))));
     } else if (key === 'morale' || key === 'luck') {
       finalVal = Math.max(-10, Math.min(10, Math.round(finalVal)));
     } else if (key === 'maxMana' || key === 'spellPower') {

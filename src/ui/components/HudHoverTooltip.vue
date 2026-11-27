@@ -6,28 +6,57 @@
 import { computed } from 'vue';
 import PixelBadgeIcon from '@ui/components/PixelBadgeIcon.vue';
 import RichSemanticText from '@ui/components/RichSemanticText.vue';
+import { useViewportInput } from '@ui/composables/useViewportInput';
 import type { HudTooltipPayload } from '@ui/hudMetadata';
 
-const props = defineProps<{
-  payload: HudTooltipPayload | null;
-  x: number;
-  y: number;
+const props = withDefaults(
+  defineProps<{
+    payload: HudTooltipPayload | null;
+    x: number;
+    y: number;
+    /** 触控点按钉住模式：启用关闭按钮与安全区居中防遮挡 */
+    pinned?: boolean;
+  }>(),
+  {
+    pinned: false,
+  },
+);
+
+const emit = defineEmits<{
+  close: [];
 }>();
 
+const { viewportWidth, viewportHeight } = useViewportInput();
+
 const boxStyle = computed(() => {
-  const w = 290;
+  const vw = viewportWidth.value;
+  const vh = viewportHeight.value;
+  const w = Math.min(290, Math.max(210, vw - 20));
   const p = props.payload;
-  const approxH =
+  const approxH = Math.min(
+    vh - 24,
     98 +
-    (p?.badges?.length ? 22 : 0) +
-    (p?.summary ? 26 : 0) +
-    (p?.lines.length ?? 0) * 21 +
-    (p?.flavor ? 32 : 0);
-  const maxX = Math.max(12, window.innerWidth - w - 16);
-  const maxY = Math.max(12, window.innerHeight - approxH - 16);
-  const left = props.x + 18 + w > window.innerWidth ? Math.max(12, props.x - w - 14) : Math.min(maxX, props.x + 16);
-  const top = Math.min(maxY, Math.max(12, props.y - 14));
-  return { left: `${Math.round(left)}px`, top: `${Math.round(top)}px` };
+      (props.pinned ? 22 : 0) +
+      (p?.badges?.length ? 22 : 0) +
+      (p?.summary ? 28 : 0) +
+      (p?.lines.length ?? 0) * 22 +
+      (p?.flavor ? 32 : 0),
+  );
+  const maxX = Math.max(10, vw - w - 10);
+  const maxY = Math.max(10, vh - approxH - 10);
+
+  if (props.pinned) {
+    // 触控钉住态：自动避让点击处所在半屏，防止手指或触发按钮被遮挡
+    const preferRight = props.x < vw * 0.45;
+    const rawLeft = preferRight ? props.x + 18 : props.x - w - 18;
+    const left = Math.min(maxX, Math.max(10, rawLeft));
+    const top = Math.min(maxY, Math.max(10, props.y - approxH * 0.35));
+    return { left: `${Math.round(left)}px`, top: `${Math.round(top)}px`, width: `${Math.round(w)}px` };
+  }
+
+  const left = props.x + 18 + w > vw ? Math.max(10, props.x - w - 14) : Math.min(maxX, props.x + 16);
+  const top = Math.min(maxY, Math.max(10, props.y - 14));
+  return { left: `${Math.round(left)}px`, top: `${Math.round(top)}px`, width: `${Math.round(w)}px` };
 });
 
 const tagClass = computed(() => {
@@ -45,8 +74,10 @@ const tagClass = computed(() => {
   <Teleport to="body">
     <div
       v-if="payload"
-      class="urushi-slip pointer-events-none fixed z-[80] w-[290px] px-3.5 py-2.5 text-[11px]"
+      class="urushi-slip touch-scroll fixed z-[80] max-h-[calc(100dvh-20px)] overflow-y-auto px-3.5 py-2.5 text-[11px]"
+      :class="pinned ? 'pointer-events-auto shadow-[0_18px_48px_rgba(0,0,0,0.92)]' : 'pointer-events-none'"
       :style="boxStyle"
+      @click.stop
     >
       <!-- 左侧朱砂/主题色垂直饰条 -->
       <span
@@ -55,7 +86,7 @@ const tagClass = computed(() => {
       />
 
       <!-- 极简四角黄铜微钉 -->
-      <span class="absolute right-1 top-1 h-1 w-1 rotate-45 bg-[#cfa75b]/65" />
+      <span v-if="!pinned" class="absolute right-1 top-1 h-1 w-1 rotate-45 bg-[#cfa75b]/65" />
       <span class="absolute bottom-1 right-1 h-1 w-1 rotate-45 bg-[#cfa75b]/65" />
 
       <div class="flex items-start justify-between gap-2 border-b border-[#99763a]/40 pb-1.5">
@@ -70,13 +101,23 @@ const tagClass = computed(() => {
             <RichSemanticText :text="payload.subtitle" :show-inline-icons="false" />
           </div>
         </div>
-        <span
-          v-if="payload.tag"
-          class="font-num shrink-0 border px-1.5 py-0.5 text-[9.5px] font-semibold"
-          :class="tagClass"
-        >
-          {{ payload.tag }}
-        </span>
+        <div class="flex shrink-0 items-center gap-1">
+          <span
+            v-if="payload.tag"
+            class="font-num border px-1.5 py-0.5 text-[9.5px] font-semibold"
+            :class="tagClass"
+          >
+            {{ payload.tag }}
+          </span>
+          <button
+            v-if="pinned"
+            class="brass-action-btn flex h-5 w-5 items-center justify-center text-[10px] text-[#e6d6b8]"
+            title="关闭详述"
+            @click.stop="emit('close')"
+          >
+            ×
+          </button>
+        </div>
       </div>
 
       <!-- 阵营 / 极性 / 生物类型彩色胶囊行 -->

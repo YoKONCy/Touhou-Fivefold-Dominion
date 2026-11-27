@@ -345,11 +345,11 @@ export function bakeLayeredEnvironmentTexture(
     ctx.fill();
   }
 
-  // 仅在缺失相邻地块的“外缘边”上绘制柔和古金地脉边线，让不规则轮廓清晰又不生硬
+  // 仅在缺失相邻地块的“外缘边”上绘制极细古金地脉边线，让不规则轮廓精致克制而不生硬
   // 尖顶六边形边 i (顶点 i -> i+1) 外法线依次对应东/东南/西南/西/西北/东北 = HEX_DIRECTIONS[0,5,4,3,2,1]
   const edgeDirIndex = [0, 5, 4, 3, 2, 1];
-  ctx.lineWidth = 1.35;
-  ctx.strokeStyle = 'rgba(207, 167, 91, 0.34)';
+  ctx.lineWidth = 0.65;
+  ctx.strokeStyle = 'rgba(207, 167, 91, 0.26)';
   for (const tile of Object.values(tiles)) {
     const pts = getProjectedHexPolygon(tile, proj, tile.elevation, 1.0);
     for (let edge = 0; edge < 6; edge++) {
