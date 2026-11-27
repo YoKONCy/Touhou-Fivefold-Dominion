@@ -3,8 +3,9 @@ import vue from '@vitejs/plugin-vue';
 import tailwindcss from '@tailwindcss/vite';
 import { fileURLToPath, URL } from 'node:url';
 
-// Vite 与 Vitest 统一构建配置
-export default defineConfig({
+// Vite 与 Vitest 统一构建配置（生产环境自动适配 GitHub Pages 子路径）
+export default defineConfig(({ command }) => ({
+  base: process.env.VITE_BASE_PATH ?? (command === 'build' ? '/Touhou-Fivefold-Dominion/' : '/'),
   plugins: [vue(), tailwindcss()],
   resolve: {
     alias: {
@@ -21,4 +22,4 @@ export default defineConfig({
     port: 5173,
     strictPort: false,
   },
-});
+}));

@@ -1,5 +1,7 @@
 # 东方五律战记 · Touhou: Fivefold Dominion
 
+> 在线游玩（GitHub Pages）：https://yokoncy.github.io/Touhou-Fivefold-Dominion/
+
 一款将 **东方 Project（Touhou Project）** 幻想乡世界观与 **《魔法门之英雄无敌 IV》（Heroes of Might and Magic IV）** 经典战术战棋系统深度同构融合的纯前端像素战棋游戏。
 
 ## 核心特色
