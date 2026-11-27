@@ -1,0 +1,614 @@
+[
+  {
+    "id": "chaos_magic",
+    "name": "Chaos Magic",
+    "wikiTitle": "Chaos Magic (H4)",
+    "isPrimary": true,
+    "parentPrimary": null,
+    "subSkills": [
+      "Pyromancy",
+      "Sorcery",
+      "Conjuration"
+    ],
+    "summary": "Chaos Magic is a secondary skill in Heroes of Might and Magic IV. It is used to cast Chaos Magic spells.\n\nChaos Magic is related to secondary skills Conjuration, Pyromancy and Sorcery. By default, sorcerers start with this skill.\n\nChaos Magic can be combined with other secondary skills, which grants hero an advanced class:\n*Death Magic: Lich\n*Combat: Fireguard\n*Life Magic: Heretic\n*Nobility: Witch King\n*Nature Magic: Warlock\n*Order Magic: Wizard\n*Scouting: Fire Diviner\n*Tactics: Pyromancer",
+    "levels": {
+      "basic": "Basic Chaos Magic allows the hero to cast level 1 Chaos Magic spells. It has no prerequesits.",
+      "advanced": "Advanced Chaos Magic allows the hero to cast level 2 and lower Chaos Magic spells. It requires the hero to learn Basic Chaos Magic and Basic Conjuration.",
+      "expert": "Expert Chaos Magic allows the hero to cast level 3 and lower Chaos Magic spells. It requires the hero to learn Advanced Chaos Magic, Advanced Conjuration and Basic Pyromancy.",
+      "master": "Master Chaos Magic allows the hero to cast level 4 and lower Chaos Magic spells. It requires the hero to learn Expert Chaos Magic, Expert Conjuration and Expert Pyromancy.",
+      "grandmaster": "Grandmaster Chaos Magic allows the hero to cast level 5 and lower Chaos Magic spells. It requires the hero to learn Master Chaos Magic, Grandmaster Conjuration and Grandmaster Pyromancy."
+    }
+  },
+  {
+    "id": "combat",
+    "name": "Combat",
+    "wikiTitle": "Combat (H4)",
+    "isPrimary": true,
+    "parentPrimary": null,
+    "subSkills": [
+      "Melee",
+      "Archery",
+      "Magic Resistance"
+    ],
+    "summary": "Combat is a secondary skill in Heroes of Might and Magic IV. It increases a hero's Melee and Ranged Defense.\n\nCombat is related to secondary skills Melee, Archery and Magic Resistance. By default, barbarians and archers start with this skill.\n\nCombat can be combined with other secondary skills, which grants hero an advanced class:\n*Chaos Magic: Fireguard\n*Death Magic: Assassin\n*Life Magic: Paladin\n*Nature Magic: Beastmaster\n*Nobility: Warlord\n*Order Magic: Battle Mage\n*Scouting: Ranger\n*Tactics: General",
+    "levels": {
+      "basic": "Basic Combat increases the hero's Melee and Ranged Defense to 15. It has no prerequesits.",
+      "advanced": "Advanced Combat increases the hero's Melee and Ranged Defense to 20. It requires the hero to learn Basic Combat.",
+      "expert": "Expert Combat increases the hero's Melee and Ranged Defense to 30. It requires the hero to learn Advanced Combat.",
+      "master": "Master Combat increases the hero's Melee and Ranged Defense to 40. It requires the hero to learn Expert Combat.",
+      "grandmaster": "Grandmaster Combat increases the hero's Melee and Ranged Defense to 60. It requires the hero to learn Master Combat."
+    }
+  },
+  {
+    "id": "death_magic",
+    "name": "Death Magic",
+    "wikiTitle": "Death Magic",
+    "isPrimary": true,
+    "parentPrimary": null,
+    "subSkills": [
+      "Occultism",
+      "Demonology",
+      "Necromancy"
+    ],
+    "summary": "Death Magic is a secondary skill in Heroes of Might and Magic IV. It is used to cast Death Magic spells.\n\nDeath Magic is related to secondary skills Occultism, Demonology and Necromancy. By default, necromancers start with this skill.\n\nDeath Magic can be combined with other secondary skills, which grants hero an Advanced class:\n*Chaos Magic: Lich\n*Combat: Assassin\n*Life Magic: Dark Priest\n*Nobility: Dark Lord\n*Nature Magic: Demonologist\n*Order Magic: Shadow Mage\n*Scouting: Ninja\n*Tactics: Reaver",
+    "levels": {
+      "basic": "Basic Death Magic allows the hero to cast level 1 Death Magic spells. It has no prerequesits.",
+      "advanced": "Advanced Death Magic allows the hero to cast level 2 and lower Death Magic spells. It requires the hero to learn Basic Death Magic and Basic Occultism.",
+      "expert": "Expert Death Magic allows the hero to cast level 3 and lower Death Magic spells. It requires the hero to learn Advanced Death Magic, Advanced Occultism and Basic Demonology.",
+      "master": "Master Death Magic allows the hero to cast level 4 and lower Death Magic spells. It requires the hero to learn Expert Death Magic, Expert Occultism and Expert Demonology.",
+      "grandmaster": "Grandmaster Death Magic allows the hero to cast level 5 and lower Death Magic spells. It requires the hero to learn Master Death Magic, Grandmaster Occultism and Grandmaster Demonology."
+    }
+  },
+  {
+    "id": "life_magic",
+    "name": "Life Magic",
+    "wikiTitle": "Life Magic",
+    "isPrimary": true,
+    "parentPrimary": null,
+    "subSkills": [
+      "Healing",
+      "Spirituality",
+      "Resurrection"
+    ],
+    "summary": "Life Magic is a secondary skill in Heroes of Might and Magic IV. It is used to cast Life Magic spells.\n\nLife Magic is related to secondary skills Healing, Spirituality and Resurrection. By default, priests start with this skill.\n\nLife Magic can be combined with other secondary skills, which grants hero an advanced class:\n*Chaos Magic: Heretic\n*Combat: Paladin\n*Death Magic: Dark Priest\n*Nobility: Cardinal\n*Nature Magic: Summoner\n*Order Magic: Monk\n*Scouting: Prophet\n*Tactics: Crusader",
+    "levels": {
+      "basic": "Basic Life Magic allows the hero to cast level 1 Life Magic spells. It has no prerequesits.",
+      "advanced": "Advanced Life Magic allows the hero to cast level 2 and lower Life Magic spells. It requires the hero to learn basic Life Magic and Basic Healing.",
+      "expert": "Expert Life Magic allows the hero to cast level 3 and lower Life Magic spells. It requires the hero to learn Advanced Life Magic, Advanced Healing and Basic Spirituality.",
+      "master": "Master Life Magic allows the hero to cast level 4 and lower Life Magic spells. It requires the hero to learn Expert Life Magic, Expert Healing and Expert Spirituality.",
+      "grandmaster": "Grandmaster Life Magic allows the hero to cast level 5 and lower Life Magic spells. It requires the hero to learn Master Life Magic, Grandmaster Healing and Grandmaster Spirituality."
+    }
+  },
+  {
+    "id": "nature_magic",
+    "name": "Nature Magic",
+    "wikiTitle": "Nature Magic",
+    "isPrimary": true,
+    "parentPrimary": null,
+    "subSkills": [
+      "Herbalism",
+      "Meditation",
+      "Summoning"
+    ],
+    "summary": "Nature Magic is a secondary skill in Heroes of Might and Magic IV. It is used to cast Nature Magic spells.\n\nNature Magic is related to secondary skills Herbalism, Meditation and Summoning. By default, druids start with this skill.\n\nNature Magic can be combined with other secondary skills, which grants hero an advanced class:\n*Chaos Magic: Warlock\n*Death Magic: Demonologist\n*Combat: Beastmaster\n*Life Magic: Summoner\n*Nobility: Beast Lord\n*Order Magic: Enchanter\n*Scouting: Bard\n*Tactics: Warden",
+    "levels": {
+      "basic": "Basic Nature Magic allows the hero to cast level 1 Nature Magic spells. It has no prerequesits.",
+      "advanced": "Advanced Nature Magic allows the hero to cast level 2 and lower Nature Magic spells. It requires the hero to learn Basic Nature Magic and Basic Herbalism.",
+      "expert": "Expert Nature Magic allows the hero to cast level 3 and lower Nature Magic spells. It requires the hero to learn Advanced Nature Magic, Advanced Herbalism and Basic Meditation.",
+      "master": "Master Nature Magic allows the hero to cast level 4 and lower Nature Magic spells. It requires the hero to learn Expert Nature Magic, Expert Herbalism and Expert Meditation.",
+      "grandmaster": "Grandmaster Nature Magic allows the hero to cast level 5 and lower Nature Magic spells. It requires the hero to learn Master Nature Magic, Grandmaster Herbalism and Grandmaster Meditation."
+    }
+  },
+  {
+    "id": "nobility",
+    "name": "Nobility",
+    "wikiTitle": "Nobility",
+    "isPrimary": true,
+    "parentPrimary": null,
+    "subSkills": [
+      "Estates",
+      "Mining",
+      "Diplomacy"
+    ],
+    "summary": "Nobility is a secondary skill in Heroes of Might and Magic IV. It is used to increase army growth within a town.\n\nNobility is related to secondary skills Estates, Mining and Diplomacy. By default, lords start with this skill.\n\nNobility can be combined with other secondary skills, which grants hero an advanced class:\n*Chaos Magic: Witch King\n*Death Magic: Dark Lord\n*Combat: Warlord\n*Life Magic: Cardinal\n*Nature Magic: Beast Lord\n*Order Magic: Wizard King\n*Scouting: Guildmaster\n*Tactics: Lord Commander",
+    "levels": {
+      "basic": "Basic Nobility increases all creature growth by 10% in the town that recognizes the hero as its governor. It has no prerequesits.",
+      "advanced": "Advanced Nobility increases all creature growth by 20% in the town that recognizes the hero as its governor. It requires the hero to learn Basic Nobility.",
+      "expert": "Expert Nobility increases all creature growth by 30% in the town that recognizes the hero as its governor. It requires the hero to learn Advanced Nobility, Basic Estates and Basic Mining.",
+      "master": "Master Nobility increases all creature growth by 40% in the town that recognizes the hero as its governor. It requires the hero to learn Expert Nobility, Advanced Estates and Advanced Mining.",
+      "grandmaster": "Grandmaster Nobility increases all creature growth by 50% in the town that recognizes the hero as its governor. It requires the hero to learn Master Nobility, Expert Estates and Expert Mining."
+    }
+  },
+  {
+    "id": "order_magic",
+    "name": "Order Magic",
+    "wikiTitle": "Order Magic (H4)",
+    "isPrimary": true,
+    "parentPrimary": null,
+    "subSkills": [
+      "Enchantment",
+      "Wizardry",
+      "Charm"
+    ],
+    "summary": "Order Magic is a secondary skill in Heroes of Might and Magic IV. It is used to cast Order Magic spells.\n\nOrder Magic is related to secondary skills Enchantment, Wizardry and Charm. By default, mages start with this skill.\n\nOrder Magic can be combined with other secondary skills, which grants hero an advanced class:\n*Chaos Magic: Wizard\n*Death Magic: Shadow Mage\n*Combat: Battle Mage\n*Life Magic: Monk\n*Nobility: Wizard King\n*Nature Magic: Enchanter\n*Scouting: Seer\n*Tactics: Illusionist",
+    "levels": {
+      "basic": "Basic Order Magic allows the hero to cast level 1 Order Magic spells. It has no prerequesits.",
+      "advanced": "Advanced Order Magic allows the hero to cast level 2 and lower Order Magic spells. It requires the hero to learn Basic Order Magic and Basic Enchantment.",
+      "expert": "Expert Order Magic allows the hero to cast level 3 and lower Order Magic spells. It requires the hero to learn Advanced Order Magic, Advanced Enchantment and Basic Wizardry.",
+      "master": "Master Order Magic allows the hero to cast level 4 and lower Order Magic spells. It requires the hero to learn Expert Order Magic, Expert Enchantment and Expert Wizardry.",
+      "grandmaster": "Grandmaster Order Magic allows the hero to cast level 5 and lower Order Magic spells. It requires the hero to learn Master Order Magic, Grandmaster Enchantment and Grandmaster Wizardry."
+    }
+  },
+  {
+    "id": "scouting",
+    "name": "Scouting",
+    "wikiTitle": "Scouting (H4)",
+    "isPrimary": true,
+    "parentPrimary": null,
+    "subSkills": [
+      "Pathfinding",
+      "Seamanship",
+      "Stealth"
+    ],
+    "summary": "Scouting is a secondary skill in Heroes of Might and Magic IV. It is used to survey the land on the adventure map.\n\nScouting is related to secondary skills Pathfinding, Seamanship and Stealth. By default, thieves start with this skill.\n\nScouting can be combined with other secondary skills, which grants hero an advanced class:\n*Chaos Magic: Fire Diviner\n*Death Magic: Ninja\n*Combat: Ranger\n*Life Magic: Prophet\n*Nobility: Guildmaster\n*Nature Magic: Bard\n*Order Magic: Seer\n*Tactics: Field Marshal",
+    "levels": {
+      "basic": "Basic Scouting gives the hero a +1 Scouting radius and the ability to learn the traits of any adventure object. The hero can also see enemies with Basic Stealth on the adventure map. It has no prerequesits.",
+      "advanced": "Advanced Scouting gives the hero a +2 Scouting radius and the ability to learn the exact number of creatures in a hostile army. The hero can also see enemies with Advanced Stealth on the adventure map. It has no prerequesits.",
+      "expert": "Expert Scouting gives the hero a +3 Scouting radius and the ability to estimate the outcome of a battle with an enemy army. The hero can also see enemies with Expert Stealth on the adventure map. It requires the hero to learn Basic Pathfinding.",
+      "master": "Master Scouting gives the hero a +4 Scouting radius anand the ability to learn the skills of enemy heroes. The hero can also see enemies with Master Stealth on the adventure map. It requires the hero to learn Advanced Pathfinding.",
+      "grandmaster": "Grandmaster Scouting +5 Scouting radius and the ability to view enemy Town and Army screens. The hero can also see enemies with Grandmaster Stealth on the adventure map. It requires the hero to learn Master Pathfinding."
+    }
+  },
+  {
+    "id": "tactics",
+    "name": "Tactics",
+    "wikiTitle": "Tactics (H4)",
+    "isPrimary": true,
+    "parentPrimary": null,
+    "subSkills": [
+      "Offense",
+      "Defense",
+      "Leadership"
+    ],
+    "summary": "Tactics is a secondary skill in Heroes of Might and Magic IV. It is used to increase speed and movement of friendly creatures in the army.\n\nTactics is related to secondary skills Offense, Defense and Leadership. By default, knights and death knights start with this skill.\n\nTactics can be combined with other secondary skills, which grants hero an advanced class:\n*Chaos Magic: Pyromancer\n*Death Magic: Reaver\n*Combat: General\n*Life Magic: Crusader\n*Nobility: Lord Commander\n*Nature Magic: Warden\n*Order Magic: Illusionist\n*Scouting: Field Marshal",
+    "levels": {
+      "basic": "Basic Tactics gives all friendly creatures +1 speed and +2 movement. It has no prerequesits.",
+      "advanced": "Advanced Tactics gives all friendly creatures +2 speed and +3 movement. It requires the hero to learn Basic Tactics.",
+      "expert": "Expert Tactics gives all friendly creatures +3 speed and +4 movement. It requires the hero to learn Advanced Tactics, Basic Offense and Basic Defense.",
+      "master": "Master Tactics gives all friendly creatures +4 speed and +5 movement. It requires the hero to learn Expert Tactics, Advanced Offense and Advanced Defense.",
+      "grandmaster": "Grandmaster Tactics gives all friendly creatures +5 speed and +6 movement. It requires the hero to learn Master Tactics, Expert Offense and Expert Defense."
+    }
+  },
+  {
+    "id": "archery",
+    "name": "Archery",
+    "wikiTitle": "Archery (H4)",
+    "isPrimary": false,
+    "parentPrimary": "Combat",
+    "subSkills": [],
+    "summary": "Archery is a secondary skill in Heroes of Might and Magic IV. It increases a hero's Ranged Attack.",
+    "levels": {
+      "basic": "Basic Archery gives the hero a Ranged Attack of 10. It requires the hero to learn Basic Combat skill.",
+      "advanced": "Advanced Archery increases the hero's Ranged Attack to 15, and divides the natural defense of enemy creatures by 1.5. Archery never reduces an enemy creature's defense below 10, and never reduces an enemy hero's defense. Heroes with Advanced Archery do full damage with ranged attacks against defenders behind castle walls and other obstacles. It requires the hero to learn Basic Archery.",
+      "expert": "Expert Archery increases the hero's Ranged Attack to 20, and divides the natural defense of enemy creatures by 2. Archery never reduces an enemy creature's defense below 10, and never reduces an enemy hero's defense. Heroes with Expert Archery do full damage at any range and full damage to enemies behind castle walls and other obstacles. It requires the hero to learn Advanced Combat and Advanced Archery.",
+      "master": "Master Archery increases the hero's Ranged Attack to 30, and divides the natural defense of enemy creatures by 2. Archery never reduces an enemy creature's defense below 10, and never reduces an enemy hero's defense. Heroes with Master Archery shoot before an enemy ranged troop can retaliate, do full damage at any range, and do full damage to enemies behind castle walls and other obstacles. It requires the hero to learn Expert Archery.",
+      "grandmaster": "Grandmaster Archery increases the hero's Ranged Attack to 30, and divides the natural defense of enemy creatures by 2. Archery never reduces an enemy creature's defense below 10, and never reduces an enemy hero's defense. Heroes with Grandmaster Archery shoot before any ranged troop can retaliate, and shoot a second time after they retaliate. They also do full damage at any range and full damage to enemies behind castle walls and other obstacles. It requires the hero to learn Expert Combat and Master Archery."
+    }
+  },
+  {
+    "id": "charm",
+    "name": "Charm",
+    "wikiTitle": "Charm (H4)",
+    "isPrimary": false,
+    "parentPrimary": "Order Magic",
+    "subSkills": [],
+    "summary": "Charm is a secondary skill in Heroes of Might and Magic IV. If the hero has a stronger army, the skill converts enemy army's creatures (neutral or belonging to a different faction) to the hero's ranks. Should the hero refuse, the creatures are not removed from the enemy army. It also reduces the cost of surrender.\n\nCharm is related to the secondary skill Order Magic.",
+    "levels": {
+      "basic": "Basic Charm can convert 15% of greatly outnumbered hostile creatures to his side. The hero can convert no more than 60 experience points of creatures, plus 10% per level of the hero. The cost of surrendering is 90% of normal. It requires the hero to learn Basic Order Magic.",
+      "advanced": "Advanced Charm can convert 20% of greatly outnumbered hostile creatures to his side. The hero can convert no more than 60 experience points of creatures, plus 15% per level of the hero. The cost of surrendering is 80% of normal. It requires the hero to learn Basic Charm.",
+      "expert": "Expert Charm can convert 25% of greatly outnumbered hostile creatures to his side. The hero can convert no more than 60 experience points of creatures, plus 10% per level of the hero. The cost of surrendering is 75% of normal. It requires the hero to learn Advanced Order Magic and Expert Charm.",
+      "master": "Master Charm can convert 30% of greatly outnumbered hostile creatures to his side. The hero can convert no more than 60 experience points of creatures, plus 10% per level of the hero. The cost of surrendering is 70% of normal. It requires the hero to learn Expert Charm.",
+      "grandmaster": "Grandmaster Charm can convert 35% of greatly outnumbered hostile creatures to his side. The hero can convert no more than 60 experience points of creatures, plus 10% per level of the hero. The cost of surrendering is 65% of normal. It requires the hero to learn Expert Order Magic and Master Charm."
+    }
+  },
+  {
+    "id": "conjuration",
+    "name": "Conjuration",
+    "wikiTitle": "Conjuration",
+    "isPrimary": false,
+    "parentPrimary": "Chaos Magic",
+    "subSkills": [],
+    "summary": "Conjuration is a secondary skill in Heroes of Might and Magic IV. It grants hero additional mana points.\n\nConjuration is related to secondary skill Chaos Magic. By default, sorcerers start with this skill.",
+    "levels": {
+      "basic": "Basic Conjuration gives the hero 10 spell points. It also allows the hero to regenerate 2 spell points per day. It requires the hero to learn Basic Chaos Magic.",
+      "advanced": "Advanced Conjuration gives the hero 20 spell points. It also allows the hero to regenerate 4 spell points per day. It requires the hero to learn Advanced Chaos Magic and Basic Conjuration.",
+      "expert": "Expert Conjuration gives the hero 30 spell points. It also allows the hero to regenerate 6 spell points per day. It requires the hero to learn Expert Chaos Magic and Advanced Conjuration.",
+      "master": "Master Conjuration gives the hero 40 spell points. It also allows the hero to regenerate 8 spell points per day. It requires the hero to learn Master Chaos Magic and Expert Conjuration.",
+      "grandmaster": "Grandmaster Conjuration gives the hero 50 spell points. It also allows the hero to regenerate 10 spell points per day. It requires the hero to learn Master Conjuration."
+    }
+  },
+  {
+    "id": "defense",
+    "name": "Defense",
+    "wikiTitle": "Defense (H4)",
+    "isPrimary": false,
+    "parentPrimary": "Tactics",
+    "subSkills": [],
+    "summary": "Defense is a secondary skill in Heroes of Might and Magic IV. It grants friendly creatures in the hero's army a bonus to melee and ranged defense.\n\nDefense is related to secondary skill tactics. By default, knights start with this skill.",
+    "levels": {
+      "basic": "Basic defense gives all friendly creatures +10% to their melee and ranged defense. It requires the hero to learn basic tactics.",
+      "advanced": "Advanced defense gives all friendly creatures +20% to their melee and ranged defense. It requires the hero to learn basic tactics and basic defense.",
+      "expert": "Expert defense gives all friendly creatures +30% to their melee and ranged defense. It requires the hero to learn advanced tactics and advanced defense.",
+      "master": "Master defense gives all friendly creatures +40% to their melee and ranged defense. It requires the hero to learn advanced tactics and expert defense.",
+      "grandmaster": "Grandmaster defense gives all friendly creatures +50% to their melee and ranged defense. It requires the hero to learn expert tactics and master defense."
+    }
+  },
+  {
+    "id": "demonology",
+    "name": "Demonology",
+    "wikiTitle": "Demonology",
+    "isPrimary": false,
+    "parentPrimary": "Death Magic",
+    "subSkills": [],
+    "summary": "Demonology is a secondary skill in Heroes of Might and Magic IV. It increases the efficiency of Death Magic spells, specifically poison, raise skeletons, animate dead, life drain, plague, raise ghost, death call, Hand of Death and raise vampires.\n\nDemonology is related to the secondary skill Death Magic.",
+    "levels": {
+      "basic": "Basic Demonology increases the effectiveness of Death Magic spells by 20%. If the hero has learned Basic nature magic, it also lets them add summon imps spell in their spellbook. It requires the hero to learn Advanced Death Magic.",
+      "advanced": "Advanced Demonology increases the effectiveness of Death Magic spells by 40%. If the hero has learned Advanced nature magic, it also lets them add summon cerberi spell in their spellbook. It requires the hero to learn Expert Death Magic and Basic Demonology.",
+      "expert": "Expert Demonology increases the effectiveness of Death Magic spells by 60%. If the hero has learned Expert nature magic, it also lets them add summon ice demons spell in their spellbook. It requires the hero to learn Advanced Demonology.",
+      "master": "Master Demonology increases the effectiveness of Death Magic spells by 80%. If the hero has learned Basic nature magic, it also lets them add summon venom spawn spell in their spellbook. It requires the hero to learn Master Death Magic and Expert Demonology.",
+      "grandmaster": "Grandmaster Demonology increases the effectiveness of Death Magic spells by 100%. If the hero has learned Basic nature magic, it also lets them add summon devils spell in their spellbook. It requires the hero to learn Master Demonology."
+    }
+  },
+  {
+    "id": "diplomacy",
+    "name": "Diplomacy",
+    "wikiTitle": "Diplomacy (H4)",
+    "isPrimary": false,
+    "parentPrimary": "Nobility",
+    "subSkills": [],
+    "summary": "Diplomacy is a secondary skill in Heroes of Might and Magic IV. If the hero has a stronger army, the skill converts enemy army's creatures (neutral or belonging to a different faction) to the hero's ranks, by paying a sum of gold. Should the hero refuse, the creatures are not removed from the enemy army. It also reduces the cost of surrender.\n\nDiplomacy is related to secondary skill Nobility.",
+    "levels": {
+      "basic": "Basic Diplomacy gives the hero the ability to convince 30% of greatly outnumbered hostile creatures to desert for a price. The hero can sway no more than 120 experience points of creatures, plus 10% per level of the hero. Also, the cost of surrendering is 80% of normal. It requires the hero to learn Basic Nobility.",
+      "advanced": "Advanced Diplomacy gives the hero the ability to convince 40% of greatly outnumbered hostile creatures to desert for a price. The hero can sway no more than 240 experience points of creatures, plus 10% per level of the hero. Also, the cost of surrendering is 70% of normal. It requires the hero to learn Basic Nobility and Basic Diplomacy.",
+      "expert": "Expert Diplomacy gives the hero the ability to convince 50% of greatly outnumbered hostile creatures to desert for a price. The hero can sway no more than 360 experience points of creatures, plus 10% per level of the hero. Also, the cost of surrendering is 60% of normal. It requires the hero to learn Advanced Nobility and Advanced Diplomacy.",
+      "master": "Master Diplomacy gives the hero the ability to convince 60% of greatly outnumbered hostile creatures to desert for a price. The hero can sway no more than 480 experience points of creatures, plus 10% per level of the hero. Also, the cost of surrendering is 55% of normal. It requires the hero to learn Advanced Nobility and Expert Diplomacy.",
+      "grandmaster": "Grandmaster Diplomacy gives the hero the ability to convince 70% of greatly outnumbered hostile creatures to desert for a price. The hero can sway no more than 600 experience points of creatures, plus 10% per level of the hero. Also, the cost of surrendering is 50% of normal. It requires the hero to learn Expert Nobility and Master Diplomacy."
+    }
+  },
+  {
+    "id": "enchantment",
+    "name": "Enchantment",
+    "wikiTitle": "Enchantment",
+    "isPrimary": false,
+    "parentPrimary": "Order Magic",
+    "subSkills": [],
+    "summary": "Enchantment is a secondary skill in Heroes of Might and Magic IV. It grants hero additional mana points.\n\nEnchantment is related to the secondary skill Order Magic. By default, mages start with this skill.",
+    "levels": {
+      "basic": "Basic Enchantment gives the hero 10 spell points. It also allows the hero to regenerate 2 spell points per day. It requires the hero to learn Basic Order Magic.",
+      "advanced": "Advanced Enchantment gives the hero 20 spell points. It also allows the hero to regenerate 4 spell points per day. It requires the hero to learn Advanced Order Magic and Basic Enchantment.",
+      "expert": "Expert Enchantment gives the hero 30 spell points. It also allows the hero to regenerate 6 spell points per day. It requires the hero to learn Expert Order Magic and Advanced Enchantment.",
+      "master": "Master Enchantment gives the hero 40 spell points. It also allows the hero to regenerate 8 spell points per day. It requires the hero to learn Master Order Magic and Expert Enchantment.",
+      "grandmaster": "Grandmaster Enchantment gives the hero 50 spell points. It also allows the hero to regenerate 10 spell points per day. It requires the hero to learn Master Enchantment."
+    }
+  },
+  {
+    "id": "estates",
+    "name": "Estates",
+    "wikiTitle": "Estates (H4)",
+    "isPrimary": false,
+    "parentPrimary": "Nobility",
+    "subSkills": [],
+    "summary": "Estates is a secondary skill in Heroes of Might and Magic IV. It grants the kingdom an additional surplus of gold per day. The hero must be outside towns for the effect to be applied.\n\nEstates is related to secondary skill nobility. By default, lords start with this skill.",
+    "levels": {
+      "basic": "Basic estates gives the hero the ability to produce an extra 100 gold per day for their kingdom, plus 10% per level of the hero. It requires the hero to learn basic nobility.",
+      "advanced": "Advanced estates gives the hero the ability to produce an extra 200 gold per day for their kingdom, plus 10% per level of the hero. It requires the hero to learn basic nobility and basic estates.",
+      "expert": "Expert estates gives the hero the ability to produce an extra 300 gold per day for their kingdom, plus 10% per level of the hero. It requires the hero to learn advanced nobility and advanced estates.",
+      "master": "Master estates gives the hero the ability to produce an extra 400 gold per day for their kingdom, plus 10% per level of the hero. It requires the hero to learn advanced nobility and expert estates.",
+      "grandmaster": "Grandmaster estates gives the hero the ability to produce an extra 500 gold per day for their kingdom, plus 10% per level of the hero. It requires the hero to learn expert nobility and master estates."
+    }
+  },
+  {
+    "id": "healing",
+    "name": "Healing",
+    "wikiTitle": "Healing",
+    "isPrimary": false,
+    "parentPrimary": "Life Magic",
+    "subSkills": [],
+    "summary": "Healing is a secondary skill in Heroes of Might and Magic IV. It grants hero additional mana points.\n\nHealing is related to secondary skill Life Magic. By default, priests start with this skill.",
+    "levels": {
+      "basic": "Basic Healing gives the hero 10 spell points. It also allows the hero to regenerate 2 spell points per day. It requires the hero to learn Basic Life Magic.",
+      "advanced": "Advanced Healing gives the hero 20 spell points. It also allows the hero to regenerate 4 spell points per day. It requires the hero to learn Advanced Life Magic and Basic Healing.",
+      "expert": "Expert Healing gives the hero 30 spell points. It also allows the hero to regenerate 6 spell points per day. It requires the hero to learn Expert Life Magic and Advanced Healing.",
+      "master": "Master Healing gives the hero 40 spell points. It also allows the hero to regenerate 8 spell points per day. It requires the hero to learn Master Life Magic and Expert Healing.",
+      "grandmaster": "Grandmaster Healing gives the hero 50 spell points. It also allows the hero to regenerate 10 spell points per day. It requires the hero to learn Master Healing."
+    }
+  },
+  {
+    "id": "herbalism",
+    "name": "Herbalism",
+    "wikiTitle": "Herbalism",
+    "isPrimary": false,
+    "parentPrimary": "Nature Magic",
+    "subSkills": [],
+    "summary": "Herbalism is a secondary skill in Heroes of Might and Magic IV. It grants hero additional mana points.\n\nHerbalism is related to secondary skill Nature Magic. By default, druids start with this skill.",
+    "levels": {
+      "basic": "Basic Herbalism gives the hero 10 spell points. It also allows the hero to regenerate 2 spell points per day. It requires the hero to learn Basic Nature Magic.",
+      "advanced": "Advanced Herbalism gives the hero 20 spell points. It also allows the hero to regenerate 4 spell points per day. It requires the hero to learn Advanced Nature Magic and Basic Herbalism.",
+      "expert": "Expert Herbalism gives the hero 30 spell points. It also allows the hero to regenerate 6 spell points per day. It requires the hero to learn Expert Nature Magic and Advanced Herbalism.",
+      "master": "Master Herbalism gives the hero 40 spell points. It also allows the hero to regenerate 8 spell points per day. It requires the hero to learn Master Nature Magic and Expert Herbalism.",
+      "grandmaster": "Grandmaster Herbalism gives the hero 50 spell points. It also allows the hero to regenerate 10 spell points per day. It requires the hero to learn Master Herbalism."
+    }
+  },
+  {
+    "id": "leadership",
+    "name": "Leadership",
+    "wikiTitle": "Leadership (H4)",
+    "isPrimary": false,
+    "parentPrimary": "Tactics",
+    "subSkills": [],
+    "summary": "Leadership is a secondary skill in Heroes of Might and Magic IV. Leadership increases the army's morale and luck stats.\n\nLeadership is related to secondary skill Tactics.",
+    "levels": {
+      "basic": "Basic Leadership gives all friendly creatures +1 morale and +1 luck. It requires the hero to learn Basic Tactics.",
+      "advanced": "Advanced Leadership gives all friendly creatures +2 morale and +2 luck. It requires the hero to learn Basic Tactics and Basic Leadership.",
+      "expert": "Expert Leadership gives all friendly creatures +3 morale and +3 luck. It requires the hero to learn Advanced Tactics and Advanced Leadership.",
+      "master": "Master Leadership gives all friendly creatures +4 morale and +4 luck. It requires the hero to learn Advanced Tactics and Expert Leadership.",
+      "grandmaster": "Grandmaster Leadership gives all friendly creatures +5 morale and +5 luck. It requires the hero to learn Expert Tactics and Master Leadership."
+    }
+  },
+  {
+    "id": "magic_resistance",
+    "name": "Magic Resistance",
+    "wikiTitle": "Magic Resistance (H4)",
+    "isPrimary": false,
+    "parentPrimary": "Combat",
+    "subSkills": [],
+    "summary": "Magic Resistance is a secondary skill in Heroes of Might and Magic IV. It increases a hero's Magic Resistance Attack.",
+    "levels": {
+      "basic": "Basic Magic Resistance gives the hero the ability to resist hostile spells 30% of the time. It requires the hero to learn Basic Combat skill.",
+      "advanced": "Advanced Magic Resistance gives the hero the ability to resist hostile spells 50% of the time. It requires the hero to learn Basic Magic Resistance.",
+      "expert": "Expert Magic Resistance gives the hero the ability to resist hostile spells 70% of the time. It requires the hero to learn Advanced Combat and Advanced Magic Resistance.",
+      "master": "Master Magic Resistance gives the hero the ability to resist hostile spells 80% of the time. It requires the hero to learn Expert Magic Resistance.",
+      "grandmaster": "Grandmaster Magic Resistance gives the hero the ability to resist hostile spells 100% of the time. It requires the hero to learn Expert Combat and Master Magic Resistance."
+    }
+  },
+  {
+    "id": "meditation",
+    "name": "Meditation",
+    "wikiTitle": "Meditation (H4)",
+    "isPrimary": false,
+    "parentPrimary": "Nature Magic",
+    "subSkills": [],
+    "summary": "Meditation is a secondary skill in Heroes of Might and Magic IV. It increases the efficiency of Nature Magic spells, specifically summoning creature spells (including demon summoning spells), and quicksand.\n\nMeditation is related to secondary skill Nature Magic.",
+    "levels": {
+      "basic": "Basic Meditation increases the effectiveness of Nature Magic spells by 20%. It requires the hero to learn Advanced Nature Magic.",
+      "advanced": "Advanced Meditation increases the effectiveness of Nature Magic spells by 40%. It requires the hero to learn Expert Nature Magic and Basic Meditation.",
+      "expert": "Expert Meditation increases the effectiveness of Nature Magic spells by 60%. It requires the hero to learn Advanced Meditation.",
+      "master": "Master Meditation increases the effectiveness of Nature Magic spells by 80%. It requires the hero to learn Master Nature Magic and Expert Meditation.",
+      "grandmaster": "Master Meditation increases the effectiveness of Nature Magic spells by 100%. It requires the hero to learn Master Meditation."
+    }
+  },
+  {
+    "id": "melee",
+    "name": "Melee",
+    "wikiTitle": "Melee",
+    "isPrimary": false,
+    "parentPrimary": "Combat",
+    "subSkills": [],
+    "summary": "Melee is a secondary skill in Heroes of Might and Magic IV. It increases a hero's Melee Attack.",
+    "levels": {
+      "basic": "Basic Melee increases the hero's Melee Attack to 15, and divides the natural defense of enemy creatures by 1.5. The Melee skill never reduces an enemy's defense below 10, and never reduces an enemy hero's defense. It requires the hero to learn Basic Combat skill.",
+      "advanced": "Advanced Melee increases the hero's Melee Attack to 20, and divides the natural defense of enemy creatures by 2. It requires the hero to learn Basic Melee.",
+      "expert": "Expert Melee increases the hero's Melee Attack to 30, and divides the natural defense of enemy creatures by 3. The hero also gains the ability to attack enemies before they can retaliate. It requires the hero to learn Advanced Combat and Advanced Melee.",
+      "master": "Master Melee increases the hero's Melee Attack to 40, and divides the natural defense of enemy creatures by 4. It requires the hero to learn Expert Melee.",
+      "grandmaster": "Grandmaster Melee increases the hero's Melee Attack to 40, and divides the natural defense of enemy creatures by 4. The hero also gains the ability to attack enemies before they can retaliate and strikes a second time after an enemy retaliates. It requires the hero to learn Expert Combat and Master Melee."
+    }
+  },
+  {
+    "id": "mining",
+    "name": "Mining",
+    "wikiTitle": "Mining",
+    "isPrimary": false,
+    "parentPrimary": "Nobility",
+    "subSkills": [],
+    "summary": "Mining is a secondary skill in Heroes of Might and Magic IV. It grants the kingdom an additional surplus of resources per day. The hero must be outside towns for the effect to be applied.\n\nMining is related to secondary skill nobility.",
+    "levels": {
+      "basic": "Basic mining allows the hero to produce 2 each of wood and ore, plus 10% per level of the hero, over a 5 day period. It requires the hero to learn basic nobility.",
+      "advanced": "Advanced mining allows the hero to produce 2 each of wood and ore, and 2 other resources, plus 10% per level of the hero, over a 5 day period. The 2 other resources cycle 1 each through gems, mercury, sulfur, and crystal - in that order. It requires the hero to learn basic nobility and basic mining.",
+      "expert": "Expert mining allows the hero to produce 2 each of wood and ore, and 4 other resources, plus 10% per level of the hero, over a 5 day period. The 4 other resources cycle 1 each through gems, mercury, sulfur, and crystals - in that order. It requires the hero to learn advanced nobility and advanced mining.",
+      "master": "Master mining allows the hero to produce 2 each of wood and ore, and 5 other resources, plus 10% per level of the hero, over a 5 day period. The 5 other resources cycle 1 each through gems, mercury, sulfur, and crystals - in that order. It requires the hero to learn advanced nobility and expert mining.",
+      "grandmaster": "Grandmaster mining allows the hero to produce 2 each of wood and ore, and 6 other resources, plus 10% per level of the hero, over a 5 day period. The 6 other resources cycle 1 each through gems, mercury, sulfur, and crystals - in that order. It requires the hero to learn expert nobility and master mining."
+    }
+  },
+  {
+    "id": "necromancy",
+    "name": "Necromancy",
+    "wikiTitle": "Necromancy (H4)",
+    "isPrimary": false,
+    "parentPrimary": "Death Magic",
+    "subSkills": [],
+    "summary": "Necromancy is a secondary skill in Heroes of Might and Magic IV. It raises undead (skeletons, ghosts and vampires) after a victorious battle.\n\nNecromancy is related to the secondary skill Death Magic.",
+    "levels": {
+      "basic": "Basic Necromancy gives the hero the ability to raise a number of skeletons equal to 10% of the strength of a defeated army, as long as that number doesn't exceed 40 experience points of undead, plus 10% per level of the hero. It requires the hero to learn Basic Death Magic.",
+      "advanced": "Advanced Necromancy gives the hero the ability to raise a number of skeletons equal to 15% of the strength of a defeated army, as long as that number doesn't exceed 80 experience points of undead, plus 10% per level of the hero. It requires the hero to learn Basic Necromancy.",
+      "expert": "Expert Necromancy gives the hero the ability to raise a number of skeletons or ghosts equal to 20% of the strength of a defeated army, as long as that number doesn't exceed 120 experience points of undead, plus 10% per level of the hero. It requires the hero to learn Advanced Death Magic and Advanced Necromancy.",
+      "master": "Master Necromancy gives the hero the ability to raise a number of skeletons or ghosts equal to 25% of the strength of a defeated army, as long as that number doesn't exceed 160 experience points of undead, plus 10% per level of the hero. It requires the hero to learn Expert Necromancy.",
+      "grandmaster": "Grandmaster Necromancy gives the hero the ability to raise a number of skeletons, ghosts, or vampires equal to 30% of the strength of a defeated army, as long as that number doesn't exceed 200 experience points of undead, plus 10% per level of the hero. It requires the hero to learn Expert Death Magic and Master Necromancy."
+    }
+  },
+  {
+    "id": "occultism",
+    "name": "Occultism",
+    "wikiTitle": "Occultism",
+    "isPrimary": false,
+    "parentPrimary": "Death Magic",
+    "subSkills": [],
+    "summary": "Occultism is a secondary skill in Heroes of Might and Magic IV. It grants hero additional mana points.\n\nOccultism is related to secondary skill Death Magic. By default, necromancers start with this skill.",
+    "levels": {
+      "basic": "Basic Occultism gives the hero 10 spell points. It also allows the hero to regenerate 2 spell points per day. It requires the hero to learn Basic Death Magic.",
+      "advanced": "Advanced Occultism gives the hero 20 spell points. It also allows the hero to regenerate 4 spell points per day. It requires the hero to learn Advanced Death Magic and Basic Occultism.",
+      "expert": "Expert Occultism gives the hero 30 spell points. It also allows the hero to regenerate 6 spell points per day. It requires the hero to learn Expert Death Magic and Advanced Occultism.",
+      "master": "Master Occultism gives the hero 40 spell points. It also allows the hero to regenerate 8 spell points per day. It requires the hero to learn Master Death Magic and Expert Occultism.",
+      "grandmaster": "Grandmaster Occultism gives the hero 50 spell points. It also allows the hero to regenerate 10 spell points per day. It requires the hero to learn Master Occultism."
+    }
+  },
+  {
+    "id": "offense",
+    "name": "Offense",
+    "wikiTitle": "Offense (H4)",
+    "isPrimary": false,
+    "parentPrimary": "Tactics",
+    "subSkills": [],
+    "summary": "Offense is a secondary skill in Heroes of Might and Magic IV. It grants friendly creatures in the hero's army a bonus to melee and ranged attack.\n\nOffense is related to secondary skill tactics. By default, death knights start with this skill.",
+    "levels": {
+      "basic": "Basic offense gives all friendly creatures +10% to their melee and ranged attack. It requires the hero to learn basic tactics.",
+      "advanced": "Advanced offense gives all friendly creatures +20% to their melee and ranged attack. It requires the hero to learn basic tactics and basic offense.",
+      "expert": "Expert offense gives all friendly creatures +30% to their melee and ranged attack. It requires the hero to learn advanced tactics and advanced offense.",
+      "master": "Master offense gives all friendly creatures +40% to their melee and ranged attack. It requires the hero to learn advanced tactics and expert offense.",
+      "grandmaster": "Grandmaster offense gives all friendly creatures +50% to their melee and ranged attack. It requires the hero to learn expert tactics and master offense."
+    }
+  },
+  {
+    "id": "pathfinding",
+    "name": "Pathfinding",
+    "wikiTitle": "Pathfinding (H4)",
+    "isPrimary": false,
+    "parentPrimary": "Scouting",
+    "subSkills": [],
+    "summary": "Pathfinding is a secondary skill in Heroes of Might and Magic IV. It increases the movement of the hero's army on land, and reduces terrain penalties on the adventure map.\n\nPathfinding is related to secondary skill Scouting.",
+    "levels": {
+      "basic": "Basic Pathfinding reduces all terrain movement penalties by 0.25 points for the hero and his army. It requires the hero to learn Basic Scouting.",
+      "advanced": "Advanced Pathfinding reduces all terrain movement penalties by 0.5 points for the hero and his army. It requires the hero to learn Basic Scouting and Basic Pathfinding.",
+      "expert": "Expert Pathfinding eliminates all terrain movement penalties for the hero and his army. It requires the hero to learn Advanced Scouting and Advanced Pathfinding.",
+      "master": "Master Pathfinding eliminates all terrain movement penalties for the hero and his army, and increases the army's movement by 25%. It requires the hero to learn Advanced Scouting and Expert Pathfinding.",
+      "grandmaster": "Grandmaster Pathfinding eliminates all terrain movement penalties for the hero and his army, and increases the army's movement by 50%. It requires the hero to learn Expert Scouting and Master Pathfinding."
+    }
+  },
+  {
+    "id": "pyromancy",
+    "name": "Pyromancy",
+    "wikiTitle": "Pyromancy",
+    "isPrimary": false,
+    "parentPrimary": "Chaos Magic",
+    "subSkills": [],
+    "summary": "Pyromancy is a secondary skill in Heroes of Might and Magic IV. It increases the efficiency of Chaos Magic spells, specifically magic arrow, sparks, fire bolt, spell shackle, fire ring, fireball, lighting, implosion, inferno, armageddon, chain lighting and disintegrate.\n\nPyromancy is related to secondary skill Chaos Magic.",
+    "levels": {
+      "basic": "Basic Pyromancy increases the effectiveness of Chaos Magic spells by 20%. It requires the hero to learn Advanced Chaos Magic.",
+      "advanced": "Advanced Pyromancy increases the effectiveness of Chaos Magic spells by 40%. It requires the hero to learn Expert Chaos Magic and Basic Pyromancy.",
+      "expert": "Expert Pyromancy increases the effectiveness of Chaos Magic spells by 60%. It requires the hero to learn Advanced Pyromancy.",
+      "master": "Master Pyromancy increases the effectiveness of Chaos Magic spells by 80%. It requires the hero to learn Master Chaos Magic and Expert Pyromancy.",
+      "grandmaster": "Master Pyromancy increases the effectiveness of Chaos Magic spells by 100%. It requires the hero to learn Master Pyromancy."
+    }
+  },
+  {
+    "id": "resurrection",
+    "name": "Resurrection",
+    "wikiTitle": "Resurrection (H4)",
+    "isPrimary": false,
+    "parentPrimary": "Life Magic",
+    "subSkills": [],
+    "summary": "Resurrection is a secondary skill in Heroes of Might and Magic IV. It revives friendly slain creatures, after the combat has ended. Undead, mechanical and elemental creatures cannot be resurrected.\n\nResurrection is related to secondary skill Life Magic.",
+    "levels": {
+      "basic": "Basic Resurrection allows the hero to resurrect 10% of the friendly creatures who die in combat. It requires the hero to learn Basic Life Magic.",
+      "advanced": "Advanced Resurrection allows the hero to resurrect 20% of the friendly creatures who die in combat. It requires the hero to learn Basic Resurrection.",
+      "expert": "Expert Resurrection allows the hero to resurrect 30% of the friendly creatures who die in combat. It requires the hero to learn Advanced Life Magic and Expert Resurrection.",
+      "master": "Master Resurrection allows the hero to resurrect 40% of the friendly creatures who die in combat. It requires the hero to learn Master Resurrection.",
+      "grandmaster": "Grandmaster Resurrection allows the hero to resurrect 50% of the friendly creatures who die in combat. It requires the hero to learn Expert Life Magic and Master Resurrection."
+    }
+  },
+  {
+    "id": "seamanship",
+    "name": "Seamanship",
+    "wikiTitle": "Seamanship",
+    "isPrimary": false,
+    "parentPrimary": "Scouting",
+    "subSkills": [],
+    "summary": "Seamanship is a secondary skill in Heroes of Might and Magic IV. It increases the movement of the hero's army on water terrain. If the hero does not have adequate Tactics, Offense and Defense skills, Seamanship grants the hero these skills during battles at sea.\n\nSeamanship is related to secondary skill Scouting.",
+    "levels": {
+      "basic": "Basic Seamanship gives the hero +25% movement at sea. It acts as Basic Tactics, Basic Offense and Basic Defense in sea battles. It requires the hero to learn Basic Scouting.",
+      "advanced": "Advanced Seamanship gives the hero +50% movement at sea. It acts as Advanced Tactics, Advanced Offense and Advanced Defense in sea battles. It requires the hero to learn Basic Scouting and Basic Seamanship.",
+      "expert": "Expert Seamanship gives the hero +100% movement at sea. It acts as Expert Tactics, Expert Offense and Expert Defense in sea battles. It requires the hero to learn Advanced Scouting and Advanced Seamanship.",
+      "master": "Master Seamanship gives the hero +150% movement at sea. It acts as Master Tactics, Master Offense and Master Defense in sea battles. It requires the hero to learn Advanced Scouting and Expert Seamanship.",
+      "grandmaster": "Grandmaster Seamanship gives the hero +200% movement at sea. It acts as Grandmaster Tactics, Grandmaster Offense and Grandmaster Defense in sea battles. It requires the hero to learn Expert Scouting and Master Seamanship."
+    }
+  },
+  {
+    "id": "sorcery",
+    "name": "Sorcery",
+    "wikiTitle": "Sorcery (H4)",
+    "isPrimary": false,
+    "parentPrimary": "Chaos Magic",
+    "subSkills": [],
+    "summary": "Sorcery is a secondary skill in Heroes of Might and Magic IV. It increases damage of all spells, in particular:\n*Life Magic: holy word, holy shout\n*Death Magic: poison, plague\n*Order Magic: magic fist, ice bolt\n*Chaos Magic: magic arrow, sparks, fire bolt, fire ring, fireball, lighting, implosion, inferno, armageddon, chain lighting, disintegrate\n\nSorcery is related to secondary skill Chaos Magic.",
+    "levels": {
+      "basic": "Basic Sorcery increases the hero's spell damage (with all magic types) by 20%. It requires the hero to learn Basic Chaos Magic.",
+      "advanced": "Advanced Sorcery increases the hero's spell damage by 40%. It requires the hero to learn Basic Sorcery.",
+      "expert": "Expert Sorcery increases the hero's spell damage by 60%. It requires the hero to learn Advanced Chaos Magic and Advanced Sorcery.",
+      "master": "Master Sorcery increases the hero's spell damage by 80%. It requires the hero to learn Expert Sorcery.",
+      "grandmaster": "Grandmaster Sorcery increases the hero's spell damage by 100%. It requires the hero to learn Expert Chaos Magic and Master Sorcery."
+    }
+  },
+  {
+    "id": "spirituality",
+    "name": "Spirituality",
+    "wikiTitle": "Spirituality",
+    "isPrimary": false,
+    "parentPrimary": "Life Magic",
+    "subSkills": [],
+    "summary": "Spirituality is a secondary skill in Heroes of Might and Magic IV. It increases the efficiency of Life Magic spells, specifically bind wound, holy word, heal, retribution, holy shout, mass healing, regeneration, divine intervention and guardian angel.\n\nSpirituality is related to secondary skill Life Magic.",
+    "levels": {
+      "basic": "Basic Spirituality increases the effectiveness of Life Magic spells by 20%. It requires the hero to learn Advanced Life Magic.",
+      "advanced": "Advanced Spirituality increases the effectiveness of Life Magic spells by 40%. It requires the hero to learn Expert Life Magic and Basic Spirituality.",
+      "expert": "Expert Spirituality increases the effectiveness of Life Magic spells by 60%. It requires the hero to learn Advanced Spirituality.",
+      "master": "Master Spirituality increases the effectiveness of Life Magic spells by 80%. It requires the hero to learn Master Life Magic and Expert Spirituality.",
+      "grandmaster": "Master Spirituality increases the effectiveness of Life Magic spells by 100%. It requires the hero to learn Master Spirituality."
+    }
+  },
+  {
+    "id": "stealth",
+    "name": "Stealth",
+    "wikiTitle": "Stealth",
+    "isPrimary": false,
+    "parentPrimary": "Scouting",
+    "subSkills": [],
+    "summary": "Stealth is a secondary skill in Heroes of Might and Magic IV. The hero becomes invisible to other units on the adventure map. The hero also gains minor experience points if they bypass hostile creatures on the map.\n\nStealth is related to secondary skill Scouting. By default, thieves start with this skill.",
+    "levels": {
+      "basic": "Basic Stealth makes the hero invisible to heroes with no Scouting skill on the Adventure Map. Enemies can see the hero if they are adjacent. The hero can only hide himself, not other creatures or heroes.",
+      "advanced": "Advanced Stealth makes the hero invisible to 2nd level creatures and heroes on the Adventure Map, even if the hero has Basic Scouting. The hero can be seen by 2nd level creatures and heroes with Basic Scouting if they are adjacent. The hero can only hide himself, not other creatures or heroes. It requires the hero to learn Advanced Scouting and Basic Stealth.",
+      "expert": "Expert Stealth makes the hero invisible to 3rd level creatures and heroes on the Adventure Map, even if they have Advanced Scouting. The hero can be seen by 3rd level creatures and heroes with Advanced Scouting if he is adjacent. The hero can only hide himself, not other creatures or heroes. It requires the hero to learn Expert Scouting and Advanced Stealth.",
+      "master": "Master Stealth makes the hero invisible to all creatures and heroes on the Adventure Map, even if they have Expert Scouting. The hero can be seen by 4th level creatures and heroes with Expert Scouting if he is adjacent. The hero can only hide himself, not other creatures or heroes. It requires the hero to learn Master Scouting and Expert Stealth.",
+      "grandmaster": "Grandmaster Stealth makes the hero invisible to all creatures and heroes on the Adventure Map, even if they have Master Scouting. The hero can be seen by heroes with Master Scouting if he is adjacent. The hero can only hide himself, not other creatures or heroes. It requires the hero to learn Grandmaster Scouting and Master Stealth."
+    }
+  },
+  {
+    "id": "summoning",
+    "name": "Summoning",
+    "wikiTitle": "Summoning",
+    "isPrimary": false,
+    "parentPrimary": "Nature Magic",
+    "subSkills": [],
+    "summary": "Summoning is a secondary skill in Heroes of Might and Magic IV. It spawns a random Nature unit in the hero's army. \n\nSummoning is related to secondary skill Nature Magic.",
+    "levels": {
+      "basic": "Basic Summoning allows the hero summon leprechauns, sprites, or wolves into the hero's army every day at a rate of 20 experience points of creatures per day, plus 10% per level of the hero. It requires the hero to learn Basic Nature Magic.",
+      "advanced": "Advanced Summoning allows the hero summon leprechauns, sprites, or wolves into the hero's army every day at a rate of 40 experience points of creatures per day, plus 10% per level of the hero. It requires the hero to learn Basic Summoning.",
+      "expert": "Expert Summoning allows the hero the ability to summon elves, satyrs, or tigers into the hero's army every day at a rate of 60 experience points of creatures per day, plus 10% per level of the hero. It requires the hero to learn Advanced Nature Magic and Expert Summoning.",
+      "master": "Master Summoning allows the hero the ability to summon elves, satyrs, or tigers into the hero's army every day at a rate of 80 experience points of creatures per day, plus 10% per level of the hero. It requires the hero to learn Master Summoning.",
+      "grandmaster": "Grandmaster Summoning allows the hero the ability to summon earth, air, fire and water elementals into the hero's army every day at a rate of 100 experience points of creatures per day, plus 10% per level of the hero. It requires the hero to learn Expert Nature Magic and Master Summoning."
+    }
+  },
+  {
+    "id": "wizardry",
+    "name": "Wizardry",
+    "wikiTitle": "Wizardry",
+    "isPrimary": false,
+    "parentPrimary": "Order Magic",
+    "subSkills": [],
+    "summary": "Wizardry is a secondary skill in Heroes of Might and Magic IV. It increases the efficiency of Order Magic spells, specifically magic fist, create illusion, ice bolt, banish and phantom image.\n\nWizardry is related to the secondary skill Order Magic.",
+    "levels": {
+      "basic": "Basic Wizardry increases the effectiveness of Order Magic spells by 20%. It requires the hero to learn Advanced Order Magic.",
+      "advanced": "Advanced Wizardry increases the effectiveness of Order Magic spells by 40%. It requires the hero to learn Expert Order Magic and Basic Wizardry.",
+      "expert": "Expert Wizardry increases the effectiveness of Order Magic spells by 60%. It requires the hero to learn Advanced Wizardry.",
+      "master": "Master Wizardry increases the effectiveness of Order Magic spells by 80%. It requires the hero to learn Master Order Magic and Expert Wizardry.",
+      "grandmaster": "Master Wizardry increases the effectiveness of Order Magic spells by 100%. It requires the hero to learn Master Wizardry."
+    }
+  }
+]

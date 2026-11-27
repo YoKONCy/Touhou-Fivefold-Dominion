@@ -1,0 +1,435 @@
+@import "tailwindcss";
+
+/* ============================================================================
+ * 东方幻想战记 H4 · 专属视觉设计系统
+ * 「幽夜蒔絵 × 博麗木刻 × 幻想折本」
+ * 100% 纯代码合成材质（零外部静态图）：和纸纤维噪点、麻の葉暗金底纹、切角漆金雕框、落款朱印
+ * ============================================================================ */
+
+:root {
+  /* 玄漆基底（暖墨紫炭色，彻底告别通用蓝灰 SaaS 暗黑风） */
+  --urushi-void: #08060a;
+  --urushi-deep: #110d13;
+  --urushi-mid: #1a141b;
+  --urushi-surface: #221a21;
+  --urushi-recess: #0d0a10;
+
+  /* 烟染古和纸（魔导书与内嵌碑文底色） */
+  --washi-dark: #211b1b;
+  --washi-warm: #2a2220;
+  --washi-edge: #3b2f28;
+
+  /* 古金蒔絵 / 锤纹黄铜 */
+  --gold-bright: #f5df9e;
+  --gold-main: #cfa75b;
+  --gold-antique: #99763a;
+  --gold-deep: #57401e;
+  --gold-hairline: rgba(207, 167, 91, 0.34);
+
+  /* 神社朱砂 / 印泥红 */
+  --cinnabar: #b92c3b;
+  --cinnabar-bright: #e04b5a;
+  --cinnabar-dark: #5e151f;
+
+  /* 翠玉印章 / 雾雨星金 / 灵力靛蓝 */
+  --jade-top: #2c6d53;
+  --jade-bot: #184231;
+  --jade-edge: #7ce0b2;
+  --star-gold: #f0c34a;
+  --indigo-mana: #6ca6e8;
+
+  /* 月白与墨灰文字阶梯 */
+  --ink-ivory: #f3ead8;
+  --ink-warm: #cabba2;
+  --ink-muted: #8a7b69;
+  --ink-faint: #574c41;
+
+  /* 纯代码内联 SVG 纹理：微粒和纸纤维 + 麻の葉微暗纹 */
+  --tex-washi-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E");
+  --tex-asanoha: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cg fill='none' stroke='%23cfa75b' stroke-width='0.55' stroke-opacity='0.085'%3E%3Cpath d='M16 0L32 16L16 32L0 16Z'/%3E%3Cpath d='M16 0V32M0 16H32M8 8L24 24M24 8L8 24'/%3E%3C/g%3E%3C/svg%3E");
+  --tex-lattice: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='%23cfa75b' stroke-width='0.5' stroke-opacity='0.065'%3E%3Cpath d='M0 12H24M12 0V24'/%3E%3Cpath d='M6 0V24M18 0V24M0 6H24M0 18H24' stroke-opacity='0.03'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+  color: var(--ink-ivory);
+  background-color: var(--urushi-void);
+}
+
+/* 严格保持像素画布与像素立绘锐利无模糊 */
+canvas,
+.pixel-art {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* ==================== 排版层级（古典典籍衬线 × 雕刻等宽数字 × 清晰正文） ==================== */
+
+.font-display {
+  font-family: "STZhongsong", "Songti SC", "Noto Serif SC", "SimSun", "Palatino Linotype", Georgia, serif;
+  letter-spacing: 0.06em;
+}
+
+.font-num {
+  font-family: "Cambria", "Georgia", "Cascadia Mono", ui-monospace, serif;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==================== 建筑级漆金雕版材质容器（严格置于 @layer components，绝不覆盖 Tailwind 的 fixed/absolute 工具类！） ==================== */
+
+@layer components {
+  /* 核心玄漆古金大面板（带真实和纸纤维噪点 + 麻の葉微暗纹 + 双重黄铜倒角边框） */
+  .urushi-frame {
+    background-color: var(--urushi-deep);
+    background-image:
+      var(--tex-washi-grain),
+      var(--tex-asanoha),
+      radial-gradient(ellipse at 14% 0%, rgba(207, 167, 91, 0.11), transparent 52%),
+      radial-gradient(ellipse at 92% 100%, rgba(185, 44, 59, 0.09), transparent 48%),
+      linear-gradient(180deg, #1d161d 0%, #130f15 58%, #0e0b11 100%);
+    border: 1.5px solid var(--gold-antique);
+    box-shadow:
+      0 0 0 1px #060508,
+      0 0 0 3px #2d2113,
+      0 0 0 4px rgba(207, 167, 91, 0.32),
+      0 28px 68px rgba(0, 0, 0, 0.88),
+      inset 0 1px 0 rgba(245, 223, 158, 0.28),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.8),
+      inset 0 0 0 4px rgba(207, 167, 91, 0.06);
+  }
+
+  /* 轻量浮层漆木笺（用于悬浮提示、算伤笺、侧边抽屉、Toast） */
+  .urushi-slip {
+    background-color: var(--urushi-deep);
+    background-image:
+      var(--tex-washi-grain),
+      linear-gradient(180deg, rgba(30, 23, 30, 0.97) 0%, rgba(15, 11, 17, 0.98) 100%);
+    border: 1px solid var(--gold-antique);
+    box-shadow:
+      0 0 0 1px #060508,
+      0 14px 36px rgba(0, 0, 0, 0.82),
+      inset 0 1px 0 rgba(245, 223, 158, 0.22),
+      inset 0 0 0 3px rgba(207, 167, 91, 0.06);
+  }
+
+  /* 内嵌木刻匾额（标题横匾） */
+  .urushi-plaque {
+    position: relative;
+    background-image:
+      var(--tex-washi-grain),
+      linear-gradient(180deg, #2b2126 0%, #1a1419 100%);
+    border: 1px solid rgba(207, 167, 91, 0.45);
+    box-shadow:
+      inset 0 1px 0 rgba(245, 223, 158, 0.2),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.65),
+      0 3px 10px rgba(0, 0, 0, 0.45);
+  }
+
+  /* 内凹烟染和纸槽（用于特技坞、技能树、装备室、纸页衬底） */
+  .washi-recess {
+    position: relative;
+    background-color: var(--urushi-recess);
+    background-image:
+      var(--tex-washi-grain),
+      var(--tex-lattice),
+      linear-gradient(180deg, rgba(16, 12, 17, 0.94) 0%, rgba(11, 8, 13, 0.97) 100%);
+    border: 1px solid rgba(153, 118, 58, 0.4);
+    box-shadow:
+      inset 0 2px 10px rgba(0, 0, 0, 0.72),
+      inset 0 0 0 1px rgba(0, 0, 0, 0.5),
+      0 1px 0 rgba(245, 223, 158, 0.1);
+  }
+
+  /* HoMM4 雕版黄铜统一数表（告别零散圆角卡片，改为 1px 黄铜分隔线的连体铭文盘！） */
+  .brass-ledger {
+    background-color: rgba(153, 118, 58, 0.44);
+    border: 1px solid var(--gold-antique);
+    box-shadow:
+      inset 0 0 0 1px rgba(0, 0, 0, 0.55),
+      0 4px 14px rgba(0, 0, 0, 0.5);
+  }
+
+  .brass-ledger-cell {
+    background-image:
+      var(--tex-washi-grain),
+      linear-gradient(180deg, #1d171f 0%, #120e14 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(245, 223, 158, 0.08),
+      inset 0 -2px 6px rgba(0, 0, 0, 0.55);
+    transition: background-color 0.12s ease, box-shadow 0.12s ease;
+  }
+
+  .brass-ledger-cell:hover {
+    background-image:
+      var(--tex-washi-grain),
+      linear-gradient(180deg, #2d232b 0%, #1b141c 100%);
+    box-shadow:
+      inset 0 0 0 1px rgba(245, 223, 158, 0.65),
+      inset 0 0 12px rgba(207, 167, 91, 0.18);
+  }
+
+  /* 切角漆木挂轴右侧栏 */
+  .shrine-scroll-pillar {
+    background-color: #120e13;
+    background-image:
+      var(--tex-washi-grain),
+      var(--tex-asanoha),
+      linear-gradient(90deg, #1d161c 0%, #130f15 24%, #110d13 78%, #0a080c 100%);
+    border-left: 2px solid var(--gold-antique);
+    box-shadow:
+      inset 1px 0 0 rgba(245, 223, 158, 0.32),
+      inset 5px 0 0 rgba(10, 8, 12, 0.7),
+      inset 6px 0 0 rgba(207, 167, 91, 0.2),
+      inset -3px 0 8px rgba(0, 0, 0, 0.75),
+      -10px 0 28px rgba(0, 0, 0, 0.75);
+  }
+
+  /* 切角黄铜嵌木指令匾（侧栏按键） */
+  .lacquer-plaque-btn {
+    position: relative;
+    background-image:
+      var(--tex-washi-grain),
+      linear-gradient(180deg, #2a2127 0%, #181218 55%, #120e13 100%);
+    border: 1px solid rgba(180, 141, 74, 0.56);
+    clip-path: polygon(
+      5px 0,
+      calc(100% - 5px) 0,
+      100% 5px,
+      100% calc(100% - 5px),
+      calc(100% - 5px) 100%,
+      5px 100%,
+      0 calc(100% - 5px),
+      0 5px
+    );
+    box-shadow:
+      inset 0 1px 0 rgba(245, 223, 158, 0.24),
+      inset 0 -2px 4px rgba(0, 0, 0, 0.65);
+    transition: transform 0.12s ease, filter 0.14s ease, border-color 0.14s ease;
+  }
+
+  .lacquer-plaque-btn:hover:not(:disabled) {
+    border-color: var(--gold-bright);
+    background-image:
+      var(--tex-washi-grain),
+      linear-gradient(180deg, #3b2d34 0%, #241b22 100%);
+    filter: drop-shadow(0 0 6px rgba(245, 223, 158, 0.22));
+  }
+
+  .lacquer-plaque-btn:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  .lacquer-plaque-btn-active {
+    border-color: var(--gold-bright);
+    background-image:
+      var(--tex-washi-grain),
+      linear-gradient(180deg, #571d29 0%, #2d121a 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 224, 160, 0.42),
+      inset 0 0 14px rgba(224, 75, 90, 0.34);
+  }
+
+  /* 八咫铜镜/结界圆框（立绘专用嵌套双环雕框） */
+  .sacred-mirror-frame {
+    position: relative;
+    background: radial-gradient(circle at 50% 38%, #28202c 0%, #0d0a10 82%);
+    border: 2px solid var(--gold-main);
+    box-shadow:
+      0 0 0 1px #060508,
+      0 0 0 3px #3c2b16,
+      0 0 0 4px rgba(207, 167, 91, 0.35),
+      inset 0 0 14px rgba(0, 0, 0, 0.85);
+  }
+
+  /* 切角七宝烧珐琅徽章（单位特技、状态、法术封印） */
+  .enamel-crest {
+    position: relative;
+    clip-path: polygon(
+      4px 0,
+      calc(100% - 4px) 0,
+      100% 4px,
+      100% calc(100% - 4px),
+      calc(100% - 4px) 100%,
+      4px 100%,
+      0 calc(100% - 4px),
+      0 4px
+    );
+    box-shadow:
+      inset 0 1px 0 rgba(255, 244, 212, 0.2),
+      inset 0 -2px 5px rgba(0, 0, 0, 0.62);
+  }
+
+  /* 正统和风落款朱印（Hanko Seal Stamp） */
+  .th-hanko {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "STZhongsong", "Songti SC", "SimSun", serif;
+    font-weight: 900;
+    line-height: 1;
+    color: #f8e9dd;
+    background: linear-gradient(180deg, #b82938 0%, #871c28 100%);
+    border: 1px solid #f07b82;
+    box-shadow:
+      inset 0 0 0 1px rgba(72, 10, 18, 0.65),
+      0 2px 6px rgba(0, 0, 0, 0.55);
+    letter-spacing: 0.05em;
+  }
+
+  .th-hanko-outline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "STZhongsong", "Songti SC", "SimSun", serif;
+    font-weight: 800;
+    line-height: 1;
+    color: #eb6370;
+    background: rgba(135, 28, 40, 0.14);
+    border: 1.5px solid rgba(212, 68, 82, 0.78);
+    box-shadow: inset 0 0 0 1px rgba(212, 68, 82, 0.22);
+  }
+
+  /* HoMM4 经典翡翠玉玺确认键 */
+  .jade-seal-btn {
+    position: relative;
+    background-image:
+      var(--tex-washi-grain),
+      linear-gradient(180deg, var(--jade-top) 0%, var(--jade-bot) 100%);
+    border: 1.5px solid var(--gold-main);
+    clip-path: polygon(
+      6px 0,
+      calc(100% - 6px) 0,
+      100% 6px,
+      100% calc(100% - 6px),
+      calc(100% - 6px) 100%,
+      6px 100%,
+      0 calc(100% - 6px),
+      0 6px
+    );
+    box-shadow:
+      inset 0 1px 0 rgba(176, 255, 222, 0.36),
+      inset 0 -2px 5px rgba(0, 0, 0, 0.55);
+    transition: filter 0.14s ease, transform 0.12s ease;
+  }
+
+  .jade-seal-btn:hover {
+    filter: brightness(1.16) drop-shadow(0 0 8px rgba(100, 224, 168, 0.32));
+  }
+
+  .jade-seal-btn:active {
+    transform: translateY(1px);
+  }
+
+  /* 古典黄铜/朱漆按钮 */
+  .brass-action-btn {
+    position: relative;
+    background-image:
+      var(--tex-washi-grain),
+      linear-gradient(180deg, #332629 0%, #1d1519 100%);
+    border: 1px solid rgba(207, 167, 91, 0.52);
+    color: var(--ink-ivory);
+    box-shadow:
+      inset 0 1px 0 rgba(245, 223, 158, 0.22),
+      0 2px 6px rgba(0, 0, 0, 0.5);
+    transition: border-color 0.14s ease, background-color 0.14s ease, filter 0.14s ease;
+  }
+
+  .brass-action-btn:hover:not(:disabled) {
+    border-color: var(--gold-bright);
+    filter: brightness(1.15);
+  }
+
+  /* ==================== 和风线装魔导折本专用纸页与装订书脊 ==================== */
+
+  .grimoire-cover {
+    background-color: #161014;
+    background-image:
+      var(--tex-washi-grain),
+      var(--tex-asanoha),
+      linear-gradient(135deg, #271b22 0%, #161015 48%, #21161c 100%);
+    border: 2px solid var(--gold-antique);
+    box-shadow:
+      0 0 0 1px #050407,
+      0 0 0 4px #2a1d12,
+      0 0 0 5px rgba(207, 167, 91, 0.35),
+      0 32px 80px rgba(0, 0, 0, 0.9),
+      inset 0 1px 0 rgba(245, 223, 158, 0.3);
+  }
+
+  .grimoire-page-left {
+    background-color: #20191a;
+    background-image:
+      var(--tex-washi-grain),
+      linear-gradient(90deg, #171214 0%, #231b1c 7%, #251d1e 86%, #140f12 100%);
+    border-top: 1px solid rgba(207, 167, 91, 0.34);
+    border-bottom: 1px solid rgba(207, 167, 91, 0.34);
+    border-left: 3px double rgba(207, 167, 91, 0.42);
+    box-shadow:
+      inset -14px 0 22px rgba(0, 0, 0, 0.62),
+      inset 4px 0 0 rgba(243, 234, 216, 0.05);
+  }
+
+  .grimoire-page-right {
+    background-color: #20191a;
+    background-image:
+      var(--tex-washi-grain),
+      linear-gradient(90deg, #130e11 0%, #241c1d 11%, #231b1c 93%, #171214 100%);
+    border-top: 1px solid rgba(207, 167, 91, 0.34);
+    border-bottom: 1px solid rgba(207, 167, 91, 0.34);
+    border-right: 3px double rgba(207, 167, 91, 0.42);
+    box-shadow:
+      inset 14px 0 22px rgba(0, 0, 0, 0.62),
+      inset -4px 0 0 rgba(243, 234, 216, 0.05);
+  }
+
+  /* 书签丝带（燕尾裁切） */
+  .silk-bookmark {
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 6px), 50% 100%, 0 calc(100% - 6px));
+    box-shadow:
+      0 4px 10px rgba(0, 0, 0, 0.55),
+      inset 0 1px 0 rgba(255, 245, 214, 0.32);
+    transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1), filter 0.15s ease;
+  }
+}
+
+/* 精致黄铜墨漆滚动条 */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(11, 8, 13, 0.8);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(153, 118, 58, 0.55);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(207, 167, 91, 0.85);
+}
+
+/* 微幅呼吸微光（仅用于充能满格符卡与当前行动者） */
+@keyframes makie-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px #060508,
+      0 0 12px rgba(240, 195, 74, 0.32),
+      inset 0 0 10px rgba(224, 75, 90, 0.22);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px #060508,
+      0 0 22px rgba(245, 223, 158, 0.58),
+      inset 0 0 16px rgba(224, 75, 90, 0.38);
+  }
+}
+
+.animate-makie-ready {
+  animation: makie-pulse 2.2s ease-in-out infinite;
+}

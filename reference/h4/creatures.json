@@ -1,0 +1,3381 @@
+[
+  {
+    "id": "squire",
+    "name": "Squire",
+    "wikiTitle": "Squire (H4)",
+    "alignment": "Life",
+    "alignmentZh": "生命（圣堂 Haven）",
+    "faction": "Haven",
+    "isTownUnit": true,
+    "tier": 1,
+    "dwelling": "Squire's guild",
+    "stats": {
+      "hp": 10,
+      "damageMin": 2,
+      "damageMax": 3,
+      "meleeAttack": 9,
+      "meleeDefense": 11,
+      "rangedAttack": null,
+      "rangedDefense": 11,
+      "ammo": null,
+      "speed": 5,
+      "movement": 19,
+      "spellPoints": null,
+      "growth": 21,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 26,
+      "rareResources": {},
+      "raw": "26 gold"
+    },
+    "abilities": [
+      {
+        "name": "Stun",
+        "description": "This creature's Stun ability gives it a chance of stunning enemies when it attacks in melee combat. Stunned enemies cannot take any action or retaliate for one turn."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The squire is a level-one creature of the Haven in Heroes of Might and Magic IV.\n\nSquires use flails that have a chance of stunning an opponent for one turn. The chance of stunning depends on the damage done and the health of the target."
+  },
+  {
+    "id": "crossbowman",
+    "name": "Crossbowman",
+    "wikiTitle": "Crossbowman (H4)",
+    "alignment": "Life",
+    "alignmentZh": "生命（圣堂 Haven）",
+    "faction": "Haven",
+    "isTownUnit": true,
+    "tier": 1,
+    "dwelling": "Archery range",
+    "stats": {
+      "hp": 10,
+      "damageMin": 2,
+      "damageMax": 3,
+      "meleeAttack": 4,
+      "meleeDefense": 11,
+      "rangedAttack": 9,
+      "rangedDefense": 11,
+      "ammo": 10,
+      "speed": 2,
+      "movement": 19,
+      "spellPoints": null,
+      "growth": 16,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 32,
+      "rareResources": {},
+      "raw": "32 gold"
+    },
+    "abilities": [
+      {
+        "name": "Ranged",
+        "description": "The Ranged ability allows this creature to attack enemies at a distance, but in melee combat this creature does half damage unless it has the Normal Melee ability."
+      },
+      {
+        "name": "Long Range",
+        "description": "Long Range allows this creature to ignore all ranged attack damage penalties for distance."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The crossbowman is a level-one creature from the Haven town in Heroes of Might and Magic IV.\n\nThe crossbowman's powerful weapon does full damage at any range."
+  },
+  {
+    "id": "pikeman",
+    "name": "Pikeman",
+    "wikiTitle": "Pikeman (H4)",
+    "alignment": "Life",
+    "alignmentZh": "生命（圣堂 Haven）",
+    "faction": "Haven",
+    "isTownUnit": true,
+    "tier": 2,
+    "dwelling": "Guardhouse",
+    "stats": {
+      "hp": 30,
+      "damageMin": 6,
+      "damageMax": 8,
+      "meleeAttack": 12,
+      "meleeDefense": 14,
+      "rangedAttack": null,
+      "rangedDefense": 14,
+      "ammo": null,
+      "speed": 4,
+      "movement": 19,
+      "spellPoints": null,
+      "growth": 9,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 150,
+      "rareResources": {},
+      "raw": "150 gold"
+    },
+    "abilities": [
+      {
+        "name": "Long Weapon",
+        "description": "Long Weapon allows this creature to attack enemies that are at a short distance out of reach of normal melee attacks."
+      },
+      {
+        "name": "Negate First Strike",
+        "description": "Negate First Strike allows this creature to counter First Strike abilities or spells."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The pikeman is a level-two creature from the Haven town in Heroes of Might and Magic IV.\n\nPikemen are masters of the pike, which gives their attack a great reach than most of their opponents. They are also immune to the First Strike ability."
+  },
+  {
+    "id": "ballista",
+    "name": "Ballista",
+    "wikiTitle": "Ballista (H4)",
+    "alignment": "Life",
+    "alignmentZh": "生命（圣堂 Haven）",
+    "faction": "Haven",
+    "isTownUnit": true,
+    "tier": 2,
+    "dwelling": "Ballista works",
+    "stats": {
+      "hp": 28,
+      "damageMin": 5,
+      "damageMax": 7,
+      "meleeAttack": 8,
+      "meleeDefense": 16,
+      "rangedAttack": 15,
+      "rangedDefense": 16,
+      "ammo": 20,
+      "speed": 0,
+      "movement": 15,
+      "spellPoints": null,
+      "growth": 7,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 190,
+      "rareResources": {},
+      "raw": "190 gold"
+    },
+    "abilities": [
+      {
+        "name": "Ranged",
+        "description": "Ranged ability allows this creature to attack enemies at a distance, but in melee combat this creature does half damage unless it has the Normal Melee ability."
+      },
+      {
+        "name": "Mechanical",
+        "description": "Mechanical creatures are not affected by morale, or by spells or abilities that only work on living creatures."
+      },
+      {
+        "name": "Long Range",
+        "description": "Long Range allows this creature to ignore all ranged attack damage penalties for distance."
+      },
+      {
+        "name": "No Obstacle Penalty",
+        "description": "No Obstacle Penalty allows this creature to do full damage to targets behind castle walls and other obstacles."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The ballista is a level-two creature from the Haven town in Heroes of Might and Magic IV.\n\nBallistae are complicated mechanical units capable of firing a bolt over great distances. They can do full damage at any range, even behind obstacles and castle walls."
+  },
+  {
+    "id": "crusader",
+    "name": "Crusader",
+    "wikiTitle": "Crusader (H4)",
+    "alignment": "Life",
+    "alignmentZh": "生命（圣堂 Haven）",
+    "faction": "Haven",
+    "isTownUnit": true,
+    "tier": 3,
+    "dwelling": "Barracks",
+    "stats": {
+      "hp": 65,
+      "damageMin": 10,
+      "damageMax": 16,
+      "meleeAttack": 22,
+      "meleeDefense": 23,
+      "rangedAttack": null,
+      "rangedDefense": 23,
+      "ammo": null,
+      "speed": 7,
+      "movement": 19,
+      "spellPoints": null,
+      "growth": 5,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 650,
+      "rareResources": {},
+      "raw": "650 gold"
+    },
+    "abilities": [
+      {
+        "name": "Two Attacks",
+        "description": "Two Attacks allows this creature to attack twice in melee combat. The second attack occurs after the enemy's retaliation."
+      },
+      {
+        "name": "Death Ward",
+        "description": "Death Ward makes this creature 50% resistant to Death spells, and its Melee and Ranged Defense is increased by 50% against Death-aligned opponents."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The crusader is a third-level creature from the Haven town in Heroes of Might and Magic IV. Monks have 50% magic resistance to Death spells.\n\nCrusaders are fervent warriors, experts with the sword who can attack twice a turn. They are also resistant to Death Magic spells and take less damage from Death-aligned opponents."
+  },
+  {
+    "id": "monk",
+    "name": "Monk",
+    "wikiTitle": "Monk (H4)",
+    "alignment": "Life",
+    "alignmentZh": "生命（圣堂 Haven）",
+    "faction": "Haven",
+    "isTownUnit": true,
+    "tier": 3,
+    "dwelling": "Monastery",
+    "stats": {
+      "hp": 55,
+      "damageMin": 10,
+      "damageMax": 15,
+      "meleeAttack": 10,
+      "meleeDefense": 22,
+      "rangedAttack": 20,
+      "rangedDefense": 22,
+      "ammo": 12,
+      "speed": 5,
+      "movement": 19,
+      "spellPoints": null,
+      "growth": 6,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 550,
+      "rareResources": {},
+      "raw": "550 gold"
+    },
+    "abilities": [
+      {
+        "name": "Ranged",
+        "description": "Ranged ability allows this creature to attack enemies at a distance, but in melee combat this creature does half damage unless it has the Normal Melee ability."
+      },
+      {
+        "name": "Death Ward",
+        "description": "Death Ward makes this creature 50% resistant to Death spells, and its Melee and Ranged Defense is increased by 50% against Death-aligned opponents."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The monk is a third-level creature from the Haven town in Heroes of Might and Magic IV. Monks have 50% magic resistance to Death spells.\n\nMonks are resistant to Death Magic spells and take less damage from Death-aligned opponents."
+  },
+  {
+    "id": "champion",
+    "name": "Champion",
+    "wikiTitle": "Champion (H4)",
+    "alignment": "Life",
+    "alignmentZh": "生命（圣堂 Haven）",
+    "faction": "Haven",
+    "isTownUnit": true,
+    "tier": 4,
+    "dwelling": "Knight's chapter",
+    "stats": {
+      "hp": 150,
+      "damageMin": 24,
+      "damageMax": 36,
+      "meleeAttack": 25,
+      "meleeDefense": 25,
+      "rangedAttack": null,
+      "rangedDefense": 25,
+      "ammo": null,
+      "speed": 6,
+      "movement": 25,
+      "spellPoints": null,
+      "growth": 4,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 2000,
+      "rareResources": {
+        "wood": 2,
+        "ore": 2
+      },
+      "raw": "2000 gold / 2 wood / 2 ore"
+    },
+    "abilities": [
+      {
+        "name": "First Strike",
+        "description": "First Strike allows this creature to strike an opponent in melee combat before it can retaliate."
+      },
+      {
+        "name": "Charge",
+        "description": "Charge allows this creature to do more damage after it charges for a long distance before attacking."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The champion is a fourth-level creature from the Haven town in Heroes of Might and Magic IV.\n\nChampions can strike before their enemy can retaliate. And they do more damage when they charge over long distances to attack."
+  },
+  {
+    "id": "angel",
+    "name": "Angel",
+    "wikiTitle": "Angel (H4)",
+    "alignment": "Life",
+    "alignmentZh": "生命（圣堂 Haven）",
+    "faction": "Haven",
+    "isTownUnit": true,
+    "tier": 4,
+    "dwelling": "Altar of light",
+    "stats": {
+      "hp": 230,
+      "damageMin": 40,
+      "damageMax": 65,
+      "meleeAttack": 30,
+      "meleeDefense": 34,
+      "rangedAttack": null,
+      "rangedDefense": 34,
+      "ammo": null,
+      "speed": 10,
+      "movement": 30,
+      "spellPoints": 20,
+      "growth": 2,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 4000,
+      "rareResources": {
+        "crystal": 2
+      },
+      "raw": "4000 gold / 2 crystal"
+    },
+    "abilities": [
+      {
+        "name": "Flying",
+        "description": "Flying allows this creature to fly over obstacles, creatures, heroes, and castle walls."
+      },
+      {
+        "name": "Resurrection",
+        "description": "Resurrection ability allows it to target friendly dead creatures and bring them back to life."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The angel is a fourth-level creature from the Haven town in Heroes of Might and Magic IV.\n\nAngels can resurrect friendly targets who have died in combat, but only those who were living before they were killed."
+  },
+  {
+    "id": "peasant",
+    "name": "Peasant",
+    "wikiTitle": "Peasant (H4)",
+    "alignment": "Life",
+    "alignmentZh": "生命（圣堂 Haven）",
+    "faction": "Haven",
+    "isTownUnit": false,
+    "tier": 1,
+    "dwelling": "Hovel",
+    "stats": {
+      "hp": 10,
+      "damageMin": 2,
+      "damageMax": 3,
+      "meleeAttack": 6,
+      "meleeDefense": 7,
+      "rangedAttack": null,
+      "rangedDefense": 7,
+      "ammo": null,
+      "speed": 2,
+      "movement": 18,
+      "spellPoints": null,
+      "growth": 36,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 15,
+      "rareResources": {},
+      "raw": "15 gold"
+    },
+    "abilities": [
+      {
+        "name": "Taxpayer",
+        "description": "Taxpayer allows this creature to generate 1 gold per day for every individual unit the player controls."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The peasant is a first-level creature, connected to the Haven in Heroes of Might and Magic IV. It is found at the hovel.\n\nThe peasant is the backbone of society. Each peasant raises 1 gold per day in taxes for their lords."
+  },
+  {
+    "id": "catapult",
+    "name": "Catapult",
+    "wikiTitle": "Catapult (H4)",
+    "alignment": "Life",
+    "alignmentZh": "生命（圣堂 Haven）",
+    "faction": "Haven",
+    "isTownUnit": false,
+    "tier": 4,
+    "dwelling": "Siege workshop",
+    "stats": {
+      "hp": 200,
+      "damageMin": 20,
+      "damageMax": 34,
+      "meleeAttack": 14,
+      "meleeDefense": 28,
+      "rangedAttack": 28,
+      "rangedDefense": 28,
+      "ammo": 12,
+      "speed": 0,
+      "movement": 17,
+      "spellPoints": null,
+      "growth": 3,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 3000,
+      "rareResources": {
+        "wood": 6,
+        "ore": 2
+      },
+      "raw": "3000 gold / 6 wood / 2 ore"
+    },
+    "abilities": [
+      {
+        "name": "Ranged",
+        "description": "Ranged ability allows this creature to attack enemies at a distance, but in melee combat this creature does half damage unless it has the Normal Melee ability."
+      },
+      {
+        "name": "Mechanical",
+        "description": "Mechanical creatures are not affected by morale, or by spells or abilities that only work on living creatures."
+      },
+      {
+        "name": "Siege Capable",
+        "description": "This creature ignores all ranged attack damage penalties for distance and does full damage to targets behind castle walls and other obstacles."
+      },
+      {
+        "name": "Greek Fire",
+        "description": "This creature's Area Attack allows its ranged attacks to strike all targets, friendly or hostile near the target, with deadly fire."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The catapult is a fourth-level creature, connected to the Haven in Heroes of Might and Magic IV: Winds of War. It is found at the siege workshop.\n\nThe newest incarnation of the catapult is an engineering marvel, able to deliver its fiery gifts of warfare to even the most hidden of its foes."
+  },
+  {
+    "id": "dwarf",
+    "name": "Dwarf",
+    "wikiTitle": "Dwarf (H4)",
+    "alignment": "Order",
+    "alignmentZh": "秩序（学院 Academy）",
+    "faction": "Academy",
+    "isTownUnit": true,
+    "tier": 1,
+    "dwelling": "Dwarven mines",
+    "stats": {
+      "hp": 12,
+      "damageMin": 2,
+      "damageMax": 3,
+      "meleeAttack": 11,
+      "meleeDefense": 11,
+      "rangedAttack": null,
+      "rangedDefense": 11,
+      "ammo": 0,
+      "speed": 3,
+      "movement": 18,
+      "spellPoints": null,
+      "growth": 18,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 28,
+      "rareResources": {},
+      "raw": "28 gold"
+    },
+    "abilities": [
+      {
+        "name": "Magic Resistance",
+        "description": "The Dwarf is 50% likely to resist offensive spells, and will only take half damage from Direct Damage spells."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The dwarf is a level-one creature of the Academy in Heroes of Might and Magic IV.\n\nDwarves have a 50% chance of resisting any hostile spell, and take half damage from spell attacks."
+  },
+  {
+    "id": "halfling",
+    "name": "Halfling",
+    "wikiTitle": "Halfling (H4)",
+    "alignment": "Order",
+    "alignmentZh": "秩序（学院 Academy）",
+    "faction": "Academy",
+    "isTownUnit": true,
+    "tier": 1,
+    "dwelling": "Halfling burrow",
+    "stats": {
+      "hp": 8,
+      "damageMin": 1,
+      "damageMax": 2,
+      "meleeAttack": 5,
+      "meleeDefense": 10,
+      "rangedAttack": 10,
+      "rangedDefense": 10,
+      "ammo": 10,
+      "speed": 6,
+      "movement": 18,
+      "spellPoints": null,
+      "growth": 23,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 22,
+      "rareResources": {},
+      "raw": "22 gold"
+    },
+    "abilities": [
+      {
+        "name": "Ranged",
+        "description": "The Ranged ability allows this creature to attack enemies at a distance, but in melee combat this creature does half damage unless it has the Normal Melee ability."
+      },
+      {
+        "name": "Giantslayer",
+        "description": "Giantslayer allows this creature to do extra damage to 4th level creatures."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The halfling is a level-one creature of the Academy in Heroes of Might and Magic IV.\n\nHalflings do extra damage against 4th level creatures."
+  },
+  {
+    "id": "gold_golem",
+    "name": "Gold golem",
+    "wikiTitle": "Gold golem (H4)",
+    "alignment": "Order",
+    "alignmentZh": "秩序（学院 Academy）",
+    "faction": "Academy",
+    "isTownUnit": true,
+    "tier": 2,
+    "dwelling": "Golem factory",
+    "stats": {
+      "hp": 50,
+      "damageMin": 8,
+      "damageMax": 12,
+      "meleeAttack": 16,
+      "meleeDefense": 16,
+      "rangedAttack": null,
+      "rangedDefense": 16,
+      "ammo": null,
+      "speed": 3,
+      "movement": 19,
+      "spellPoints": null,
+      "growth": 6,
+      "experience": null,
+      "size": "Small"
+    },
+    "cost": {
+      "gold": 240,
+      "rareResources": {},
+      "raw": "240 gold"
+    },
+    "abilities": [
+      {
+        "name": "Magic Resistance",
+        "description": "The gold golem will resist 75% of the offensive spells targetting him. Likewise, he will only take 1/4 damage from direct damage spells cast his way."
+      },
+      {
+        "name": "Mechanical",
+        "description": "Mechanical creatures are not affected by morale, or by spells or abilities that only work on living creatures."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The gold golem is a second-level creature of the Academy in Heroes of Might and Magic IV.\n\nGold golems have a 75% chance of resisting any hostile spell, and take only 25% of damage from spell attacks."
+  },
+  {
+    "id": "mage",
+    "name": "Mage",
+    "wikiTitle": "Mage (H4)",
+    "alignment": "Order",
+    "alignmentZh": "秩序（学院 Academy）",
+    "faction": "Academy",
+    "isTownUnit": true,
+    "tier": 2,
+    "dwelling": "Mage tower",
+    "stats": {
+      "hp": 16,
+      "damageMin": 3,
+      "damageMax": 4,
+      "meleeAttack": 6,
+      "meleeDefense": 12,
+      "rangedAttack": null,
+      "rangedDefense": 12,
+      "ammo": null,
+      "speed": 5,
+      "movement": 19,
+      "spellPoints": 16,
+      "growth": 8,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 160,
+      "rareResources": {},
+      "raw": "160 gold"
+    },
+    "abilities": [
+      {
+        "name": "Spellcaster",
+        "description": "Mages can cast Blur, Magic Fist, Curse, Poison, and Raise skeletons. Each mage does 4.8 points of damage with Magic Fist, 2.4 points of Poison damage, and can raise 1.6 Skeletons. Each stack will start combat with 18 spell points."
+      }
+    ],
+    "castableSpells": [
+      "Blur",
+      "Curse",
+      "Magic Fist",
+      "Poison",
+      "Raise Skeletons"
+    ],
+    "summary": "The mage is a second-level creature of the Academy in Heroes of Might and Magic IV.\n\nThe mage can cast the following spells: Blur, Curse, Magic Fist, Poison, and Raise Skeletons."
+  },
+  {
+    "id": "naga",
+    "name": "Naga",
+    "wikiTitle": "Naga (H4)",
+    "alignment": "Order",
+    "alignmentZh": "秩序（学院 Academy）",
+    "faction": "Academy",
+    "isTownUnit": true,
+    "tier": 3,
+    "dwelling": "Golden pavilion",
+    "stats": {
+      "hp": 90,
+      "damageMin": 14,
+      "damageMax": 22,
+      "meleeAttack": 22,
+      "meleeDefense": 22,
+      "rangedAttack": null,
+      "rangedDefense": 22,
+      "ammo": null,
+      "speed": 7,
+      "movement": 20,
+      "spellPoints": null,
+      "growth": 4,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 850,
+      "rareResources": {},
+      "raw": "850 gold"
+    },
+    "abilities": [
+      {
+        "name": "No Retaliation",
+        "description": "This creature's No Retaliation ability allows it to attack without any chance of retaliation."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The naga is a third-level creature of the Academy in Heroes of Might and Magic IV.\n\nThe many-armed naga has a distinct advantage over other creatures, allowing them to attack with no fear of retaliation."
+  },
+  {
+    "id": "genie",
+    "name": "Genie",
+    "wikiTitle": "Genie (H4)",
+    "alignment": "Order",
+    "alignmentZh": "秩序（学院 Academy）",
+    "faction": "Academy",
+    "isTownUnit": true,
+    "tier": 3,
+    "dwelling": "Altar of wishes",
+    "stats": {
+      "hp": 60,
+      "damageMin": 9,
+      "damageMax": 12,
+      "meleeAttack": 10,
+      "meleeDefense": 18,
+      "rangedAttack": null,
+      "rangedDefense": 18,
+      "ammo": 0,
+      "speed": 6,
+      "movement": 25,
+      "spellPoints": 24,
+      "growth": 6,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 550,
+      "rareResources": {},
+      "raw": "550 gold"
+    },
+    "abilities": [
+      {
+        "name": "Spellcaster",
+        "description": "The Genie has access to Cowardice, Create illusion, Slow, Mirth, Song of Peace and Ice Bolt. Each genie does 15.2 points of damage with Ice Bolt, and can create 15.2 hit points of illusions."
+      }
+    ],
+    "castableSpells": [
+      "Cowardice",
+      "Create Illusion",
+      "Ice Bolt",
+      "Mirth",
+      "Slow",
+      "Song of Peace"
+    ],
+    "summary": "The Genie is a third-level creature of the Academy in Heroes of Might and Magic IV.\n\nGenies can cast the following spells: Cowardice, Create Illusion, Ice Bolt, Mirth, Slow, and Song of Peace."
+  },
+  {
+    "id": "dragon_golem",
+    "name": "Dragon golem",
+    "wikiTitle": "Dragon golem (H4)",
+    "alignment": "Order",
+    "alignmentZh": "秩序（学院 Academy）",
+    "faction": "Academy",
+    "isTownUnit": true,
+    "tier": 4,
+    "dwelling": "Dragon factory",
+    "stats": {
+      "hp": 220,
+      "damageMin": 36,
+      "damageMax": 55,
+      "meleeAttack": 34,
+      "meleeDefense": 34,
+      "rangedAttack": null,
+      "rangedDefense": 34,
+      "ammo": null,
+      "speed": 9,
+      "movement": 27,
+      "spellPoints": null,
+      "growth": 2,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 4000,
+      "rareResources": {
+        "ore": 4
+      },
+      "raw": "4000 gold / 4 ore"
+    },
+    "abilities": [
+      {
+        "name": "First Strike",
+        "description": "First strike allows this creature to strike an opponent in melee combat before it can retaliate."
+      },
+      {
+        "name": "Negate First Strike",
+        "description": "Negate First strike allows this creature to counter First strike abilities or spells."
+      },
+      {
+        "name": "Mechanical",
+        "description": "Mechanical creatures are not affected by morale, or by spells or abilities that only work on living creatures."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The dragon golem is a fourth-level creature of the Academy in Heroes of Might and Magic IV.\n\nThe reflexes of a dragon golem are tuned so tightly that their lightning fast attacks strikes before even the quickest enemy. They are built and manned by the mysterious, mechanically-minded Red Dwarves."
+  },
+  {
+    "id": "titan",
+    "name": "Titan",
+    "wikiTitle": "Titan (H4)",
+    "alignment": "Order",
+    "alignmentZh": "秩序（学院 Academy）",
+    "faction": "Academy",
+    "isTownUnit": true,
+    "tier": 4,
+    "dwelling": "Cloud castle",
+    "stats": {
+      "hp": 210,
+      "damageMin": 34,
+      "damageMax": 50,
+      "meleeAttack": 32,
+      "meleeDefense": 32,
+      "rangedAttack": 32,
+      "rangedDefense": 32,
+      "ammo": 16,
+      "speed": 6,
+      "movement": 21,
+      "spellPoints": null,
+      "growth": 2,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 4000,
+      "rareResources": {
+        "gems": 2
+      },
+      "raw": "4000 gold / 2 gems"
+    },
+    "abilities": [
+      {
+        "name": "Chaos Ward",
+        "description": "Chaos Ward makes this creature 50% resistant to Chaos spells, and its Melee and Ranged Defense is increased by 50% against Chaos-aligned opponents."
+      },
+      {
+        "name": "Ranged",
+        "description": "The Ranged ability allows this creature to attack enemies at a distance, but in melee combat this creature does half damage unless it has the Normal Melee ability."
+      },
+      {
+        "name": "Normal Melee",
+        "description": "This creature's Normal Melee means it doesn't suffer the melee combat damage penalty suffered by most ranged creatures."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The titan is a fourth-level creature of the Academy in Heroes of Might and Magic IV.\n\nUnlike most ranged creatures, titans do full damage to adjacent targets. They are also resistant to Chaos Magic spells and take less damage from Chaos-aligned opponents."
+  },
+  {
+    "id": "evil_sorceress",
+    "name": "Evil sorceress",
+    "wikiTitle": "Evil sorceress",
+    "alignment": "Order",
+    "alignmentZh": "秩序（学院 Academy）",
+    "faction": "Academy",
+    "isTownUnit": false,
+    "tier": 4,
+    "dwelling": "Ward of Sorcery",
+    "stats": {
+      "hp": 100,
+      "damageMin": 20,
+      "damageMax": 34,
+      "meleeAttack": 28,
+      "meleeDefense": 28,
+      "rangedAttack": null,
+      "rangedDefense": 28,
+      "ammo": null,
+      "speed": 7,
+      "movement": 30,
+      "spellPoints": 50,
+      "growth": 2,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 4000,
+      "rareResources": {
+        "mercury": 2
+      },
+      "raw": "4000 gold / 2 mercury"
+    },
+    "abilities": [
+      {
+        "name": "Teleport",
+        "description": "Teleport allows this creature to move instantly to any point on the battlefield."
+      },
+      {
+        "name": "Spellcaster",
+        "description": "Spellcaster allows this creature to cast Banish, Mass cancellation, Implosion, and Mass Slow during combat."
+      },
+      {
+        "name": "Magic Mirror",
+        "description": "This creature's Magic Mirror ability allows it to reflect hostile spells back upon the caster like the Magic Mirror spell."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The evil sorceress is a fourth-level creature, connected to the Academy in Heroes of Might and Magic IV: The Gathering Storm. She is found at the Ward of Sorcery.\n\nThe evil sorceress combines powerful spellcasting with a natural defense against enemy spells and the ability to teleport on the battlefield."
+  },
+  {
+    "id": "skeleton",
+    "name": "Skeleton",
+    "wikiTitle": "Skeleton (H4)",
+    "alignment": "Death",
+    "alignmentZh": "死亡（墓园 Necropolis）",
+    "faction": "Necropolis",
+    "isTownUnit": true,
+    "tier": 1,
+    "dwelling": "Cemetary",
+    "stats": {
+      "hp": 8,
+      "damageMin": 1,
+      "damageMax": 2,
+      "meleeAttack": 12,
+      "meleeDefense": 12,
+      "rangedAttack": null,
+      "rangedDefense": 24,
+      "ammo": null,
+      "speed": 4,
+      "movement": 19,
+      "spellPoints": null,
+      "growth": 25,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 22,
+      "rareResources": {},
+      "raw": "22 gold"
+    },
+    "abilities": [
+      {
+        "name": "Undead",
+        "description": "Undead creatures are not affected by morale, or by spells and abilities that only work on living creatures. Some spells and artifacts (such as Holy Water) have special effects on Undead creatures. Undead creatures, however, give an additional -2 morale penalty to all non-Death creatures."
+      },
+      {
+        "name": "Skeletal",
+        "description": "Skeletal increases this creature's Ranged Defense by 100%."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The skeleton is a level-one creature of the Necropolis in Heroes of Might and Magic IV.\n\nIt is difficult to shoot a creature made up entirely of bone. Hence, the skeleton's improved defense against ranged attacks."
+  },
+  {
+    "id": "imp",
+    "name": "Imp",
+    "wikiTitle": "Imp (H4)",
+    "alignment": "Death",
+    "alignmentZh": "死亡（墓园 Necropolis）",
+    "faction": "Necropolis",
+    "isTownUnit": true,
+    "tier": 1,
+    "dwelling": "Torture chamber",
+    "stats": {
+      "hp": 7,
+      "damageMin": 1,
+      "damageMax": 2,
+      "meleeAttack": 10,
+      "meleeDefense": 10,
+      "rangedAttack": null,
+      "rangedDefense": 10,
+      "ammo": null,
+      "speed": 6,
+      "movement": 28,
+      "spellPoints": null,
+      "growth": 28,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 18,
+      "rareResources": {},
+      "raw": "18 gold"
+    },
+    "abilities": [
+      {
+        "name": "Flying",
+        "description": "Flying allows this creature to fly over obstacles, creatures, heroes, and castle walls."
+      },
+      {
+        "name": "Mana Leech",
+        "description": "Mana Leech allows this creature to drain mana from enemy spellcasters each turn and transfer it to a nearby friendly spellcaster."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The imp is a level-one creature of the Necropolis in Heroes of Might and Magic IV.\n\nImps drain spell points from enemy spellcasters and transfer them to friendly spellcasters."
+  },
+  {
+    "id": "ghost",
+    "name": "Ghost",
+    "wikiTitle": "Ghost (H4)",
+    "alignment": "Death",
+    "alignmentZh": "死亡（墓园 Necropolis）",
+    "faction": "Necropolis",
+    "isTownUnit": true,
+    "tier": 2,
+    "dwelling": "Barrow mound",
+    "stats": {
+      "hp": 15,
+      "damageMin": 2,
+      "damageMax": 4,
+      "meleeAttack": 15,
+      "meleeDefense": 30,
+      "rangedAttack": null,
+      "rangedDefense": 30,
+      "ammo": null,
+      "speed": 6,
+      "movement": 28,
+      "spellPoints": null,
+      "growth": 9,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 140,
+      "rareResources": {},
+      "raw": "140 gold"
+    },
+    "abilities": [
+      {
+        "name": "Flying",
+        "description": "Flying allows this creature to fly over obstacles, creatures, heroes, and castle walls."
+      },
+      {
+        "name": "Undead",
+        "description": "Undead creatures are not affected by morale, or by spells and abilities that only work on living creatures. Some spells and artifact (such as Holy Water) have special effects on Undead creatures. Undead creatures, however, give an additional -2 morale penalty to all non-Death creatures."
+      },
+      {
+        "name": "Aging",
+        "description": "This creature's attack has a chance of temporarily Aging the enemy. An Aged target has its Attack skill decreased by 25%, its Defense skill decreased by 20%, and its Speed and Movement decreased by 50%."
+      },
+      {
+        "name": "Insubstantial",
+        "description": "Insubstantial increases this creature's Melee and Ranged Defense by 100%."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The ghost is a second-level creature of the Necropolis in Heroes of Might and Magic IV.\n\nThe ethereal ghosts can drain life energy from their opponents, aging their prey in seconds. This causes any target to become slower and weaker in combat."
+  },
+  {
+    "id": "cerberus",
+    "name": "Cerberus",
+    "wikiTitle": "Cerberus (H4)",
+    "alignment": "Death",
+    "alignmentZh": "死亡（墓园 Necropolis）",
+    "faction": "Necropolis",
+    "isTownUnit": true,
+    "tier": 2,
+    "dwelling": "Kennels",
+    "stats": {
+      "hp": 24,
+      "damageMin": 4,
+      "damageMax": 6,
+      "meleeAttack": 16,
+      "meleeDefense": 16,
+      "rangedAttack": null,
+      "rangedDefense": 16,
+      "ammo": null,
+      "speed": 6,
+      "movement": 21,
+      "spellPoints": null,
+      "growth": 7,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 190,
+      "rareResources": {},
+      "raw": "190 gold"
+    },
+    "abilities": [
+      {
+        "name": "No Retaliation",
+        "description": "This creature's No Retaliation ability allows it to attack without any chance of retaliation."
+      },
+      {
+        "name": "3-Headed Attack",
+        "description": "With the 3-Headed Attack all enemies standing to the left, front and right of the creature are attacked simultaneously."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The cerberus is a second-level creature of the Necropolis in Heroes of Might and Magic IV.\n\nThe three-headed cerberi can attack up to 3 adjacent enemies simultaneously. These enemies cannot retaliate against a cerberus attack."
+  },
+  {
+    "id": "vampire",
+    "name": "Vampire",
+    "wikiTitle": "Vampire (H4)",
+    "alignment": "Death",
+    "alignmentZh": "死亡（墓园 Necropolis）",
+    "faction": "Necropolis",
+    "isTownUnit": true,
+    "tier": 3,
+    "dwelling": "Mansion",
+    "stats": {
+      "hp": 75,
+      "damageMin": 12,
+      "damageMax": 18,
+      "meleeAttack": 30,
+      "meleeDefense": 30,
+      "rangedAttack": null,
+      "rangedDefense": 30,
+      "ammo": null,
+      "speed": 6,
+      "movement": 28,
+      "spellPoints": null,
+      "growth": 3,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 1100,
+      "rareResources": {},
+      "raw": "1100 gold"
+    },
+    "abilities": [
+      {
+        "name": "Undead",
+        "description": "Undead creatures are not affected by morale, or by spells and abilities that only work on living creatures. Some spells and artifacts (such as Holy Water) have special effects on Undead creatures. Undead creatures, however, give an additional -2 morale penalty to all non-Death creatures."
+      },
+      {
+        "name": "Flying",
+        "description": "Flying allows this creature to fly over obstacles, creatures, heroes, and castle walls."
+      },
+      {
+        "name": "No Retaliation",
+        "description": "This creature's No Retaliation ability allows it to attack without any chance of retaliation."
+      },
+      {
+        "name": "Life Draining",
+        "description": "This creature's Life Draining attack sucks the life force from its enemies. This life force will heal damage received in combat and even resurrect those who have died."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The vampire is a third-level creature of the Necropolis in Heroes of Might and Magic IV.\n\nVampires regain health when they attack a living opponent. Health gained this way can even resurrect fallen vampires. Their hypnotic presence also prevents their victims from retaliating."
+  },
+  {
+    "id": "venom_spawn",
+    "name": "Venom spawn",
+    "wikiTitle": "Venom spawn",
+    "alignment": "Death",
+    "alignmentZh": "死亡（墓园 Necropolis）",
+    "faction": "Necropolis",
+    "isTownUnit": true,
+    "tier": 3,
+    "dwelling": "Spawning pit",
+    "stats": {
+      "hp": 100,
+      "damageMin": 16,
+      "damageMax": 24,
+      "meleeAttack": 13,
+      "meleeDefense": 26,
+      "rangedAttack": 26,
+      "rangedDefense": 26,
+      "ammo": 15,
+      "speed": 6,
+      "movement": 19,
+      "spellPoints": null,
+      "growth": 3,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 1100,
+      "rareResources": {},
+      "raw": "1100 gold"
+    },
+    "abilities": [
+      {
+        "name": "Ranged",
+        "description": "The Ranged ability allows this creature to attack enemies at a distance, but in melee combat this creature does half damage unless it has the Normal Melee ability."
+      },
+      {
+        "name": "Poison",
+        "description": "This creature's Poison attack damages a target and then do additional damage every turn until combat ends (as long as that target is living)."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The venom spawn is a third-level creature of the Necropolis in Heroes of Might and Magic IV.\n\nThe hideous, malformed venom spawn spits a deadly poison on its enemies before it consumes them."
+  },
+  {
+    "id": "bone_dragon",
+    "name": "Bone dragon",
+    "wikiTitle": "Bone dragon (H4)",
+    "alignment": "Death",
+    "alignmentZh": "死亡（墓园 Necropolis）",
+    "faction": "Necropolis",
+    "isTownUnit": true,
+    "tier": 4,
+    "dwelling": "Dragon graveyard",
+    "stats": {
+      "hp": 275,
+      "damageMin": 45,
+      "damageMax": 65,
+      "meleeAttack": 30,
+      "meleeDefense": 30,
+      "rangedAttack": null,
+      "rangedDefense": 60,
+      "ammo": null,
+      "speed": 5,
+      "movement": 28,
+      "spellPoints": null,
+      "growth": 2,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 4000,
+      "rareResources": {
+        "crystal": 2
+      },
+      "raw": "4000 gold / 2 crystal"
+    },
+    "abilities": [
+      {
+        "name": "Flying",
+        "description": "Flying allows this creature to fly over obstacles, creatures, heroes, and castle walls."
+      },
+      {
+        "name": "Undead",
+        "description": "Undead creatures are not affected by morale, or by spells and abilities that only work on living creatures. Some spells and artifacts (such as Holy Water) have special effects on Undead creatures. Undead creatures, however, give an additional -2 morale penalty to all non-Death creatures."
+      },
+      {
+        "name": "Skeletal",
+        "description": "Skeletal increases this creature's Ranged Defense by 100%."
+      },
+      {
+        "name": "Fear",
+        "description": "Fear prevents the opponent from retaliating. Anyone struck by fear runs away a short distance."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The bone dragon is a fourth-level creature of the Necropolis in Heroes of Might and Magic IV.\n\nWhen a bone dragon attacks, the sight is so fearsome most enemies flee in terror. Also, a bone dragon's skeletal body improves its defense against ranged attacks."
+  },
+  {
+    "id": "devil",
+    "name": "Devil",
+    "wikiTitle": "Devil (H4)",
+    "alignment": "Death",
+    "alignmentZh": "死亡（墓园 Necropolis）",
+    "faction": "Necropolis",
+    "isTownUnit": true,
+    "tier": 4,
+    "dwelling": "Temple of the Damned",
+    "stats": {
+      "hp": 210,
+      "damageMin": 34,
+      "damageMax": 50,
+      "meleeAttack": 33,
+      "meleeDefense": 33,
+      "rangedAttack": null,
+      "rangedDefense": 33,
+      "ammo": null,
+      "speed": 7,
+      "movement": 30,
+      "spellPoints": 8,
+      "growth": 2,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 4000,
+      "rareResources": {
+        "sulfur": 2
+      },
+      "raw": "4000 gold / 2 sulfur"
+    },
+    "abilities": [
+      {
+        "name": "Teleport",
+        "description": "Teleport allows this creature to move instantly to any point on the battlefield."
+      },
+      {
+        "name": "Summon Demons",
+        "description": "Summon Demons allows this creature to summon Ice Demons during combat."
+      },
+      {
+        "name": "Life Ward",
+        "description": "Life Ward makes this creature 50% resistant to Life spells, and its Melee and Ranged Defense is increased by 50% against Life-aligned opponents."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The devil is a fourth-level creature of the Necropolis in Heroes of Might and Magic IV.\n\nDevils can teleport to any location during combat. They are resistant to Life Magic spells and take less damage from Life-aligned opponents. They can also summon ice demons to assist them in battle."
+  },
+  {
+    "id": "zombie",
+    "name": "Zombie",
+    "wikiTitle": "Zombie (H4)",
+    "alignment": "Death",
+    "alignmentZh": "死亡（墓园 Necropolis）",
+    "faction": "Necropolis",
+    "isTownUnit": false,
+    "tier": 1,
+    "dwelling": "Desecrated grave",
+    "stats": {
+      "hp": 24,
+      "damageMin": 2,
+      "damageMax": 4,
+      "meleeAttack": 8,
+      "meleeDefense": 10,
+      "rangedAttack": null,
+      "rangedDefense": 10,
+      "ammo": null,
+      "speed": 1,
+      "movement": 18,
+      "spellPoints": null,
+      "growth": 15,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 35,
+      "rareResources": {},
+      "raw": "35 gold"
+    },
+    "abilities": [
+      {
+        "name": "Undead",
+        "description": "Undead creatures are not affected by morale, or by spells and abilities that only work on living creatures. Some spells and artifacts (such as Holy Water) have special effects on Undead creatures. Undead creatures, however, give an additional -2 morale penalty to all non-Death creatures."
+      },
+      {
+        "name": "Toughness",
+        "description": "Toughness increases this creature's hit points."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The zombie is a first-level creature, connected to the Necropolis in Heroes of Might and Magic IV. It can be purchased at the Desecrated Grave external dwelling.\n\nZombies are remarkably hard to destroy."
+  },
+  {
+    "id": "gargoyle",
+    "name": "Gargoyle",
+    "wikiTitle": "Gargoyle (H4)",
+    "alignment": "Death",
+    "alignmentZh": "死亡（墓园 Necropolis）",
+    "faction": "Necropolis",
+    "isTownUnit": false,
+    "tier": 2,
+    "dwelling": "Parapet",
+    "stats": {
+      "hp": 22,
+      "damageMin": 4,
+      "damageMax": 6,
+      "meleeAttack": 14,
+      "meleeDefense": 16,
+      "rangedAttack": null,
+      "rangedDefense": 16,
+      "ammo": null,
+      "speed": 7,
+      "movement": 29,
+      "spellPoints": null,
+      "growth": 8,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 160,
+      "rareResources": {},
+      "raw": "160 gold"
+    },
+    "abilities": [
+      {
+        "name": "Flying",
+        "description": "Flying allows this creature to fly over obstacles, creatures, heroes, and castle walls."
+      },
+      {
+        "name": "Elemental",
+        "description": "Elementals are immune to certain spells (such as Poison) that only work on normal, living creatures."
+      },
+      {
+        "name": "Stone Skin",
+        "description": "This creature's Stone Skin increases its Melee and Ranged Defense by 25%. The Stoneskin spell has no additional effect."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The gargoyle is a second-level creature, connected to the Necropolis in Heroes of Might and Magic IV. It can be purchased at the parapet external dwelling.\n\nGargoyles have naturally stony skin, which improves their defense. They are also elemental creatures, so spells and abilities which affect living things do not affect them."
+  },
+  {
+    "id": "mummy",
+    "name": "Mummy",
+    "wikiTitle": "Mummy (H4)",
+    "alignment": "Death",
+    "alignmentZh": "死亡（墓园 Necropolis）",
+    "faction": "Necropolis",
+    "isTownUnit": false,
+    "tier": 2,
+    "dwelling": "Embalmer's lab",
+    "stats": {
+      "hp": 30,
+      "damageMin": 5,
+      "damageMax": 8,
+      "meleeAttack": 15,
+      "meleeDefense": 16,
+      "rangedAttack": null,
+      "rangedDefense": 16,
+      "ammo": null,
+      "speed": 4,
+      "movement": 19,
+      "spellPoints": null,
+      "growth": 8,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 170,
+      "rareResources": {},
+      "raw": "170 gold"
+    },
+    "abilities": [
+      {
+        "name": "Undead",
+        "description": "Undead creatures are not affected by morale, or by spells and abilities that only work on living creatures. Some spells and artifacts (such as Holy Water) have special effects on Undead creatures. Undead creatures, however, give an additional -2 morale penalty to all non-Death creatures."
+      },
+      {
+        "name": "Curse",
+        "description": "Curse causes this creature's normal attack to also act as the Death Magic spell Curse."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The mummy is a second-level creature, connected to the Necropolis in Heroes of Might and Magic IV. It can be purchased at the Embalmer's Lab external dwelling.\n\nMummies automatically Curse any enemy they attack."
+  },
+  {
+    "id": "ice_demon",
+    "name": "Ice demon",
+    "wikiTitle": "Ice demon",
+    "alignment": "Death",
+    "alignmentZh": "死亡（墓园 Necropolis）",
+    "faction": "Necropolis",
+    "isTownUnit": false,
+    "tier": 3,
+    "dwelling": "Ice Gate",
+    "stats": {
+      "hp": 70,
+      "damageMin": 12,
+      "damageMax": 16,
+      "meleeAttack": 30,
+      "meleeDefense": 30,
+      "rangedAttack": null,
+      "rangedDefense": 30,
+      "ammo": null,
+      "speed": 5,
+      "movement": 19,
+      "spellPoints": null,
+      "growth": 4,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 850,
+      "rareResources": {},
+      "raw": "850 gold"
+    },
+    "abilities": [
+      {
+        "name": "Freezing Attack",
+        "description": "This creature's Freezing Attack has a chance of freezing an enemy in a block of ice for two turns."
+      },
+      {
+        "name": "Cold Attack",
+        "description": "In combat, this creature's normal attack is a Cold Attack, so targets with Cold Resistance will take less damage."
+      },
+      {
+        "name": "Cold Resistance",
+        "description": "Cold Resistance makes this creature immune to cold-based spells. It also takes half damage from enemies with cold-based attacks."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The ice demon is a third-level creature, connected to the Necropolis in Heroes of Might and Magic IV. It can be purchased at the Ice gate external dwelling.\n\nAn ice demon attack has a chance of freezing an enemy for up to 2 turns. Ice demons are also immune to cold-based spells, and take half damage from cold-based attacks (such as those of water elementals and other ice demons)."
+  },
+  {
+    "id": "dark_champion",
+    "name": "Dark champion",
+    "wikiTitle": "Dark champion",
+    "alignment": "Death",
+    "alignmentZh": "死亡（墓园 Necropolis）",
+    "faction": "Necropolis",
+    "isTownUnit": false,
+    "tier": 4,
+    "dwelling": "Dark knight's sanctum",
+    "stats": {
+      "hp": 200,
+      "damageMin": 30,
+      "damageMax": 42,
+      "meleeAttack": 40,
+      "meleeDefense": 40,
+      "rangedAttack": null,
+      "rangedDefense": 40,
+      "ammo": null,
+      "speed": 6,
+      "movement": 30,
+      "spellPoints": 18,
+      "growth": 2,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 4000,
+      "rareResources": {
+        "ore": 4
+      },
+      "raw": "4000 gold / 4 ore"
+    },
+    "abilities": [
+      {
+        "name": "Charge",
+        "description": "Charge allows this creature to do more damage after it charges for a long distance before attacking."
+      },
+      {
+        "name": "Undead",
+        "description": "Undead creatures are not affected by morale, or by spells and abilities that only work on living creatures. Some spells and artifacts (such as Holy Water) have special effects on Undead creatures. Undead creatures, however, give an additional -2 morale penalty to all non-Death creatures."
+      },
+      {
+        "name": "Terror",
+        "description": "Terror allows this creature to cast Terror on an opponent. Enemies who are frozen by Terror cannot take any actions for one turn."
+      },
+      {
+        "name": "Regeneration",
+        "description": "This creature's Regeneration ability allows it to completely heal all of its wounds at the end of each turn. Regenerates up to 50 hit points per turn."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The dark champion is a fourth-level creature, connected to the Necropolis in Heroes of Might and Magic IV: The Gathering Storm. It can be purchased at the dark knight's sanctum external dwelling.\n\nDark Champions are powerful, twisted undead Paladins. Those facing the charge of a Dark Campion will often flee in terror, while the few remaining to fight discover the wounds inflicted upon a Dark Champion rapidly fade away."
+  },
+  {
+    "id": "bandit",
+    "name": "Bandit",
+    "wikiTitle": "Bandit (H4)",
+    "alignment": "Chaos",
+    "alignmentZh": "混乱（疯人院 Asylum）",
+    "faction": "Asylum",
+    "isTownUnit": true,
+    "tier": 1,
+    "dwelling": "Den of thieves",
+    "stats": {
+      "hp": 10,
+      "damageMin": 1,
+      "damageMax": 3,
+      "meleeAttack": 9,
+      "meleeDefense": 9,
+      "rangedAttack": null,
+      "rangedDefense": 9,
+      "ammo": null,
+      "speed": 7,
+      "movement": 23,
+      "spellPoints": null,
+      "growth": 26,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 20,
+      "rareResources": {},
+      "raw": "20 gold"
+    },
+    "abilities": [
+      {
+        "name": "Stealth",
+        "description": "With Stealth, this creature is invisible at a distance on the Adventure Map to 2nd level creatures and heroes with Basic Scouting. The creature is invisible to adjacent 1st level creatures and heroes with no Scouting."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The bandit is a level 1 creature in the Asylum town in Heroes of Might and Magic IV.\n\nBandits are invisible to 2nd level creatures on the adventure map, and to heroes with Basic Scouting. Bandits are invisible when adjacent to 1st level creatures and heroes with no scouting."
+  },
+  {
+    "id": "orc",
+    "name": "Orc",
+    "wikiTitle": "Orc (H4)",
+    "alignment": "Chaos",
+    "alignmentZh": "混乱（疯人院 Asylum）",
+    "faction": "Asylum",
+    "isTownUnit": true,
+    "tier": 1,
+    "dwelling": "Orc towers",
+    "stats": {
+      "hp": 12,
+      "damageMin": 1,
+      "damageMax": 3,
+      "meleeAttack": 11,
+      "meleeDefense": 9,
+      "rangedAttack": 11,
+      "rangedDefense": 9,
+      "ammo": 6,
+      "speed": 4,
+      "movement": 19,
+      "spellPoints": null,
+      "growth": 16,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 34,
+      "rareResources": {},
+      "raw": "34 gold"
+    },
+    "abilities": [
+      {
+        "name": "Ranged",
+        "description": "The Ranged ability allows this creature to attack enemies at a distance, but in melee combat this creature does half damage unless it has the Normal Melee ability."
+      },
+      {
+        "name": "Normal Melee",
+        "description": "This creature's Normal Melee means it doesn't suffer the melee combat damage penalty suffered by most ranged creatures."
+      },
+      {
+        "name": "Short Range",
+        "description": "Short Range dramatically decreases the damage of this ranged creature's attack at long range."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The orc is a level-one creature from the Asylum town in Heroes of Might and Magic IV.\n\nAn Orc's throwing axe does much damage when thrown for a short distance as it does when used in hand-to-hand. At longer distances, the damage decreases drastically."
+  },
+  {
+    "id": "medusa",
+    "name": "Medusa",
+    "wikiTitle": "Medusa (H4)",
+    "alignment": "Chaos",
+    "alignmentZh": "混乱（疯人院 Asylum）",
+    "faction": "Asylum",
+    "isTownUnit": true,
+    "tier": 2,
+    "dwelling": "Statuary garden",
+    "stats": {
+      "hp": 24,
+      "damageMin": 3,
+      "damageMax": 6,
+      "meleeAttack": 19,
+      "meleeDefense": 17,
+      "rangedAttack": 19,
+      "rangedDefense": 17,
+      "ammo": null,
+      "speed": 5,
+      "movement": 19,
+      "spellPoints": null,
+      "growth": 6,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 220,
+      "rareResources": {},
+      "raw": "220 gold"
+    },
+    "abilities": [
+      {
+        "name": "Ranged",
+        "description": "The Ranged abilityallows this creature to attack enemies at a distance, but in melee combat this creature does half damage unless it has the Normal Melee ability."
+      },
+      {
+        "name": "Normal Melee",
+        "description": "This creature's Normal Melee means it doesn't suffer the melee combat damage penalty suffered by most ranged creatures."
+      },
+      {
+        "name": "Unlimited Shots",
+        "description": "Unlimited Shots assures that this creature never runs out of ammunition when making ranged attacks."
+      },
+      {
+        "name": "Stone Gaze",
+        "description": "This creature's Stone Gaze attack has a chance (depending on the strength of the creature) of killing enemies instantly by turning them into stone. The Stone Gaze damaged is dealt even if the target blocked the normal attack."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The medusa is a second-level creature from the Asylum town in Heroes of Might and Magic IV.\n\nA medusa's gaze has chance of transforming her opponent into stone, instantly killing them. Undead, Mechanical, and Elemental creatures are immune to this ability."
+  },
+  {
+    "id": "minotaur",
+    "name": "Minotaur",
+    "wikiTitle": "Minotaur (H4)",
+    "alignment": "Chaos",
+    "alignmentZh": "混乱（疯人院 Asylum）",
+    "faction": "Asylum",
+    "isTownUnit": true,
+    "tier": 2,
+    "dwelling": "Labyrinth",
+    "stats": {
+      "hp": 38,
+      "damageMin": 5,
+      "damageMax": 6,
+      "meleeAttack": 16,
+      "meleeDefense": 15,
+      "rangedAttack": null,
+      "rangedDefense": 15,
+      "ammo": null,
+      "speed": 6,
+      "movement": 19,
+      "spellPoints": null,
+      "growth": 6,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 230,
+      "rareResources": {},
+      "raw": "230 gold"
+    },
+    "abilities": [
+      {
+        "name": "Block",
+        "description": "Block gives this creature a chance of completely blocking any melee, ranged, or area effect attack. Even if the attack is blocked, the target will receive damage from the Stone Gaze ability."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The minotaur is a second-level creature from the Asylum town in Heroes of Might and Magic IV.\n\nMinotaurs are highly skilled with the battleaxe, giving them a chance of completely deflecting any enemy attack."
+  },
+  {
+    "id": "nightmare",
+    "name": "Nightmare",
+    "wikiTitle": "Nightmare (H4)",
+    "alignment": "Chaos",
+    "alignmentZh": "混乱（疯人院 Asylum）",
+    "faction": "Asylum",
+    "isTownUnit": true,
+    "tier": 3,
+    "dwelling": "Black wood",
+    "stats": {
+      "hp": 110,
+      "damageMin": 12,
+      "damageMax": 26,
+      "meleeAttack": 23,
+      "meleeDefense": 20,
+      "rangedAttack": null,
+      "rangedDefense": 20,
+      "ammo": null,
+      "speed": 6,
+      "movement": 23,
+      "spellPoints": 6,
+      "growth": 4,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 800,
+      "rareResources": {},
+      "raw": "800 gold"
+    },
+    "abilities": [
+      {
+        "name": "Terror",
+        "description": "Terror allows this creature to cast Terror on an opponent. Enemies who are frozen by Terror cannot take any actions for one turn."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The nightmare is a third-level creature from the Asylum town in Heroes of Might and Magic IV.\n\nThe fearsome and wild nightmares have the ability to cast Terror on an opponent, causing their enemy to lose their turn."
+  },
+  {
+    "id": "efreet",
+    "name": "Efreet",
+    "wikiTitle": "Efreet (H4)",
+    "alignment": "Chaos",
+    "alignmentZh": "混乱（疯人院 Asylum）",
+    "faction": "Asylum",
+    "isTownUnit": true,
+    "tier": 3,
+    "dwelling": "Volcanic vent",
+    "stats": {
+      "hp": 80,
+      "damageMin": 10,
+      "damageMax": 20,
+      "meleeAttack": 25,
+      "meleeDefense": 23,
+      "rangedAttack": null,
+      "rangedDefense": 23,
+      "ammo": null,
+      "speed": 6,
+      "movement": 29,
+      "spellPoints": null,
+      "growth": 4,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 850,
+      "rareResources": {},
+      "raw": "850 gold"
+    },
+    "abilities": [
+      {
+        "name": "Flying",
+        "description": "Flying allows this creature to fly over obstacles, creatures, heroes, and castle walls."
+      },
+      {
+        "name": "Fire Shield",
+        "description": "Fire Shield surrounds this creature in a wall of fire, allowing it to do fire damage in addition to its normal attack to an enemy."
+      },
+      {
+        "name": "Fire Attack",
+        "description": "In combat, this creature's normal attack is a Fire Attack, so targets with Fire Resistance will take less damage."
+      },
+      {
+        "name": "Fire Resistance",
+        "description": "Fire Resistance makes this creature immune to fire-based spells, and to damage from breath attacks if the creature is a secondary target. The creature also takes half damage from enemies with fire-based attacks."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The efreet is a third-level creature from the Asylum town in Heroes of Might and Magic IV.\n\nEfreeti are surrounded by an aura of flame that damages any enemy who strikes them. Efreeti are also immune to fire-based spells and take half damage from fire-based attacks (such as those from fire elementals and other efreeti)."
+  },
+  {
+    "id": "hydra",
+    "name": "Hydra",
+    "wikiTitle": "Hydra (H4)",
+    "alignment": "Chaos",
+    "alignmentZh": "混乱（疯人院 Asylum）",
+    "faction": "Asylum",
+    "isTownUnit": true,
+    "tier": 4,
+    "dwelling": "Hydra pond",
+    "stats": {
+      "hp": 250,
+      "damageMin": 28,
+      "damageMax": 60,
+      "meleeAttack": 30,
+      "meleeDefense": 26,
+      "rangedAttack": null,
+      "rangedDefense": 26,
+      "ammo": null,
+      "speed": 6,
+      "movement": 21,
+      "spellPoints": null,
+      "growth": 2,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 4000,
+      "rareResources": {
+        "mercury": 2
+      },
+      "raw": "4000 gold / 2 mercury"
+    },
+    "abilities": [
+      {
+        "name": "No Retaliation",
+        "description": "This creature's No Retaliation ability allows it to attack without any chance of retaliation."
+      },
+      {
+        "name": "Multiple Attack",
+        "description": "Multiple Attack allows this creature to attack all nearby enemies simultaneously."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The hydra is a fourth-level creature from the Asylum town in Heroes of Might and Magic IV.\n\nA hydra can strike at all surrounding units at the same time, and because they strike with such blinding speed their enemies cannot retaliate."
+  },
+  {
+    "id": "black_dragon",
+    "name": "Black dragon",
+    "wikiTitle": "Black dragon (H4)",
+    "alignment": "Chaos",
+    "alignmentZh": "混乱（疯人院 Asylum）",
+    "faction": "Asylum",
+    "isTownUnit": true,
+    "tier": 4,
+    "dwelling": "Dragon cave",
+    "stats": {
+      "hp": 400,
+      "damageMin": 55,
+      "damageMax": 110,
+      "meleeAttack": 40,
+      "meleeDefense": 40,
+      "rangedAttack": null,
+      "rangedDefense": 40,
+      "ammo": null,
+      "speed": 7,
+      "movement": 30,
+      "spellPoints": null,
+      "growth": 1,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 8000,
+      "rareResources": {
+        "sulfur": 4
+      },
+      "raw": "8000 gold / 4 sulfur"
+    },
+    "abilities": [
+      {
+        "name": "Flying",
+        "description": "Flying allows this creature to fly over obstacles, creatures, heroes, and castle walls."
+      },
+      {
+        "name": "Immune to Magic",
+        "description": "This creature is completely Immune to Magic, including spells cast by friendly troops."
+      },
+      {
+        "name": "Breath Attack",
+        "description": "This creature's Breath Attack allows it to attack with a blast of fire that may also harm creatures directly behind an enemy target."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The black dragon is a fourth-level creature from the Asylum town in Heroes of Might and Magic IV.\n\nThe omnious black dragon is completely immune to magic, and can attack multiple enemies with its fiery breath."
+  },
+  {
+    "id": "pirate",
+    "name": "Pirate",
+    "wikiTitle": "Pirate (H4)",
+    "alignment": "Chaos",
+    "alignmentZh": "混乱（疯人院 Asylum）",
+    "faction": "Asylum",
+    "isTownUnit": false,
+    "tier": 1,
+    "dwelling": "Pirate's cove",
+    "stats": {
+      "hp": 10,
+      "damageMin": 1,
+      "damageMax": 2,
+      "meleeAttack": 11,
+      "meleeDefense": 9,
+      "rangedAttack": null,
+      "rangedDefense": 9,
+      "ammo": null,
+      "speed": 5,
+      "movement": 19,
+      "spellPoints": null,
+      "growth": 24,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 22,
+      "rareResources": {},
+      "raw": "22 gold"
+    },
+    "abilities": [
+      {
+        "name": "Bonuses at Sea",
+        "description": "Bonuses at Sea makes this creature faster and allows it to do more damage when fighting on the deck of a ship. Its Melee and Ranged Defense also increases."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The pirate is a first-level creature connected to the Asylum town in Heroes of Might and Magic IV. It can be found at the pirate's cove creature dwelling.\n\nPirates are at home on a swaying deck, so they move faster, do more damage, and and take less damage when fighting at sea."
+  },
+  {
+    "id": "troglodyte",
+    "name": "Troglodyte",
+    "wikiTitle": "Troglodyte (H4)",
+    "alignment": "Chaos",
+    "alignmentZh": "混乱（疯人院 Asylum）",
+    "faction": "Asylum",
+    "isTownUnit": false,
+    "tier": 1,
+    "dwelling": "Warren",
+    "stats": {
+      "hp": 14,
+      "damageMin": 2,
+      "damageMax": 3,
+      "meleeAttack": 11,
+      "meleeDefense": 9,
+      "rangedAttack": null,
+      "rangedDefense": 9,
+      "ammo": null,
+      "speed": 5,
+      "movement": 19,
+      "spellPoints": null,
+      "growth": 19,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 28,
+      "rareResources": {},
+      "raw": "28 gold"
+    },
+    "abilities": [
+      {
+        "name": "Immune to Visual Attacks",
+        "description": "Naturally blind creatures are Immune to Visual Attacks. All abilities and spells that influence vision (like Blind and Stone Gaze) do not work on it."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The troglodyte is a level-one creature, connected to the Asylum town in Heroes of Might and Magic IV. It can be found at the troglodyte warren creature dwelling.\n\nTroglodytes are naturally blind, so they are unaffected by blinding spells and the stone gaze of medusas."
+  },
+  {
+    "id": "evil_eye",
+    "name": "Evil eye",
+    "wikiTitle": "Evil eye (H4)",
+    "alignment": "Chaos",
+    "alignmentZh": "混乱（疯人院 Asylum）",
+    "faction": "Asylum",
+    "isTownUnit": false,
+    "tier": 2,
+    "dwelling": "Pillar of eyes",
+    "stats": {
+      "hp": 26,
+      "damageMin": 3,
+      "damageMax": 7,
+      "meleeAttack": 8,
+      "meleeDefense": 15,
+      "rangedAttack": 16,
+      "rangedDefense": 15,
+      "ammo": 15,
+      "speed": 6,
+      "movement": 19,
+      "spellPoints": null,
+      "growth": 6,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 220,
+      "rareResources": {},
+      "raw": "220 gold"
+    },
+    "abilities": [
+      {
+        "name": "Ranged",
+        "description": "The Ranged ability allows this creature to attack enemies at a distance, but in melee combat this creature does half damage unless it has the Normal Melee ability."
+      },
+      {
+        "name": "Flying",
+        "description": "Flying allows this creature to fly over obstacles, creatures, heroes, and castle walls."
+      },
+      {
+        "name": "Random Harmful Spells",
+        "description": "This creature attacks with random Harmful Spells, casting a random Chaos Magic or Death Magic spell on its enemy."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The evil eye is a second-level creature, connected to the Asylum town in Heroes of Might and Magic IV. It can be found at the pillar of eyes creature dwelling.\n\nWhen evil eyes attack, they randomly cast a harmful spell on an enemy. The possible spells include Curse, Disrupting Ray, Slow, Sorrow, Weakness, Magic Leech, and Misfortune."
+  },
+  {
+    "id": "troll",
+    "name": "Troll",
+    "wikiTitle": "Troll (H4)",
+    "alignment": "Chaos",
+    "alignmentZh": "混乱（疯人院 Asylum）",
+    "faction": "Asylum",
+    "isTownUnit": false,
+    "tier": 2,
+    "dwelling": "Troll cave",
+    "stats": {
+      "hp": 45,
+      "damageMin": 6,
+      "damageMax": 12,
+      "meleeAttack": 16,
+      "meleeDefense": 15,
+      "rangedAttack": null,
+      "rangedDefense": 15,
+      "ammo": null,
+      "speed": 3,
+      "movement": 18,
+      "spellPoints": null,
+      "growth": 6,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 230,
+      "rareResources": {},
+      "raw": "230 gold"
+    },
+    "abilities": [
+      {
+        "name": "Regeneration",
+        "description": "This creature's Regeneration ability allows it to completely heal all of his wounds at the end of each turn. Regenerates up to 50 hit points per turn."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The troll is a second-level creature, connected to the Asylum town in Heroes of Might and Magic IV. It can be found at the troll cave creature dwelling.\n\nTrolls have an amazing constitution which allows them to regenerate all of their hit points at the start of each combat round."
+  },
+  {
+    "id": "goblin_knight",
+    "name": "Goblin knight",
+    "wikiTitle": "Goblin knight",
+    "alignment": "Chaos",
+    "alignmentZh": "混乱（疯人院 Asylum）",
+    "faction": "Asylum",
+    "isTownUnit": false,
+    "tier": 3,
+    "dwelling": "Goblin armory",
+    "stats": {
+      "hp": 120,
+      "damageMin": 16,
+      "damageMax": 30,
+      "meleeAttack": 20,
+      "meleeDefense": 26,
+      "rangedAttack": null,
+      "rangedDefense": 26,
+      "ammo": null,
+      "speed": 7,
+      "movement": 27,
+      "spellPoints": null,
+      "growth": 4,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 1000,
+      "rareResources": {},
+      "raw": "1000 gold"
+    },
+    "abilities": [
+      {
+        "name": "Magic Resistance",
+        "description": "This creature's Magic Resistance gives it a chance of resisting most hostile spells. The creature also takes less damage from spells that cause direct damage."
+      },
+      {
+        "name": "Stone Skin",
+        "description": "This creature's Stone Skin increases its Melee and Ranged Defense by 25%. The Stoneskin spell has no additional effect."
+      },
+      {
+        "name": "Negate First Strike",
+        "description": "Negate First Strike allows this creature to counter First Strike abilities or spells."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The goblin knight is a third-level creature, connected to the Asylum town in Heroes of Might and Magic IV: The Gathering Storm. It can be found at the goblin armory creature dwelling.\n\nThe heavy armor of the goblin knight grants a resistance to both magic and physical attacks, but allows enough freedom of movement for the goblin's natural quickness to overcome the fastest of opponents."
+  },
+  {
+    "id": "megadragon",
+    "name": "Megadragon",
+    "wikiTitle": "Megadragon (H4)",
+    "alignment": "Chaos",
+    "alignmentZh": "混乱（疯人院 Asylum）",
+    "faction": "Asylum",
+    "isTownUnit": false,
+    "tier": 4,
+    "dwelling": null,
+    "stats": {
+      "hp": 1000,
+      "damageMin": 50,
+      "damageMax": 100,
+      "meleeAttack": 50,
+      "meleeDefense": 50,
+      "rangedAttack": null,
+      "rangedDefense": 50,
+      "ammo": null,
+      "speed": 7,
+      "movement": 30,
+      "spellPoints": null,
+      "growth": null,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": null,
+      "rareResources": {},
+      "raw": ""
+    },
+    "abilities": [
+      {
+        "name": "Breath Attack",
+        "description": "This creature's arc-shaped Breath Attack allows it to attack with a blast of fire that may also harm creatures behind an enemy target."
+      },
+      {
+        "name": "Magic Resistance",
+        "description": "This creature's Magic Resistance gives it a chance of resisting most hostile spells. The creature also takes less damage from spells that cause direct damage."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The megadragon is a fourth-level creature, connected to the Asylum town in Heroes of Might and Magic IV: Winds of War. This creature cannot be purchased.\n\nQuite simply, there is no creature alive or dead that could stand alone against the raw, awesome power of the Megadragon. Their extreme rarity and limited suceptibility to magic are their only known weaknesses."
+  },
+  {
+    "id": "wolf",
+    "name": "Wolf",
+    "wikiTitle": "Wolf (H4)",
+    "alignment": "Nature",
+    "alignmentZh": "自然（自然保护区 Preserve）",
+    "faction": "Preserve",
+    "isTownUnit": true,
+    "tier": 1,
+    "dwelling": "Wolf den",
+    "stats": {
+      "hp": 12,
+      "damageMin": 2,
+      "damageMax": 3,
+      "meleeAttack": 9,
+      "meleeDefense": 9,
+      "rangedAttack": null,
+      "rangedDefense": 9,
+      "ammo": null,
+      "speed": 7,
+      "movement": 21,
+      "spellPoints": null,
+      "growth": 15,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 36,
+      "rareResources": {},
+      "raw": "36 gold"
+    },
+    "abilities": [
+      {
+        "name": "Two Attacks",
+        "description": "Two Attacks allows this creature to attack twice in melee combat. The second attack occurs after the enemy's retaliation."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The wolf is a level-one creature in the Preserve town in Heroes of Might and Magic IV.\n\nWolves snap and claw at their opponents, getting two attacks in combat."
+  },
+  {
+    "id": "sprite",
+    "name": "Sprite",
+    "wikiTitle": "Sprite (H4)",
+    "alignment": "Nature",
+    "alignmentZh": "自然（自然保护区 Preserve）",
+    "faction": "Preserve",
+    "isTownUnit": true,
+    "tier": 1,
+    "dwelling": "Fae trees",
+    "stats": {
+      "hp": 7,
+      "damageMin": 1,
+      "damageMax": 2,
+      "meleeAttack": 10,
+      "meleeDefense": 10,
+      "rangedAttack": null,
+      "rangedDefense": 10,
+      "ammo": null,
+      "speed": 6,
+      "movement": 29,
+      "spellPoints": null,
+      "growth": 23,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 22,
+      "rareResources": {},
+      "raw": "22 gold"
+    },
+    "abilities": [
+      {
+        "name": "Flying",
+        "description": "Flying allows this creature to fly over obstacles, creatures, heroes, and castle walls."
+      },
+      {
+        "name": "No Retaliation",
+        "description": "This creature's No Retaliation ability allows it to attack without any chance of retaliation."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The sprite is a level-one creature available for the Preserve town in Heroes of Might and Magic IV.\n\nDue to a sprite's small stature and stunning speed opponents find it impossible to retaliate against their attacks."
+  },
+  {
+    "id": "white_tiger",
+    "name": "White tiger",
+    "wikiTitle": "White tiger (H4)",
+    "alignment": "Nature",
+    "alignmentZh": "自然（自然保护区 Preserve）",
+    "faction": "Preserve",
+    "isTownUnit": true,
+    "tier": 2,
+    "dwelling": "Tiger den",
+    "stats": {
+      "hp": 35,
+      "damageMin": 6,
+      "damageMax": 8,
+      "meleeAttack": 19,
+      "meleeDefense": 19,
+      "rangedAttack": null,
+      "rangedDefense": 19,
+      "ammo": null,
+      "speed": 8,
+      "movement": 24,
+      "spellPoints": null,
+      "growth": 6,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 220,
+      "rareResources": {},
+      "raw": "220 gold"
+    },
+    "abilities": [
+      {
+        "name": "First Strike",
+        "description": "First Strike allows this creature to strike an opponent in melee combat before it can retaliate."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The white tiger is a second-level creature for the Preserve town in Heroes of Might and Magic IV.\n\nThe wise white tiger is not only fast but a strategic genius in battle, so they can attack an enemy before they can retaliate."
+  },
+  {
+    "id": "elf",
+    "name": "Elf",
+    "wikiTitle": "Elf (H4)",
+    "alignment": "Nature",
+    "alignmentZh": "自然（自然保护区 Preserve）",
+    "faction": "Preserve",
+    "isTownUnit": true,
+    "tier": 2,
+    "dwelling": "Treetop lodge",
+    "stats": {
+      "hp": 18,
+      "damageMin": 3,
+      "damageMax": 4,
+      "meleeAttack": 8,
+      "meleeDefense": 16,
+      "rangedAttack": 16,
+      "rangedDefense": 16,
+      "ammo": 24,
+      "speed": 6,
+      "movement": 19,
+      "spellPoints": null,
+      "growth": 7,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 190,
+      "rareResources": {},
+      "raw": "190 gold"
+    },
+    "abilities": [
+      {
+        "name": "Ranged",
+        "description": "The Ranged ability allows this creature to attack enemies at a distance, but in melee combat this creature does half damage unless she has the Normal Melee ability."
+      },
+      {
+        "name": "Shoots Twice",
+        "description": "Shoots Twice allows this ranged creature to fire twice each time it attacks. The second attack occurs after any enemy retaliation."
+      },
+      {
+        "name": "Ranged First Strike",
+        "description": "Ranged First Strike allows this creature to strike a target in ranged combat before its target can retaliate."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The elf is a second-level creature for the Preserve town in Heroes of Might and Magic IV.\n\nElves, masters of the longbow, are able to attack twice per round, and their first attack always occurs before their enemy can retaliate."
+  },
+  {
+    "id": "griffin",
+    "name": "Griffin",
+    "wikiTitle": "Griffin (H4)",
+    "alignment": "Nature",
+    "alignmentZh": "自然（自然保护区 Preserve）",
+    "faction": "Preserve",
+    "isTownUnit": true,
+    "tier": 3,
+    "dwelling": "Griffin cliffs",
+    "stats": {
+      "hp": 95,
+      "damageMin": 16,
+      "damageMax": 22,
+      "meleeAttack": 19,
+      "meleeDefense": 19,
+      "rangedAttack": null,
+      "rangedDefense": 19,
+      "ammo": null,
+      "speed": 6,
+      "movement": 29,
+      "spellPoints": null,
+      "growth": 4,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 800,
+      "rareResources": {},
+      "raw": "800 gold"
+    },
+    "abilities": [
+      {
+        "name": "Flying",
+        "description": "Flying allows this creature to fly over obstacles, creatures, heroes, and castle walls."
+      },
+      {
+        "name": "Unlimited Retaliation",
+        "description": "Unlimited Retaliation allows this creature to retaliate against any number of attacks in a single turn."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The griffin is a third-level creature for the Preserve town in Heroes of Might and Magic IV.\n\nGriffins are fierce, tireless fighters who have an unlimited capacity to retaliate against enemy attacks."
+  },
+  {
+    "id": "unicorn",
+    "name": "Unicorn",
+    "wikiTitle": "Unicorn (H4)",
+    "alignment": "Nature",
+    "alignmentZh": "自然（自然保护区 Preserve）",
+    "faction": "Preserve",
+    "isTownUnit": true,
+    "tier": 3,
+    "dwelling": "Unicorn glade",
+    "stats": {
+      "hp": 80,
+      "damageMin": 12,
+      "damageMax": 20,
+      "meleeAttack": 20,
+      "meleeDefense": 20,
+      "rangedAttack": null,
+      "rangedDefense": 20,
+      "ammo": null,
+      "speed": 6,
+      "movement": 25,
+      "spellPoints": null,
+      "growth": 5,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 650,
+      "rareResources": {},
+      "raw": "650 gold"
+    },
+    "abilities": [
+      {
+        "name": "Blind",
+        "description": "This creature's attack has a chance of Blinding an enemy."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The unicorn is a third-level creature for the Preserve town in Heroes of Might and Magic IV.\n\nThe touch of a unicorn's magical horn has a chance of blinding its opponent."
+  },
+  {
+    "id": "phoenix",
+    "name": "Phoenix",
+    "wikiTitle": "Phoenix (H4)",
+    "alignment": "Nature",
+    "alignmentZh": "自然（自然保护区 Preserve）",
+    "faction": "Preserve",
+    "isTownUnit": true,
+    "tier": 4,
+    "dwelling": "Pyre",
+    "stats": {
+      "hp": 275,
+      "damageMin": 45,
+      "damageMax": 65,
+      "meleeAttack": 28,
+      "meleeDefense": 28,
+      "rangedAttack": null,
+      "rangedDefense": 28,
+      "ammo": null,
+      "speed": 12,
+      "movement": 30,
+      "spellPoints": 12,
+      "growth": 2,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 4000,
+      "rareResources": {
+        "mercury": 2
+      },
+      "raw": "4000 gold / 2 mercury"
+    },
+    "abilities": [
+      {
+        "name": "Flying",
+        "description": "Flying allows this creature to fly over obstacles, creatures, heroes, and castle walls."
+      },
+      {
+        "name": "Rebirth",
+        "description": "This creature can use the Rebirth ability to return to life after it is killed in combat. If all are killed before they have used this ability, a portion will automatically be reborn."
+      },
+      {
+        "name": "Breath Attack",
+        "description": "This creature's Breath Attack allows it to attack with a blast of fire that may also harm creatures directly behind an enemy target."
+      },
+      {
+        "name": "Fire Resistance",
+        "description": "Fire Resistance makes this creature immune to fire-based spells, and to damage from breath attacks if the creature is a secondary target. The creature also takes half damage from enemies with fire-based attacks."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The phoenix is a fourth-level creature for the Preserve town in Heroes of Might and Magic IV.\n\nThe fiery breath of the phoenix can attack multiple enemies under the right conditions, and once per combat, it can attempt to return from the dead."
+  },
+  {
+    "id": "faerie_dragon",
+    "name": "Faerie dragon",
+    "wikiTitle": "Faerie dragon (H4)",
+    "alignment": "Nature",
+    "alignmentZh": "自然（自然保护区 Preserve）",
+    "faction": "Preserve",
+    "isTownUnit": true,
+    "tier": 4,
+    "dwelling": "Magic forest",
+    "stats": {
+      "hp": 220,
+      "damageMin": 34,
+      "damageMax": 50,
+      "meleeAttack": 15,
+      "meleeDefense": 29,
+      "rangedAttack": null,
+      "rangedDefense": 29,
+      "ammo": null,
+      "speed": 7,
+      "movement": 29,
+      "spellPoints": 40,
+      "growth": 2,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 4000,
+      "rareResources": {
+        "gems": 2
+      },
+      "raw": "4000 gold / 2 gems"
+    },
+    "abilities": [
+      {
+        "name": "Flying",
+        "description": "Flying allows this creature to fly over obstacles, creatures, heroes, and castle walls."
+      },
+      {
+        "name": "Spellcaster",
+        "description": "Spellcaster allows this creature to use a variety of spells during combat."
+      },
+      {
+        "name": "Magic Mirror",
+        "description": "This creature's Magic Mirror ability allows it to reflect hostile spells back upon the caster like the Magic Mirror spell."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The faerie dragon is a fourth-level creature for the Preserve town in Heroes of Might and Magic IV.\n\nFaerie dragon have a natural defense against magical attacks, reflecting spells back on the caster (similar to the Magic Mirror spell)."
+  },
+  {
+    "id": "leprechaun",
+    "name": "Leprechaun",
+    "wikiTitle": "Leprechaun (H4)",
+    "alignment": "Nature",
+    "alignmentZh": "自然（自然保护区 Preserve）",
+    "faction": "Preserve",
+    "isTownUnit": false,
+    "tier": 1,
+    "dwelling": "Magic rainbow",
+    "stats": {
+      "hp": 8,
+      "damageMin": 1,
+      "damageMax": 2,
+      "meleeAttack": 10,
+      "meleeDefense": 10,
+      "rangedAttack": null,
+      "rangedDefense": 10,
+      "ammo": null,
+      "speed": 6,
+      "movement": 19,
+      "spellPoints": 3,
+      "growth": 22,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 24,
+      "rareResources": {},
+      "raw": "24 gold"
+    },
+    "abilities": [
+      {
+        "name": "Fortune",
+        "description": "Fortune allows this creature to cast the Nature Magic spell Fortune."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The leprechaun is a first-level creature of the Preserve town in Heroes of Might and Magic IV. It can be found at the Creature Portal, or the Magic Rainbow external dwelling.\n\nLeprechauns can boost the luck of friendly targets."
+  },
+  {
+    "id": "satyr",
+    "name": "Satyr",
+    "wikiTitle": "Satyr (H4)",
+    "alignment": "Nature",
+    "alignmentZh": "自然（自然保护区 Preserve）",
+    "faction": "Preserve",
+    "isTownUnit": false,
+    "tier": 2,
+    "dwelling": "Wine keg",
+    "stats": {
+      "hp": 36,
+      "damageMin": 5,
+      "damageMax": 8,
+      "meleeAttack": 14,
+      "meleeDefense": 13,
+      "rangedAttack": null,
+      "rangedDefense": 13,
+      "ammo": null,
+      "speed": 6,
+      "movement": 20,
+      "spellPoints": 6,
+      "growth": 8,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 170,
+      "rareResources": {},
+      "raw": "170 gold"
+    },
+    "abilities": [
+      {
+        "name": "Mirth",
+        "description": "Mirth allows this creature to cast the Life Magic spell Mirth."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The satyr is a second-level creature of the Preserve town in Heroes of Might and Magic IV. It can be found at the Creature Portal, or the Wine Keg external dwelling.\n\nThe cheerful, optimistic satyr can cast the Mirth spell, raising the morale of friendly targets."
+  },
+  {
+    "id": "air_elemental",
+    "name": "Air elemental",
+    "wikiTitle": "Air elemental (H4)",
+    "alignment": "Nature",
+    "alignmentZh": "自然（自然保护区 Preserve）",
+    "faction": "Preserve",
+    "isTownUnit": false,
+    "tier": 3,
+    "dwelling": "Air portal",
+    "stats": {
+      "hp": 40,
+      "damageMin": 6,
+      "damageMax": 10,
+      "meleeAttack": 16,
+      "meleeDefense": 32,
+      "rangedAttack": null,
+      "rangedDefense": 32,
+      "ammo": null,
+      "speed": 7,
+      "movement": 29,
+      "spellPoints": null,
+      "growth": 6,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 350,
+      "rareResources": {},
+      "raw": "350 gold"
+    },
+    "abilities": [
+      {
+        "name": "Flying",
+        "description": "Flying allows this creature to fly over obstacles, creatures, heroes, and castle walls."
+      },
+      {
+        "name": "Elemental",
+        "description": "Elementals are immune to certain spells (such as Poison) that only work on normal, living creatures."
+      },
+      {
+        "name": "Insubstantial",
+        "description": "Insubstantial increases this creature's Melee and Ranged Defense by 100%."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The air elemental is a third-level creature of the Preserve town in Heroes of Might and Magic IV. It can be found at the Creature Portal, or the Air Portal external dwelling.\n\nAir elementals are made up of nothing more than swirling air, so it is much more difficult to hit them with physical attacks."
+  },
+  {
+    "id": "water_elemental",
+    "name": "Water elemental",
+    "wikiTitle": "Water elemental (H4)",
+    "alignment": "Nature",
+    "alignmentZh": "自然（自然保护区 Preserve）",
+    "faction": "Preserve",
+    "isTownUnit": false,
+    "tier": 3,
+    "dwelling": "Water portal",
+    "stats": {
+      "hp": 38,
+      "damageMin": 6,
+      "damageMax": 9,
+      "meleeAttack": 17,
+      "meleeDefense": 17,
+      "rangedAttack": null,
+      "rangedDefense": 17,
+      "ammo": null,
+      "speed": 5,
+      "movement": 19,
+      "spellPoints": 24,
+      "growth": 6,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 350,
+      "rareResources": {},
+      "raw": "350 gold"
+    },
+    "abilities": [
+      {
+        "name": "Elemental",
+        "description": "Elementals are immune to certain spells (such as Poison) that only work on normal, living creatures."
+      },
+      {
+        "name": "Spellcaster",
+        "description": "Spellcaster allows this creature to cast Fatigue, Ice bolt, Quicksand, and Weakness during combat."
+      },
+      {
+        "name": "Cold Attack",
+        "description": "In combat, this creature's normal attack is a Cold Attack, so targets with Cold Resistance will take less damage."
+      },
+      {
+        "name": "Cold Resistance",
+        "description": "Cold Resistance makes this creature immune to cold-based spells. It also takes half damage from enemies with cold-based attacks."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The water elemental is a third-level creature of the Preserve town in Heroes of Might and Magic IV. It can be found at the Creature Portal, or the Water Portal external dwelling.\n\nWater elementals are immune to cold-based spells and take half damage from cold-based attacks (such as those from ice demons or other water elementals)."
+  },
+  {
+    "id": "fire_elemental",
+    "name": "Fire elemental",
+    "wikiTitle": "Fire elemental (H4)",
+    "alignment": "Nature",
+    "alignmentZh": "自然（自然保护区 Preserve）",
+    "faction": "Preserve",
+    "isTownUnit": false,
+    "tier": 3,
+    "dwelling": "Fire portal",
+    "stats": {
+      "hp": 50,
+      "damageMin": 7,
+      "damageMax": 10,
+      "meleeAttack": 10,
+      "meleeDefense": 18,
+      "rangedAttack": 20,
+      "rangedDefense": 18,
+      "ammo": 20,
+      "speed": 6,
+      "movement": 20,
+      "spellPoints": null,
+      "growth": 6,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 350,
+      "rareResources": {},
+      "raw": "350 gold"
+    },
+    "abilities": [
+      {
+        "name": "Ranged",
+        "description": "The Ranged ability allows this creature to attack enemies at a distance, but in melee combat this creature does half damage unless it has the Normal Melee ability."
+      },
+      {
+        "name": "Elemental",
+        "description": "Elementals are immune to certain spells (such as Poison) that only work on normal, living creatures."
+      },
+      {
+        "name": "Fire Attack",
+        "description": "In combat, this creature's normal attack is a Fire Attack, so targets with Fire Resistance will take less damage."
+      },
+      {
+        "name": "Fire Resistance",
+        "description": "Fire Resistance makes this creature immune to fire-based spells, and to damage from breath attacks if the creature is a secondary target. The creature also takes half damage from enemies with fire-based attacks."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The fire elemental is a third-level creature of the Preserve town in Heroes of Might and Magic IV. It can be found at the Creature Portal, or the Fire Portal external dwelling.\n\nFire elementals are immune to fire-based spells and take half damage from fire-based attacks (such as those from efreeti and other fire elementals)."
+  },
+  {
+    "id": "earth_elemental",
+    "name": "Earth elemental",
+    "wikiTitle": "Earth elemental (H4)",
+    "alignment": "Nature",
+    "alignmentZh": "自然（自然保护区 Preserve）",
+    "faction": "Preserve",
+    "isTownUnit": false,
+    "tier": 3,
+    "dwelling": "Earth portal",
+    "stats": {
+      "hp": 50,
+      "damageMin": 9,
+      "damageMax": 14,
+      "meleeAttack": 18,
+      "meleeDefense": 20,
+      "rangedAttack": null,
+      "rangedDefense": 20,
+      "ammo": null,
+      "speed": 1,
+      "movement": 18,
+      "spellPoints": null,
+      "growth": 6,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 375,
+      "rareResources": {},
+      "raw": "375 gold"
+    },
+    "abilities": [
+      {
+        "name": "Elemental",
+        "description": "Elementals are immune to certain spells (such as Poison) that only work on normal, living creatures."
+      },
+      {
+        "name": "Magic Resistance",
+        "description": "This creature's Magic Resistance gives it a chance of resisting most hostile spells. The creature also takes less damage from spells that cause direct damage."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The earth elemental is a third-level creature of the Preserve town in Heroes of Might and Magic IV. It can be found at the Creature Portal, or the Earth Portal external dwelling.\n\nEarth elementals have a 50% chance of resisting any hostile spell, and take only half damage from spell attacks."
+  },
+  {
+    "id": "waspwort",
+    "name": "Waspwort",
+    "wikiTitle": "Waspwort",
+    "alignment": "Nature",
+    "alignmentZh": "自然（自然保护区 Preserve）",
+    "faction": "Preserve",
+    "isTownUnit": false,
+    "tier": 3,
+    "dwelling": "Hothouse",
+    "stats": {
+      "hp": 60,
+      "damageMin": 10,
+      "damageMax": 14,
+      "meleeAttack": 11,
+      "meleeDefense": 22,
+      "rangedAttack": 22,
+      "rangedDefense": 22,
+      "ammo": 20,
+      "speed": 4,
+      "movement": 15,
+      "spellPoints": null,
+      "growth": 6,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 550,
+      "rareResources": {},
+      "raw": "550 gold"
+    },
+    "abilities": [
+      {
+        "name": "Ranged",
+        "description": "The Ranged ability allows this creature to attack enemies at a distance, but in melee combat this creature does half damage unless it has the Normal Melee ability."
+      },
+      {
+        "name": "Weakness",
+        "description": "Weakness causes this creature's attack to cast the Weakness spell on its target. Weakened creatures do less damage in combat."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The waspwort is a third-level creature of the Preserve town in Heroes of Might and Magic IV. It can be found at the Creature Portal, or the Hothouse external dwelling.\n\nWaspworts are semi-intelligent, carnivorous plants. They are capable of hurling toxic needles at their prey, causing Weakness in anyone they strike."
+  },
+  {
+    "id": "mantis",
+    "name": "Mantis",
+    "wikiTitle": "Mantis (H4)",
+    "alignment": "Nature",
+    "alignmentZh": "自然（自然保护区 Preserve）",
+    "faction": "Preserve",
+    "isTownUnit": false,
+    "tier": 4,
+    "dwelling": "Mantis nest",
+    "stats": {
+      "hp": 210,
+      "damageMin": 34,
+      "damageMax": 50,
+      "meleeAttack": 34,
+      "meleeDefense": 34,
+      "rangedAttack": null,
+      "rangedDefense": 34,
+      "ammo": null,
+      "speed": 8,
+      "movement": 29,
+      "spellPoints": null,
+      "growth": 2,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 4000,
+      "rareResources": {
+        "gems": 2
+      },
+      "raw": "4000 gold / 2 gems"
+    },
+    "abilities": [
+      {
+        "name": "Flying",
+        "description": "Flying allows this creature to fly over obstacles, creatures, heroes, and castle walls."
+      },
+      {
+        "name": "First Strike",
+        "description": "First Strike allows this creature to strike an opponent in melee combat before it can retaliate."
+      },
+      {
+        "name": "Binding",
+        "description": "Binding allows the creature to Bind the last creature it attacks with its forelimbs. Bound enemies cannot move, though they can still attack, retaliate and cast spells. Bound creatures do half damage when they attack. If the attacking creature moves, the Binding is also removed."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The mantis is a fourth-level creature of the Preserve town in Heroes of Might and Magic IV. It can be found at the Creature Portal, or the Mantis Nest external dwelling.\n\nThe mantis is extremely fast for a creature of its size, giving it the ability to attack an enemy before they can retaliate. It can also bind an enemy by grabbing them with a foreleg."
+  },
+  {
+    "id": "gargantuan",
+    "name": "Gargantuan",
+    "wikiTitle": "Gargantuan",
+    "alignment": "Nature",
+    "alignmentZh": "自然（自然保护区 Preserve）",
+    "faction": "Preserve",
+    "isTownUnit": false,
+    "tier": 4,
+    "dwelling": "Gargantuan dell",
+    "stats": {
+      "hp": 300,
+      "damageMin": 28,
+      "damageMax": 40,
+      "meleeAttack": 32,
+      "meleeDefense": 32,
+      "rangedAttack": 32,
+      "rangedDefense": 32,
+      "ammo": 16,
+      "speed": 4,
+      "movement": 21,
+      "spellPoints": null,
+      "growth": 2,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 4000,
+      "rareResources": {
+        "crystal": 2
+      },
+      "raw": "4000 gold / 2 crystal"
+    },
+    "abilities": [
+      {
+        "name": "Ranged",
+        "description": "The Ranged ability allows this creature to attack enemies at a distance, but in melee combat this creature does half damage unless it has the Normal Melee ability."
+      },
+      {
+        "name": "Shoots Twice",
+        "description": "Shoots Twice allows this ranged creature to fire twice each time it attacks. The second attack occurs after any enemy retaliation."
+      },
+      {
+        "name": "Area Attack",
+        "description": "This creature's Area Attack allows its ranged attacks to strike all targets, friendly or hostile, in a small area (3x3 yards)."
+      },
+      {
+        "name": "Normal Melee",
+        "description": "This creature's Normal Melee means it doesn't suffer the melee combat damage penalty suffered by most ranged creatures."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The gargantuan is a fourth-level creature, connected to the Preserve town in Heroes of Might and Magic IV: The Gathering Storm. It can be found at the Gargantuan Dell external dwelling.\n\nA large earth elemental, resembling a Behemoth, the Gargantuan attacks with the very earth in a devastating barrage of rocks. In melee, the Gargantuan pounds its opponents with its massive fists."
+  },
+  {
+    "id": "berserker",
+    "name": "Berserker",
+    "wikiTitle": "Berserker (H4)",
+    "alignment": "Might",
+    "alignmentZh": "力量（据点 Stronghold）",
+    "faction": "Stronghold",
+    "isTownUnit": true,
+    "tier": 1,
+    "dwelling": "Longhouse",
+    "stats": {
+      "hp": 18,
+      "damageMin": 2,
+      "damageMax": 3,
+      "meleeAttack": 12,
+      "meleeDefense": 8,
+      "rangedAttack": null,
+      "rangedDefense": 8,
+      "ammo": null,
+      "speed": 6,
+      "movement": 20,
+      "spellPoints": null,
+      "growth": 19,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 20,
+      "rareResources": {},
+      "raw": "20 gold"
+    },
+    "abilities": [
+      {
+        "name": "Two Attacks",
+        "description": "Two Attacks allows this creature to attack twice in melee combat. The second attack occurs after the enemy's retaliation."
+      },
+      {
+        "name": "Berserk",
+        "description": "A Berserk creature must attack or move to attack every turn. They cannot wait. They are also immune to all forms of fear."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The berserker is a first-level Stronghold creature in Heroes of Might and Magic IV.\n\nBerserkers attack in a frenzy with no thought of defense. They are so riled up, in fact, that they cannot be controlled during combat. At the earliest opportunity, they will charge the enemy."
+  },
+  {
+    "id": "centaur",
+    "name": "Centaur",
+    "wikiTitle": "Centaur (H4)",
+    "alignment": "Might",
+    "alignmentZh": "力量（据点 Stronghold）",
+    "faction": "Stronghold",
+    "isTownUnit": true,
+    "tier": 1,
+    "dwelling": "Centaur stables",
+    "stats": {
+      "hp": 20,
+      "damageMin": 3,
+      "damageMax": 5,
+      "meleeAttack": 10,
+      "meleeDefense": 10,
+      "rangedAttack": 10,
+      "rangedDefense": 10,
+      "ammo": 4,
+      "speed": 4,
+      "movement": 25,
+      "spellPoints": null,
+      "growth": 9,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 40,
+      "rareResources": {},
+      "raw": "40 gold"
+    },
+    "abilities": [
+      {
+        "name": "Ranged",
+        "description": "The Ranged ability allows this creature to attack enemies at a distance, but in melee combat this creature does half damage unless it has the Normal Melee ability."
+      },
+      {
+        "name": "Normal Melee",
+        "description": "This creature's Normal Melee means it doesn't suffer the melee combat damage penalty suffered by most ranged creatures."
+      },
+      {
+        "name": "Short Range",
+        "description": "Short Range dramatically decreases the damage of this ranged creature's attack at long range."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The centaur is a level-one creature from the Stronghold town in Heroes of Might and Magic IV.\n\nCentaurs use spears in combat. The damage done by a thrown spear decreases rapidly with distance, but unlike other ranged creatures, the centaur suffers no penalty in melee combat."
+  },
+  {
+    "id": "harpy",
+    "name": "Harpy",
+    "wikiTitle": "Harpy (H4)",
+    "alignment": "Might",
+    "alignmentZh": "力量（据点 Stronghold）",
+    "faction": "Stronghold",
+    "isTownUnit": true,
+    "tier": 2,
+    "dwelling": "Harpy peak",
+    "stats": {
+      "hp": 24,
+      "damageMin": 4,
+      "damageMax": 5,
+      "meleeAttack": 16,
+      "meleeDefense": 15,
+      "rangedAttack": null,
+      "rangedDefense": 15,
+      "ammo": null,
+      "speed": 5,
+      "movement": 28,
+      "spellPoints": null,
+      "growth": 8,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 110,
+      "rareResources": {},
+      "raw": "110 gold"
+    },
+    "abilities": [
+      {
+        "name": "Flying",
+        "description": "Flying allows this creature to fly over obstacles, creatures, heroes, and castle walls."
+      },
+      {
+        "name": "No Retaliation",
+        "description": "No Retaliation ability allows it to attack without any chance of retaliation."
+      },
+      {
+        "name": "Strike and Return",
+        "description": "Strike and Return allows this creature to fly back to its starting point after attacking."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The harpy is one of the second level creatures available in the Stronghold town in Heroes of Might and Magic IV.\n\nHarpies can fly up to an enemy, attack and return to their starting position before the enemy has the opportunity to retaliate."
+  },
+  {
+    "id": "nomad",
+    "name": "Nomad",
+    "wikiTitle": "Nomad (H4)",
+    "alignment": "Might",
+    "alignmentZh": "力量（据点 Stronghold）",
+    "faction": "Stronghold",
+    "isTownUnit": true,
+    "tier": 2,
+    "dwelling": "Nomad tents",
+    "stats": {
+      "hp": 45,
+      "damageMin": 6,
+      "damageMax": 9,
+      "meleeAttack": 16,
+      "meleeDefense": 13,
+      "rangedAttack": null,
+      "rangedDefense": 13,
+      "ammo": null,
+      "speed": 8,
+      "movement": 27,
+      "spellPoints": null,
+      "growth": 6,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 150,
+      "rareResources": {},
+      "raw": "150 gold"
+    },
+    "abilities": [
+      {
+        "name": "First Strike",
+        "description": "First Strike allows this creature to strike an opponent in melee combat before it can retaliate."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The nomad is one of the second level creatures available in the Stronghold town in Heroes of Might and Magic IV.\n\nNomads have mastered the art of swift combat, striking before their enemy gets the opportunity to retaliate."
+  },
+  {
+    "id": "ogre_mage",
+    "name": "Ogre mage",
+    "wikiTitle": "Ogre mage (H4)",
+    "alignment": "Might",
+    "alignmentZh": "力量（据点 Stronghold）",
+    "faction": "Stronghold",
+    "isTownUnit": true,
+    "tier": 3,
+    "dwelling": "Ogre fort",
+    "stats": {
+      "hp": 85,
+      "damageMin": 12,
+      "damageMax": 18,
+      "meleeAttack": 18,
+      "meleeDefense": 16,
+      "rangedAttack": null,
+      "rangedDefense": 16,
+      "ammo": null,
+      "speed": 4,
+      "movement": 19,
+      "spellPoints": 6,
+      "growth": 6,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 350,
+      "rareResources": {},
+      "raw": "350 gold"
+    },
+    "abilities": [
+      {
+        "name": "Bloodlust",
+        "description": "This creature can cast the Chaos Magic spell Bloodlust."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The ogre mage is one of the third-level creatures available in the Stronghold town in Heroes of Might and Magic IV.\n\nOgre magi have the innate ability to cast the Bloodlust spell, goading others into a dangerous battle rage."
+  },
+  {
+    "id": "cyclops",
+    "name": "Cyclops",
+    "wikiTitle": "Cyclops (H4)",
+    "alignment": "Might",
+    "alignmentZh": "力量（据点 Stronghold）",
+    "faction": "Stronghold",
+    "isTownUnit": true,
+    "tier": 3,
+    "dwelling": "Cyclops cave",
+    "stats": {
+      "hp": 95,
+      "damageMin": 12,
+      "damageMax": 18,
+      "meleeAttack": 15,
+      "meleeDefense": 24,
+      "rangedAttack": 30,
+      "rangedDefense": 24,
+      "ammo": 8,
+      "speed": 4,
+      "movement": 21,
+      "spellPoints": null,
+      "growth": 3,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 750,
+      "rareResources": {},
+      "raw": "750 gold"
+    },
+    "abilities": [
+      {
+        "name": "Ranged",
+        "description": "The Ranged ability allows this creature to attack enemies at a distance, but in melee combat this creature does half damage unless it has the Normal Melee ability."
+      },
+      {
+        "name": "Area Attack",
+        "description": "This creature's Area Attack allows its ranged attacks to strike all targets, friendly or hostile, in a small area (3x3 yards)."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The cyclops is one of the third-level creatures available in the Stronghold town in Heroes of Might and Magic IV.\n\nThe cyclops hurls huge boulders that shatter on impact, damaging all nearby targets."
+  },
+  {
+    "id": "thunderbird",
+    "name": "Thunderbird",
+    "wikiTitle": "Thunderbird (H4)",
+    "alignment": "Might",
+    "alignmentZh": "力量（据点 Stronghold）",
+    "faction": "Stronghold",
+    "isTownUnit": true,
+    "tier": 4,
+    "dwelling": "Cliff nest",
+    "stats": {
+      "hp": 170,
+      "damageMin": 24,
+      "damageMax": 40,
+      "meleeAttack": 30,
+      "meleeDefense": 30,
+      "rangedAttack": null,
+      "rangedDefense": 30,
+      "ammo": null,
+      "speed": 6,
+      "movement": 29,
+      "spellPoints": null,
+      "growth": 3,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 1800,
+      "rareResources": {
+        "mercury": 2
+      },
+      "raw": "1800 gold / 2 mercury"
+    },
+    "abilities": [
+      {
+        "name": "Flying",
+        "description": "Flying allows this creature to fly over obstacles, creatures, heroes, and castle walls."
+      },
+      {
+        "name": "Lightning Attack",
+        "description": "This creature's Lightning Attack summons a bolt of lightning that strikes its opponent immediately after its normal attack."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The thunderbird is one of the fourth-level creatures available in the Stronghold town in Heroes of Might and Magic IV.\n\nThunderbirds can summon lightning to strike enemies they have just attacked."
+  },
+  {
+    "id": "behemoth",
+    "name": "Behemoth",
+    "wikiTitle": "Behemoth (H4)",
+    "alignment": "Might",
+    "alignmentZh": "力量（据点 Stronghold）",
+    "faction": "Stronghold",
+    "isTownUnit": true,
+    "tier": 4,
+    "dwelling": "Behemoth crag",
+    "stats": {
+      "hp": 240,
+      "damageMin": 55,
+      "damageMax": 80,
+      "meleeAttack": 36,
+      "meleeDefense": 34,
+      "rangedAttack": null,
+      "rangedDefense": 34,
+      "ammo": null,
+      "speed": 6,
+      "movement": 21,
+      "spellPoints": null,
+      "growth": 2,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 2750,
+      "rareResources": {
+        "crystal": 2
+      },
+      "raw": "2750 gold / 2 crystal"
+    },
+    "abilities": [
+      {
+        "name": "Strength",
+        "description": "Strength increases the creature's combat damage."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The behemoth is one of the fourth-level creatures available in the Stronghold town in Heroes of Might and Magic IV.\n\nThe deadly, lumbering behemoth is so powerful that few can match its strength in battle."
+  },
+  {
+    "id": "mermaid",
+    "name": "Mermaid",
+    "wikiTitle": "Mermaid (H4)",
+    "alignment": "Might",
+    "alignmentZh": "力量（据点 Stronghold）",
+    "faction": "Stronghold",
+    "isTownUnit": false,
+    "tier": 2,
+    "dwelling": null,
+    "stats": {
+      "hp": 38,
+      "damageMin": 5,
+      "damageMax": 8,
+      "meleeAttack": 15,
+      "meleeDefense": 13,
+      "rangedAttack": null,
+      "rangedDefense": 13,
+      "ammo": null,
+      "speed": 5,
+      "movement": 19,
+      "spellPoints": null,
+      "growth": null,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": null,
+      "rareResources": {},
+      "raw": ""
+    },
+    "abilities": [
+      {
+        "name": "Hypnotize",
+        "description": "In addition to this creature's normal attack, its Hypnotize ability has a chance of taking control of an enemy opponent for one turn."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The mermaid is a second-level creature, connected to the Stronghold in Heroes of Might and Magic IV. It cannot be acquired in-game, only added in the Scenario Editor.\n\nMermaids have a chance of hypnotizing their opponents, giving them control of their target for one turn. They are also immune to the Charm and Diplomacy skills."
+  },
+  {
+    "id": "sea_monster",
+    "name": "Sea monster",
+    "wikiTitle": "Sea monster (H4)",
+    "alignment": "Might",
+    "alignmentZh": "力量（据点 Stronghold）",
+    "faction": "Stronghold",
+    "isTownUnit": false,
+    "tier": 4,
+    "dwelling": null,
+    "stats": {
+      "hp": 275,
+      "damageMin": 45,
+      "damageMax": 65,
+      "meleeAttack": 35,
+      "meleeDefense": 34,
+      "rangedAttack": null,
+      "rangedDefense": 34,
+      "ammo": null,
+      "speed": 5,
+      "movement": 24,
+      "spellPoints": null,
+      "growth": null,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": null,
+      "rareResources": {},
+      "raw": ""
+    },
+    "abilities": [
+      {
+        "name": "Devouring",
+        "description": "This creature's Devouring ability gives it a chance of swallowing an enemy whole when it attacks."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The sea monster is a fourth-level creature, connected to the Stronghold in Heroes of Might and Magic IV. It cannot be aquired in-game, only added in the Scenario Editor.\n\nBeware these legendary creatures of the deep! Sea monsters have a chance of devouring any opponent they attack. They are also immune to the Charm and Diplomacy skills."
+  },
+  {
+    "id": "frenzied_gnasher",
+    "name": "Frenzied gnasher",
+    "wikiTitle": "Frenzied gnasher",
+    "alignment": "Might",
+    "alignmentZh": "力量（据点 Stronghold）",
+    "faction": "Stronghold",
+    "isTownUnit": false,
+    "tier": 4,
+    "dwelling": "Beast pen",
+    "stats": {
+      "hp": 300,
+      "damageMin": 40,
+      "damageMax": 55,
+      "meleeAttack": 40,
+      "meleeDefense": 40,
+      "rangedAttack": null,
+      "rangedDefense": 40,
+      "ammo": null,
+      "speed": 4,
+      "movement": 21,
+      "spellPoints": null,
+      "growth": 2,
+      "experience": null,
+      "size": null
+    },
+    "cost": {
+      "gold": 4000,
+      "rareResources": {
+        "crystal": 2
+      },
+      "raw": "4000 gold / 2 crystal"
+    },
+    "abilities": [
+      {
+        "name": "Immune to Magic",
+        "description": "This creature is completely Immune to Magic, including spells cast by friendly troops."
+      },
+      {
+        "name": "Berserk",
+        "description": "A Berserk creature must attack or move to attack every turn. They cannot wait. They are also immune to all forms of fear."
+      }
+    ],
+    "castableSpells": [],
+    "summary": "The frenzied gnasher is a fourth-level creature, connected to the Stronghold in Heroes of Might and Magic IV: Winds of War. It can be purchased at the beast pen.\n\nThe Frenzied Gnasher is a massive and powerful beast that is immune to magic. A few have been captured and trained just enough to be useful in battle, but turned loose there is no stopping it."
+  }
+]

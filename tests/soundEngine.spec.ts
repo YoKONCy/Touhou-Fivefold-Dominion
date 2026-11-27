@@ -1,0 +1,244 @@
+/**
+ * 电影级物理建模 Web Audio 音效引擎单元测试（含离线 PCM 声学波形体检与全 42 配方调度验证）
+ */
+import { describe, expect, it } from 'vitest';
+import {
+  buildPhysicalSoundBank,
+  createBrownNoiseBuffer,
+  createSpatialImpulseResponse,
+  DEFAULT_SFX_CATALOG,
+  SoundEngine,
+  type SynthEnv,
+} from '@audio/index';
+import { createPinkNoiseBuffer, createWhiteNoiseBuffer } from '@audio/synthPrimitives';
+
+/** 构建轻量级无头 AudioContext 桩对象，真实校验浮点 PCM 缓冲区与全部 Web Audio 参数边界 */
+function createMockAudioContext(sampleRate = 44100): AudioContext {
+  const makeParam = (initial = 0) => {
+    const param = {
+      value: initial,
+      setValueAtTime: (v: number, t: number) => {
+        if (!Number.isFinite(v) || !Number.isFinite(t) || t < 0) {
+          throw new Error(`非法 AudioParam setValueAtTime(${v}, ${t})`);
+        }
+        param.value = v;
+      },
+      linearRampToValueAtTime: (v: number, t: number) => {
+        if (!Number.isFinite(v) || !Number.isFinite(t) || t < 0) {
+          throw new Error(`非法 AudioParam linearRamp(${v}, ${t})`);
+        }
+        param.value = v;
+      },
+      exponentialRampToValueAtTime: (v: number, t: number) => {
+        // Web Audio 规范严格要求指数斜坡目标值必须 > 0
+        if (!Number.isFinite(v) || v <= 0 || !Number.isFinite(t) || t < 0) {
+          throw new Error(`非法 AudioParam exponentialRamp(${v}, ${t})`);
+        }
+        param.value = v;
+      },
+      setTargetAtTime: (v: number, t: number, tc: number) => {
+        if (!Number.isFinite(v) || !Number.isFinite(t) || tc <= 0) {
+          throw new Error(`非法 AudioParam setTarget(${v}, ${t}, ${tc})`);
+        }
+        param.value = v;
+      },
+    };
+    return param;
+  };
+
+  const makeNode = () => ({
+    connect: () => {},
+    disconnect: () => {},
+  });
+
+  const ctx = {
+    sampleRate,
+    currentTime: 0.1,
+    state: 'running',
+    destination: makeNode(),
+    createBuffer: (channels: number, length: number, sr: number) => {
+      const data = Array.from({ length: channels }, () => new Float32Array(length));
+      return {
+        numberOfChannels: channels,
+        length,
+        sampleRate: sr,
+        duration: length / sr,
+        getChannelData: (ch: number) => data[ch],
+      } as unknown as AudioBuffer;
+    },
+    createGain: () => ({ ...makeNode(), gain: makeParam(1) }),
+    createStereoPanner: () => ({ ...makeNode(), pan: makeParam(0) }),
+    createWaveShaper: () => ({ ...makeNode(), curve: null, oversample: 'none' }),
+    createBiquadFilter: () => ({
+      ...makeNode(),
+      type: 'lowpass',
+      frequency: makeParam(1000),
+      Q: makeParam(1),
+      gain: makeParam(0),
+    }),
+    createOscillator: () => ({
+      ...makeNode(),
+      type: 'sine',
+      frequency: makeParam(440),
+      detune: makeParam(0),
+      start: (t = 0) => {
+        if (!Number.isFinite(t) || t < 0) throw new Error(`非法 osc.start(${t})`);
+      },
+      stop: (t = 0) => {
+        if (!Number.isFinite(t) || t < 0) throw new Error(`非法 osc.stop(${t})`);
+      },
+    }),
+    createBufferSource: () => ({
+      ...makeNode(),
+      buffer: null as AudioBuffer | null,
+      loop: false,
+      playbackRate: makeParam(1),
+      start: (t = 0, offset = 0, dur?: number) => {
+        if (!Number.isFinite(t) || t < 0 || offset < 0 || (dur !== undefined && dur < 0)) {
+          throw new Error(`非法 src.start(${t}, ${offset}, ${dur})`);
+        }
+      },
+      stop: () => {},
+    }),
+  };
+  return ctx as unknown as AudioContext;
+}
+
+describe('电影级物理建模音效引擎 (SoundEngine)', () => {
+  it('应完整注册全部 42 组东方×H4音色配方（含五类远程弹道、冰霜/雷电与神枪冈格尼尔），无头安全零报错', () => {
+    const engine = new SoundEngine({ muted: false, masterVolume: 0.8, sfxVolume: 0.9, uiVolume: 0.8 });
+    const ids = Object.keys(DEFAULT_SFX_CATALOG);
+    expect(ids.length).toBeGreaterThanOrEqual(42);
+
+    const requiredNewIds = [
+      'shot_arrow',
+      'shot_light_orb',
+      'shot_dark_orb',
+      'shot_magic_wave',
+      'shot_explosive_shell',
+      'spell_ice',
+      'spell_lightning',
+      'spellcard_gungnir',
+    ];
+    for (const reqId of requiredNewIds) {
+      expect(engine.hasRecipe(reqId)).toBe(true);
+    }
+
+    for (const id of ids) {
+      expect(engine.hasRecipe(id)).toBe(true);
+      expect(engine.play(id)).toBe(true);
+    }
+    expect(engine.getPlayCount()).toBe(ids.length);
+  });
+
+  it('离线预烘焙物理建模 PCM 库与双空间卷积混响 IR 应零 NaN、零削波且能量饱满', () => {
+    const mockCtx = createMockAudioContext(44100);
+    const bank = buildPhysicalSoundBank(mockCtx);
+    const brown = createBrownNoiseBuffer(mockCtx, 1);
+    const roomIr = createSpatialImpulseResponse(mockCtx, 'battlefield');
+    const hallIr = createSpatialImpulseResponse(mockCtx, 'hall');
+
+    const checkBuffer = (name: string, buf: AudioBuffer, expectedChannels = 1) => {
+      expect(buf.numberOfChannels, `${name} 声道数`).toBe(expectedChannels);
+      expect(buf.length, `${name} 采样长度`).toBeGreaterThan(64);
+      for (let ch = 0; ch < buf.numberOfChannels; ch++) {
+        const samples = buf.getChannelData(ch);
+        let peak = 0;
+        let energySum = 0;
+        let nonFiniteCount = 0;
+        for (let i = 0; i < samples.length; i++) {
+          const s = samples[i];
+          if (!Number.isFinite(s)) {
+            nonFiniteCount += 1;
+            continue;
+          }
+          const a = Math.abs(s);
+          if (a > peak) peak = a;
+          energySum += s * s;
+        }
+        const rms = Math.sqrt(energySum / samples.length);
+        expect(nonFiniteCount, `${name}[ch${ch}] 含 NaN/Infinity`).toBe(0);
+        expect(peak, `${name} 峰值超 1.0 发生数字削波`).toBeLessThanOrEqual(1.0);
+        expect(rms, `${name} 静音无能量`).toBeGreaterThan(0.005);
+      }
+    };
+
+    for (const [key, buf] of Object.entries(bank)) {
+      checkBuffer(`bank.${key}`, buf, 1);
+    }
+    checkBuffer('brownNoise', brown, 1);
+    checkBuffer('roomIr', roomIr, 2);
+    checkBuffer('hallIr', hallIr, 2);
+  });
+
+  it('全部 42 组配方在真实节点参数调度（含指数斜坡正值校验）下应零异常完成渲染', () => {
+    const mockCtx = createMockAudioContext(44100);
+    const env: SynthEnv = {
+      ctx: mockCtx,
+      dryBus: mockCtx.createGain(),
+      wetBus: mockCtx.createGain(),
+      hallWetBus: mockCtx.createGain(),
+      whiteNoise: createWhiteNoiseBuffer(mockCtx, 2),
+      pinkNoise: createPinkNoiseBuffer(mockCtx, 2),
+      brownNoise: createBrownNoiseBuffer(mockCtx, 2),
+      bank: buildPhysicalSoundBank(mockCtx),
+    };
+
+    for (const [id, recipe] of Object.entries(DEFAULT_SFX_CATALOG)) {
+      expect(
+        () =>
+          recipe.render(env, {
+            pan: 0.25,
+            gain: recipe.defaultGain,
+            pitchScale: 1.03,
+            now: 0.2,
+          }),
+        `配方 ${id} 节点参数调度异常`,
+      ).not.toThrow();
+    }
+  });
+
+  it('同类音效防连发冷却、静音门控、总线音量钳制与外部配方热扩展应准确生效', () => {
+    const engine = new SoundEngine({ muted: false, masterVolume: 0.7, sfxVolume: 0.8, uiVolume: 0.7 });
+
+    // 1. 冷却期拦截同一音效连发（ui_click 冷却 35ms）
+    expect(engine.play('ui_click')).toBe(true);
+    expect(engine.play('ui_click')).toBe(false);
+
+    // 2. 静音门控与一键切换
+    expect(engine.toggleMute()).toBe(true);
+    expect(engine.play('spellcard_declare')).toBe(false);
+    expect(engine.toggleMute()).toBe(false);
+    expect(engine.play('spellcard_declare')).toBe(true);
+
+    // 3. 音量边界自动钳制在 [0, 1]
+    const clamped = engine.updateSettings({ masterVolume: 2.5, uiVolume: -0.4 });
+    expect(clamped.masterVolume).toBe(1);
+    expect(clamped.uiVolume).toBe(0);
+    // ui 总线为 0 时拒绝触发 ui 音效，但 sfx 音效仍可正常播放
+    expect(engine.play('ui_panel_open')).toBe(false);
+    expect(engine.playAtStageX('graze_tick', 220, 880)).toBe(true);
+
+    // 4. Phase 2 复用扩展口：热注册新音效配方
+    engine.registerRecipe('world_caravan_bell', {
+      bus: 'sfx',
+      cooldownMs: 0,
+      defaultGain: 0.4,
+      reverbSend: 0.3,
+      render: () => {},
+    });
+    expect(engine.hasRecipe('world_caravan_bell')).toBe(true);
+    expect(engine.play('world_caravan_bell')).toBe(true);
+    expect(engine.play('world_caravan_bell')).toBe(true);
+
+    // 5. BGM 通道配置、音轨切换、音量钳制与无头环境零报错验证
+    expect(engine.getBgmTrackUrl()).toContain('assets/audio/battle_bgm.mp3');
+    const bgmUpdated = engine.updateSettings({ bgmVolume: 1.8, bgmEnabled: true });
+    expect(bgmUpdated.bgmVolume).toBe(1);
+    expect(bgmUpdated.bgmEnabled).toBe(true);
+    engine.setBgmTrack('/assets/audio/custom_theme.mp3');
+    expect(engine.getBgmTrackUrl()).toBe('/assets/audio/custom_theme.mp3');
+    expect(() => engine.startBgm()).not.toThrow();
+    expect(() => engine.stopBgm()).not.toThrow();
+  });
+});

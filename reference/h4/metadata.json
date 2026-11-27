@@ -1,0 +1,37 @@
+{
+  "source": "Might & Magic Wiki (https://mightandmagic.fandom.com) via MediaWiki API",
+  "license": "CC-BY-SA 3.0 (data & text reference only; zero copyrighted images/audio)",
+  "fetchedAt": "2026-11-25T04:50:37.072Z",
+  "counts": {
+    "creaturesTotal": 74,
+    "creaturesTown": 48,
+    "creaturesExternalOrExpansion": 26,
+    "uniqueAbilitiesTotal": 75,
+    "spellsTotal": 142,
+    "spellsBySchool": {
+      "Life": 32,
+      "Order": 27,
+      "Death": 25,
+      "Chaos": 27,
+      "Nature": 31
+    },
+    "artifactsAndItemsTotal": 208,
+    "potionsTotal": 22,
+    "combinationSetsTotal": 5,
+    "skillsTotal": 36,
+    "primarySkills": 9,
+    "secondarySkills": 27,
+    "classesTotal": 48,
+    "baseClasses": 11,
+    "advancedClasses": 37,
+    "townsTotal": 6,
+    "townBuildingsTotal": 172
+  },
+  "audit": {
+    "creaturesMissingHp": [],
+    "abilitiesMissingDesc": [],
+    "spellsMissingDesc": [],
+    "skillsMissingLevels": [],
+    "advancedMissingBonus": []
+  }
+}

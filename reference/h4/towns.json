@@ -1,0 +1,2447 @@
+[
+  {
+    "id": "haven",
+    "name": "Haven",
+    "alignment": "Life",
+    "alignmentZh": "生命（圣堂 Haven）",
+    "nativeTerrain": "Grass",
+    "heroClasses": [
+      "Knight (might)",
+      "Priest (magic)"
+    ],
+    "magicSchools": [
+      "Life",
+      "Nature",
+      "Order"
+    ],
+    "grailBuilding": "Holy avatar",
+    "buildings": [
+      {
+        "category": "Basic",
+        "name": "Village hall",
+        "description": "Provides 500 gold per day. It is required before you can build any other town structure.",
+        "cost": {
+          "gold": null,
+          "rareResources": {},
+          "raw": "N/A"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Basic",
+        "name": "Town hall",
+        "description": "Provides 750 gold per day.",
+        "cost": {
+          "gold": 2500,
+          "rareResources": {
+            "wood": 10,
+            "ore": 10
+          },
+          "raw": "10 wood / 10 ore / 2500 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Basic",
+        "name": "City hall",
+        "description": "Provides 1000 gold per day.",
+        "cost": {
+          "gold": 2500,
+          "rareResources": {
+            "wood": 10,
+            "ore": 10,
+            "gems": 5,
+            "crystal": 5
+          },
+          "raw": "10 wood / 10 ore / 5 gems / 5 crystal / 2500 gold"
+        },
+        "prerequisites": "Town hall"
+      },
+      {
+        "category": "Basic",
+        "name": "Tavern",
+        "description": "Allows the recruitment of heroes",
+        "cost": {
+          "gold": 500,
+          "rareResources": {
+            "wood": 2
+          },
+          "raw": "2 wood / 500 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Basic",
+        "name": "Prison",
+        "description": "Holds captured enemy heroes.* (This building cannot be constructed; it is added to the town by default.)",
+        "cost": {
+          "gold": null,
+          "rareResources": {},
+          "raw": "N/A"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Basic",
+        "name": "Fort",
+        "description": "Builds a level one city wall. It is required to build 1st level creature dwellings.",
+        "cost": {
+          "gold": 5000,
+          "rareResources": {
+            "wood": 20,
+            "ore": 20
+          },
+          "raw": "20 wood / 20 ore / 5000 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Basic",
+        "name": "Citadel",
+        "description": "Builds a moat and level two city wall.",
+        "cost": {
+          "gold": 7500,
+          "rareResources": {
+            "wood": 10,
+            "ore": 10
+          },
+          "raw": "10 wood / 10 ore / 7500 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Basic",
+        "name": "Castle",
+        "description": "Builds a keep and level three city wall.",
+        "cost": {
+          "gold": 7500,
+          "rareResources": {
+            "wood": 10,
+            "ore": 10
+          },
+          "raw": "10 wood / 10 ore / 7500 gold"
+        },
+        "prerequisites": "Citadel"
+      },
+      {
+        "category": "Basic",
+        "name": "Caravan",
+        "description": "Sends heroes and creatures to remote locations. Travel time is computed using a high (30 move / day) movement rate.",
+        "cost": {
+          "gold": 4000,
+          "rareResources": {
+            "wood": 10
+          },
+          "raw": "10 wood / 4000 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Basic",
+        "name": "Shipyard",
+        "description": "Builds ships, and allows caravans to travel across bodies of water.",
+        "cost": {
+          "gold": 2000,
+          "rareResources": {
+            "wood": 20
+          },
+          "raw": "20 wood / 2000 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Other",
+        "name": "Abbey",
+        "description": "Provides +2 morale until the next battle.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "wood": 4,
+            "ore": 4
+          },
+          "raw": "4 wood / 4 ore / 1000 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Other",
+        "name": "Seminary",
+        "description": "Teaches the basic level of 4 skills for 2000 gold each. Skills are chosen from secondary skills for Tactics, Combat, Life Magic, Order Magic, and Nature Magic.",
+        "cost": {
+          "gold": 5750,
+          "rareResources": {
+            "wood": 5,
+            "ore": 5,
+            "gems": 2,
+            "crystal": 2
+          },
+          "raw": "5 wood / 5 ore / 2 gems / 2 crystal / 5750 gold"
+        },
+        "prerequisites": "Abbey"
+      },
+      {
+        "category": "Other",
+        "name": "Order of Paladins",
+        "description": "Sells Longswords, Plate Mail, and Potions of Restoration, Holy Water, Healing, Mirth and Immortality.",
+        "cost": {
+          "gold": 3000,
+          "rareResources": {
+            "ore": 14
+          },
+          "raw": "14 ore / 3000 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Other",
+        "name": "Stables",
+        "description": "Provides armies with +5 movement for the next 7 days.",
+        "cost": {
+          "gold": 2750,
+          "rareResources": {
+            "wood": 10
+          },
+          "raw": "10 wood / 2750 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Other",
+        "name": "Holy avatar",
+        "description": "Provides 3000 gold per day. Also, the strength of all Life Magic spells are increased by 50%.",
+        "cost": {
+          "gold": null,
+          "rareResources": {},
+          "raw": "Grail"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Mage guild",
+        "name": "Holy cathedral level 1",
+        "description": "Teaches 3 Level One Life Magic spells. Heroes who visit regain up to 35% of their spell points. Heroes who spend the night recover all of their spell points.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "wood": 3,
+            "ore": 3
+          },
+          "raw": "3 wood / 3 ore / 1000 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Mage guild",
+        "name": "Holy cathedral level 2",
+        "description": "Teaches 3 Level Two Life Magic spells. Heroes who visit regain up to 50% of their spell points. Heroes who spend the night recover all of their spell points.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "wood": 1,
+            "ore": 1
+          },
+          "raw": "1 wood / 1 ore / 1000 gold"
+        },
+        "prerequisites": "Holy cathedral level 1"
+      },
+      {
+        "category": "Mage guild",
+        "name": "Holy cathedral level 3",
+        "description": "Teaches 2 Level Three Life Magic spells. Heroes who visit regain up to 65% of their spell points. Heroes who spend the night recover all of their spell points.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "wood": 1,
+            "ore": 1
+          },
+          "raw": "1 wood / 1 ore / 1000 gold"
+        },
+        "prerequisites": "Holy cathedral level 2"
+      },
+      {
+        "category": "Mage guild",
+        "name": "Holy cathedral level 4",
+        "description": "Teaches 2 Level Four Life Magic spells. Heroes who visit regain up to 80% of their spell points. Heroes who spend the night recover all of their spell points.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "wood": 1,
+            "ore": 1
+          },
+          "raw": "1 wood / 1 ore / 1000 gold"
+        },
+        "prerequisites": "Holy cathedral level 3"
+      },
+      {
+        "category": "Mage guild",
+        "name": "Holy cathedral level 5",
+        "description": "Teaches 1 Level Five Life Magic spell. Heroes who visit or spend the night recover 100% of their spell points.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "wood": 1,
+            "ore": 1
+          },
+          "raw": "1 wood / 1 ore / 1000 gold"
+        },
+        "prerequisites": "Holy cathedral level 4"
+      },
+      {
+        "category": "Mage guild",
+        "name": "Order of Nature",
+        "description": "Teaches Nature Magic spells. Depending on the level of the mage guild, it teaches 2 spells for Level One, Two and Three and 1 spell each for Levels Four and Five.",
+        "cost": {
+          "gold": 2500,
+          "rareResources": {
+            "wood": 2,
+            "ore": 2,
+            "crystal": 2
+          },
+          "raw": "2 wood / 2 ore / 2 crystal / 2500 gold"
+        },
+        "prerequisites": "Holy cathedral level 1"
+      },
+      {
+        "category": "Mage guild",
+        "name": "Order of Enchantment",
+        "description": "Teaches Order Magic spells. Depending on the level of the mage guild, it teaches 2 spells for Level One, Two and Three and 1 spell each for Levels Four and Five.",
+        "cost": {
+          "gold": 2500,
+          "rareResources": {
+            "wood": 2,
+            "ore": 2,
+            "gems": 2
+          },
+          "raw": "2 wood / 2 ore / 2 gems / 2500 gold"
+        },
+        "prerequisites": "Holy cathedral level 1"
+      },
+      {
+        "category": "Creature production",
+        "name": "Squire's guild",
+        "description": "Generates Squires.",
+        "cost": {
+          "gold": 1500,
+          "rareResources": {},
+          "raw": "1500 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Creature production",
+        "name": "Archery range",
+        "description": "Generates Crossbowmen.",
+        "cost": {
+          "gold": 1500,
+          "rareResources": {},
+          "raw": "1500 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Creature production",
+        "name": "Guardhouse",
+        "description": "Generates Pikemen. Building the Guardhouse prevents the construction of the Ballista Works.",
+        "cost": {
+          "gold": 3000,
+          "rareResources": {
+            "wood": 3,
+            "ore": 3
+          },
+          "raw": "3 wood / 3 ore / 3000 gold"
+        },
+        "prerequisites": "Tavern / Squire's guild or archery range"
+      },
+      {
+        "category": "Creature production",
+        "name": "Ballista works",
+        "description": "Generates Ballistae. Building the Ballista Works prevents the construction of the Guardhouse.",
+        "cost": {
+          "gold": 3000,
+          "rareResources": {
+            "wood": 6
+          },
+          "raw": "6 wood / 3000 gold"
+        },
+        "prerequisites": "Archery range"
+      },
+      {
+        "category": "Creature production",
+        "name": "Barracks",
+        "description": "Generates Crusaders. Building the Barracks prevents the construction of the Monastery.",
+        "cost": {
+          "gold": 6250,
+          "rareResources": {
+            "wood": 12,
+            "ore": 12
+          },
+          "raw": "12 wood / 12 ore / 6250 gold"
+        },
+        "prerequisites": "Order of paladins / Guardhouse or ballista works"
+      },
+      {
+        "category": "Creature production",
+        "name": "Monastery",
+        "description": "Generates Monks. Building the Monastery prevents the construction of the Barracks.",
+        "cost": {
+          "gold": 6250,
+          "rareResources": {
+            "wood": 4,
+            "ore": 4,
+            "crystal": 8
+          },
+          "raw": "4 wood / 4 ore / 8 crystal / 6250 gold"
+        },
+        "prerequisites": "Abbey / Guardhouse or ballista works"
+      },
+      {
+        "category": "Creature production",
+        "name": "Knight's chapter",
+        "description": "Generates Champions. Building the Knight's Chapter prevents the construction of the Altar of Light.",
+        "cost": {
+          "gold": 14000,
+          "rareResources": {
+            "wood": 40,
+            "ore": 32
+          },
+          "raw": "40 wood / 32 ore / 14000 gold"
+        },
+        "prerequisites": "Stables / Order of paladins / Monastery or barracks"
+      },
+      {
+        "category": "Creature production",
+        "name": "Altar of Light",
+        "description": "Generates Angels. Building the Altar of Light prevents the construction of the Knight's Chapter.",
+        "cost": {
+          "gold": 14000,
+          "rareResources": {
+            "wood": 12,
+            "ore": 10,
+            "gems": 15,
+            "crystal": 12
+          },
+          "raw": "12 wood / 10 ore / 15 gems / 12 crystal / 14000 gold"
+        },
+        "prerequisites": "Seminary / Monastery or barracks"
+      }
+    ]
+  },
+  {
+    "id": "academy",
+    "name": "Academy",
+    "alignment": "Order",
+    "alignmentZh": "秩序（学院 Academy）",
+    "nativeTerrain": "Snow",
+    "heroClasses": [
+      "Lord (might)",
+      "Mage (magic)"
+    ],
+    "magicSchools": [
+      "Order",
+      "Death",
+      "Life"
+    ],
+    "grailBuilding": "Great library",
+    "buildings": [
+      {
+        "category": "Basic",
+        "name": "Village hall",
+        "description": "Provides 500 gold per day. It is required before you can build any other town structure.",
+        "cost": {
+          "gold": null,
+          "rareResources": {},
+          "raw": "N/A"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Basic",
+        "name": "Town hall",
+        "description": "Provides 750 gold per day.",
+        "cost": {
+          "gold": 2500,
+          "rareResources": {
+            "wood": 10,
+            "ore": 10
+          },
+          "raw": "10 wood / 10 ore / 2500 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Basic",
+        "name": "City hall",
+        "description": "Provides 1000 gold per day.",
+        "cost": {
+          "gold": 2500,
+          "rareResources": {
+            "wood": 10,
+            "ore": 10,
+            "gems": 5,
+            "crystal": 5
+          },
+          "raw": "10 wood / 10 ore / 5 gems / 5 crystal / 2500 gold"
+        },
+        "prerequisites": "Town hall"
+      },
+      {
+        "category": "Basic",
+        "name": "Tavern",
+        "description": "Allows the recruitment of heroes",
+        "cost": {
+          "gold": 500,
+          "rareResources": {
+            "wood": 2
+          },
+          "raw": "2 wood / 500 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Basic",
+        "name": "Prison",
+        "description": "Holds captured enemy heroes.* (This building cannot be constructed; it is added to the town by default.)",
+        "cost": {
+          "gold": null,
+          "rareResources": {},
+          "raw": "N/A"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Basic",
+        "name": "Fort",
+        "description": "Builds a level one city wall. It is required to build 1st level creature dwellings.",
+        "cost": {
+          "gold": 5000,
+          "rareResources": {
+            "wood": 20,
+            "ore": 20
+          },
+          "raw": "20 wood / 20 ore / 5000 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Basic",
+        "name": "Citadel",
+        "description": "Builds a moat and level two city wall.",
+        "cost": {
+          "gold": 7500,
+          "rareResources": {
+            "wood": 10,
+            "ore": 10
+          },
+          "raw": "10 wood / 10 ore / 7500 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Basic",
+        "name": "Castle",
+        "description": "Builds a keep and level three city wall.",
+        "cost": {
+          "gold": 7500,
+          "rareResources": {
+            "wood": 10,
+            "ore": 10
+          },
+          "raw": "10 wood / 10 ore / 7500 gold"
+        },
+        "prerequisites": "Citadel"
+      },
+      {
+        "category": "Basic",
+        "name": "Caravan",
+        "description": "Sends heroes and creatures to remote locations. Travel time is computed using a high (30 move / day) movement rate.",
+        "cost": {
+          "gold": 4000,
+          "rareResources": {
+            "wood": 10
+          },
+          "raw": "10 wood / 4000 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Basic",
+        "name": "Shipyard",
+        "description": "Builds ships, and allows caravans to travel across bodies of water.",
+        "cost": {
+          "gold": 2000,
+          "rareResources": {
+            "wood": 20
+          },
+          "raw": "20 wood / 2000 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Other",
+        "name": "University",
+        "description": "Teaches the basic level of 4 skills for 2000 gold each. Skills are chosen from the secondary skills for Nobility, Scouting, Life Magic, Order Magic, and Death Magic.",
+        "cost": {
+          "gold": 5750,
+          "rareResources": {
+            "wood": 5,
+            "ore": 5,
+            "sulfur": 2,
+            "gems": 2
+          },
+          "raw": "5 wood / 5 ore / 2 sulfur / 2 gems / 5750 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Other",
+        "name": "Treasury",
+        "description": "Provides an extra 10% gold per week.",
+        "cost": {
+          "gold": 6000,
+          "rareResources": {
+            "wood": 5,
+            "ore": 10
+          },
+          "raw": "5 wood / 10 ore / 6000 gold"
+        },
+        "prerequisites": "Town hall / Fort"
+      },
+      {
+        "category": "Other",
+        "name": "Alchemist's shop",
+        "description": "Sells Telescope, Mage's Staff, Chain Mail, and Potions of Restoration, Immortality, Cold, Fire Resistance, and Binding Liquid.",
+        "cost": {
+          "gold": 3000,
+          "rareResources": {
+            "wood": 4,
+            "ore": 4,
+            "mercury": 1,
+            "sulfur": 1,
+            "gems": 1,
+            "crystal": 1
+          },
+          "raw": "4 wood / 4 ore / 1 mercury / 1 sulfur / 1 gem / 1 crystal / 3000 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Other",
+        "name": "Great Library",
+        "description": "Provides 3000 gold per day. Also, the strength of all Order Magic spells are increased by 50%. All Institutes of Magic for this player contain spells as if they were Level 5. A hero who stays in a town with an Institute of Magic can exceed his/her normal spell point limit by 25% for every level over a Level 1 Institute of Magic.",
+        "cost": {
+          "gold": null,
+          "rareResources": {},
+          "raw": "Grail"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Mage guild",
+        "name": "Institute of Magic level 1",
+        "description": "Teaches 3 Level One Order Magic spells. Heroes who visit regain up to 35% of their spell points. Heroes who spend the night recover all of their spell points.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "wood": 2,
+            "ore": 2,
+            "gems": 1
+          },
+          "raw": "2 wood / 2 ore / 1 gem / 1000 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Mage guild",
+        "name": "Institute of Magic level 2",
+        "description": "Teaches 3 Level Two Order Magic spells. Heroes who visit regain up to 50% of their spell points. Heroes who spend the night recover all of their spell points.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "gems": 1
+          },
+          "raw": "1 gem / 1000 gold"
+        },
+        "prerequisites": "Institute of Magic level 1"
+      },
+      {
+        "category": "Mage guild",
+        "name": "Institute of Magic level 3",
+        "description": "Teaches 2 Level Three Order Magic spells. Heroes who visit regain up to 65% of their spell points. Heroes who spend the night recover all of their spell points.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "gems": 1
+          },
+          "raw": "1 gem / 1000 gold"
+        },
+        "prerequisites": "Institute of Magic level 2"
+      },
+      {
+        "category": "Mage guild",
+        "name": "Institute of Magic level 4",
+        "description": "Teaches 2 Level Four Order Magic spells. Heroes who visit regain up to 80% of their spell points. Heroes who spend the night recover all of their spell points.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "gems": 1
+          },
+          "raw": "1 gem / 1000 gold"
+        },
+        "prerequisites": "Institute of Magic level 3"
+      },
+      {
+        "category": "Mage guild",
+        "name": "Institute of Magic level 5",
+        "description": "Teaches 1 Level Five Order Magic spell. Heroes who visit or spend the night recover 100% of their spell points.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "gems": 1
+          },
+          "raw": "1 gem / 1000 gold"
+        },
+        "prerequisites": "Institute of Magic level 4"
+      },
+      {
+        "category": "Mage guild",
+        "name": "Clerical library",
+        "description": "Teaches Life Magic spells. Depending on the level of the mage guild, it teaches 2 spells for Level One, Two and Three and 1 spell each for Levels Four and Five.",
+        "cost": {
+          "gold": 2500,
+          "rareResources": {
+            "wood": 4,
+            "ore": 4
+          },
+          "raw": "4 wood / 4 ore / 2500 gold"
+        },
+        "prerequisites": "Institute of Magic level 1"
+      },
+      {
+        "category": "Mage guild",
+        "name": "Necromantic library",
+        "description": "Teaches Death Magic spells. Depending on the level of the mage guild, it teaches 2 spells for Level One, Two and Three and 1 spell each for Levels Four and Five.",
+        "cost": {
+          "gold": 2500,
+          "rareResources": {
+            "wood": 2,
+            "ore": 2,
+            "sulfur": 2
+          },
+          "raw": "2 wood / 2 ore / 2 sulfur / 2500 gold"
+        },
+        "prerequisites": "Institute of Magic level 1"
+      },
+      {
+        "category": "Creature production",
+        "name": "Dwarven mines",
+        "description": "Generates Dwarves.",
+        "cost": {
+          "gold": 1500,
+          "rareResources": {},
+          "raw": "1500 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Creature production",
+        "name": "Halfling burrow",
+        "description": "Generates Halflings.",
+        "cost": {
+          "gold": 1500,
+          "rareResources": {},
+          "raw": "1500 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Creature production",
+        "name": "Golem factory",
+        "description": "Generates Gold Golems. Building the Golem Factory prevents the construction of the Mage Tower.",
+        "cost": {
+          "gold": 3000,
+          "rareResources": {
+            "ore": 6
+          },
+          "raw": "6 ore / 3000 gold"
+        },
+        "prerequisites": "Insitute of Magic level 1 / Dwarven mines or halfling burrow"
+      },
+      {
+        "category": "Creature production",
+        "name": "Mage tower",
+        "description": "Generates Mages. Building the Mage Tower prevents the construction of the Golem Factory.",
+        "cost": {
+          "gold": 2750,
+          "rareResources": {
+            "gems": 1,
+            "crystal": 1,
+            "sulfur": 1,
+            "mercury": 1
+          },
+          "raw": "1 gem / 1 crystal / 1 sulfur / 1 mercury / 2750 gold"
+        },
+        "prerequisites": "Insitute of Magic level 1 / Dwarven mines or halfling burrow"
+      },
+      {
+        "category": "Creature production",
+        "name": "Golden pavilion",
+        "description": "Generates Naga. Building the Golden Pavilion prevents the construction of the Altar of Wishes.",
+        "cost": {
+          "gold": 6250,
+          "rareResources": {
+            "wood": 8,
+            "ore": 8,
+            "crystal": 4
+          },
+          "raw": "8 wood / 8 ore / 4 crystal / 6250 gold"
+        },
+        "prerequisites": "Treasury / Mage tower or golem factory"
+      },
+      {
+        "category": "Creature production",
+        "name": "Altar of Wishes",
+        "description": "Generates Genies. Building the Altar of Wishes prevents the construction of the Golden Pavilion.",
+        "cost": {
+          "gold": 6250,
+          "rareResources": {
+            "gems": 12
+          },
+          "raw": "12 gems / 6250 gold"
+        },
+        "prerequisites": "Clerical library / Mage tower or golem factory"
+      },
+      {
+        "category": "Creature production",
+        "name": "Dragon factory",
+        "description": "Generates Dragon Golems. Building the Dragon Factory prevents the construction of the Cloud Castle.",
+        "cost": {
+          "gold": 14000,
+          "rareResources": {
+            "wood": 12,
+            "ore": 30,
+            "sulfur": 4,
+            "crystal": 4,
+            "gems": 4,
+            "mercury": 4
+          },
+          "raw": "12 wood / 30 ore / 4 sulfur / 4 crystal / 4 gems / 4 mercury / 14000 gold"
+        },
+        "prerequisites": "Alchemist's shop / University / Altar of Wishes or golden pavilion"
+      },
+      {
+        "category": "Creature production",
+        "name": "Cloud castle",
+        "description": "Generates Titans. Building the Cloud Castle prevents the construction of the Dragon Factory.",
+        "cost": {
+          "gold": 14000,
+          "rareResources": {
+            "wood": 16,
+            "ore": 16,
+            "gems": 20
+          },
+          "raw": "16 wood / 16 ore / 20 gems / 14000 gold"
+        },
+        "prerequisites": "Castle / Altar of Wishes or golden pavilion"
+      }
+    ]
+  },
+  {
+    "id": "necropolis",
+    "name": "Necropolis",
+    "alignment": "Death",
+    "alignmentZh": "死亡（墓园 Necropolis）",
+    "nativeTerrain": "Volcanic",
+    "heroClasses": [
+      "Death Knight (might)",
+      "Necromancer (magic)"
+    ],
+    "magicSchools": [
+      "Death",
+      "Chaos",
+      "Order"
+    ],
+    "grailBuilding": "Infernal effigy",
+    "buildings": [
+      {
+        "category": "Basic",
+        "name": "Village hall",
+        "description": "Provides 500 gold per day. It is required before you can build any other town structure.",
+        "cost": {
+          "gold": null,
+          "rareResources": {},
+          "raw": "N/A"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Basic",
+        "name": "Town hall",
+        "description": "Provides 750 gold per day.",
+        "cost": {
+          "gold": 2500,
+          "rareResources": {
+            "wood": 10,
+            "ore": 10
+          },
+          "raw": "10 wood / 10 ore / 2500 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Basic",
+        "name": "City hall",
+        "description": "Provides 1000 gold per day.",
+        "cost": {
+          "gold": 2500,
+          "rareResources": {
+            "wood": 10,
+            "ore": 10,
+            "gems": 5,
+            "crystal": 5
+          },
+          "raw": "10 wood / 10 ore / 5 gems / 5 crystals / 2500 gold"
+        },
+        "prerequisites": "Town hall"
+      },
+      {
+        "category": "Basic",
+        "name": "Tavern",
+        "description": "Allows the recruitment of heroes",
+        "cost": {
+          "gold": 500,
+          "rareResources": {
+            "wood": 2
+          },
+          "raw": "2 wood / 500 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Basic",
+        "name": "Prison",
+        "description": "Holds captured enemy heroes.* (This building cannot be constructed; it is added to the town by default.)",
+        "cost": {
+          "gold": null,
+          "rareResources": {},
+          "raw": "N/A"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Basic",
+        "name": "Fort",
+        "description": "Builds a level one city wall. It is required to build 1st level creature dwellings.",
+        "cost": {
+          "gold": 5000,
+          "rareResources": {
+            "wood": 20,
+            "ore": 20
+          },
+          "raw": "20 wood / 20 ore / 5000 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Basic",
+        "name": "Citadel",
+        "description": "Builds a moat and level two city wall.",
+        "cost": {
+          "gold": 7500,
+          "rareResources": {
+            "wood": 10,
+            "ore": 10
+          },
+          "raw": "10 wood / 10 ore / 7500 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Basic",
+        "name": "Castle",
+        "description": "Builds a keep and level three city wall.",
+        "cost": {
+          "gold": 7500,
+          "rareResources": {
+            "wood": 10,
+            "ore": 10
+          },
+          "raw": "10 wood / 10 ore / 7500 gold"
+        },
+        "prerequisites": "Citadel"
+      },
+      {
+        "category": "Basic",
+        "name": "Caravan",
+        "description": "Sends heroes and creatures to remote locations. Travel time is computed using a high (30 move / day) movement rate.",
+        "cost": {
+          "gold": 4000,
+          "rareResources": {
+            "wood": 10
+          },
+          "raw": "10 wood / 4000 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Basic",
+        "name": "Shipyard",
+        "description": "Builds ships, and allows caravans to travel across bodies of water.",
+        "cost": {
+          "gold": 2000,
+          "rareResources": {
+            "wood": 20
+          },
+          "raw": "20 wood / 2000 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Other",
+        "name": "Undead transformer",
+        "description": "Converts Level One and Two creatures into skeletons, Level Three creatures into ghosts, and Level Four creatures into vampires.* (While not mentioned, it also converts megadragons, faerie dragons and black dragons into bone dragons.)",
+        "cost": {
+          "gold": 2500,
+          "rareResources": {
+            "ore": 10,
+            "mercury": 5
+          },
+          "raw": "10 ore / 5 mercury / 2500 gold"
+        },
+        "prerequisites": "Cemetery"
+      },
+      {
+        "category": "Other",
+        "name": "Necromancy amplifier",
+        "description": "Incerases the effects of the Necromancy skill by 10%.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "wood": 6,
+            "sulfur": 3,
+            "mercury": 3
+          },
+          "raw": "6 wood / 3 sulfur / 3 mercury / 1000 gold"
+        },
+        "prerequisites": "Fort / Tower of Darkness Level 1"
+      },
+      {
+        "category": "Other",
+        "name": "Armory",
+        "description": "Sells Longswords, Chain Mail, Shields, Vials of Poison, Potions of Restoration, Clouds of Despair, Vials of Choking Gas, and Potions of Immortality.",
+        "cost": {
+          "gold": 3000,
+          "rareResources": {
+            "wood": 4,
+            "ore": 10
+          },
+          "raw": "4 wood / 10 ore / 3000 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Other",
+        "name": "Infernal effigy",
+        "description": "Provides 3000 gold per day. Also, the strength of all Death Magic spells are increased by 50%. The maximum number of creatures that can be raised by necromancy is increased by 50%, and the effects of the Necromancy skill are increased by 10%.",
+        "cost": {
+          "gold": null,
+          "rareResources": {},
+          "raw": "Grail"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Mage guild",
+        "name": "Tower of Darkness level 1",
+        "description": "Teaches 3 Level One Death Magic spells. Heroes who visit regain up to 35% of their spell points. Heroes who spend the night recover all of their spell points.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "wood": 2,
+            "ore": 2,
+            "sulfur": 1
+          },
+          "raw": "2 wood / 2 ore / 1 sulfur / 1000 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Mage guild",
+        "name": "Tower of Darkness level 2",
+        "description": "Teaches 3 Level Two Death Magic spells. Heroes who visit regain up to 50% of their spell points. Heroes who spend the night recover all of their spell points.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "sulfur": 1
+          },
+          "raw": "1 sulfur / 1000 gold"
+        },
+        "prerequisites": "Tower of Darkness level 1"
+      },
+      {
+        "category": "Mage guild",
+        "name": "Tower of Darkness level 3",
+        "description": "Teaches 2 Level Three Death Magic spells. Heroes who visit regain up to 65% of their spell points. Heroes who spend the night recover all of their spell points.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "sulfur": 1
+          },
+          "raw": "1 sulfur / 1000 gold"
+        },
+        "prerequisites": "Tower of Darkness level 2"
+      },
+      {
+        "category": "Mage guild",
+        "name": "Tower of Darkness level 4",
+        "description": "Teaches 2 Level Four Death Magic spells. Heroes who visit regain up to 80% of their spell points. Heroes who spend the night recover all of their spell points.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "sulfur": 1
+          },
+          "raw": "1 sulfur / 1000 gold"
+        },
+        "prerequisites": "Tower of Darkness level 3"
+      },
+      {
+        "category": "Mage guild",
+        "name": "Tower of Darkness level 5",
+        "description": "Teaches 1 Level Five Death Magic spell. Heroes who visit or spend the night recover 100% of their spell points.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "sulfur": 1
+          },
+          "raw": "1 sulfur / 1000 gold"
+        },
+        "prerequisites": "Tower of Darkness level 4"
+      },
+      {
+        "category": "Mage guild",
+        "name": "Annex of wizardry",
+        "description": "Teaches Order Magic spells. Depending on the level of the mage guild, it teaches 2 spells for Level One, Two and Three and 1 spell each for Levels Four and Five.",
+        "cost": {
+          "gold": 2500,
+          "rareResources": {
+            "wood": 2,
+            "ore": 2,
+            "gems": 2
+          },
+          "raw": "2 wood / 2 ore / 2 gems / 2500 gold"
+        },
+        "prerequisites": "Tower of Darkness level 1"
+      },
+      {
+        "category": "Mage guild",
+        "name": "Chaos annex",
+        "description": "Teaches Chaos Magic spells. Depending on the level of the mage guild, it teaches 2 spells for Level One, Two and Three and 1 spell each for Levels Four and Five.",
+        "cost": {
+          "gold": 2500,
+          "rareResources": {
+            "wood": 2,
+            "ore": 2,
+            "mercury": 2
+          },
+          "raw": "2 wood / 2 ore / 2 mercury / 2500 gold"
+        },
+        "prerequisites": "Tower of Darkness level 1"
+      },
+      {
+        "category": "Creature production",
+        "name": "Cemetery",
+        "description": "Generates Skeletons.",
+        "cost": {
+          "gold": 1500,
+          "rareResources": {},
+          "raw": "1500 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Creature production",
+        "name": "Torture chamber",
+        "description": "Generates Imps.",
+        "cost": {
+          "gold": 1500,
+          "rareResources": {},
+          "raw": "1500 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Creature production",
+        "name": "Barrow mound",
+        "description": "Generates Ghosts. Building the Barrow Mound prevents the construction of the Kennels.",
+        "cost": {
+          "gold": 3250,
+          "rareResources": {
+            "crystal": 3
+          },
+          "raw": "3 crystal / 3250 gold"
+        },
+        "prerequisites": "Undead transformer / Cemetery or torture chamber"
+      },
+      {
+        "category": "Creature production",
+        "name": "Kennels",
+        "description": "Generates Cerberi. Building the Kennels prevents the construction of the Barrow Mound.",
+        "cost": {
+          "gold": 3000,
+          "rareResources": {
+            "wood": 4,
+            "sulfur": 1
+          },
+          "raw": "4 wood / 1 sulfur / 3000 gold"
+        },
+        "prerequisites": "Torture chamber"
+      },
+      {
+        "category": "Creature production",
+        "name": "Mansion",
+        "description": "Generates Vampires. Building the Mansion prevents the construction of the Spawning Pit.",
+        "cost": {
+          "gold": 6250,
+          "rareResources": {
+            "wood": 8,
+            "crystal": 8
+          },
+          "raw": "8 wood / 8 crystal / 6250 gold"
+        },
+        "prerequisites": "Tavern / Barrow mound or kennels"
+      },
+      {
+        "category": "Creature production",
+        "name": "Spawning pit",
+        "description": "Generates Venom Spawns. Building the Spawning Pit prevents the construction of the Mansion.",
+        "cost": {
+          "gold": 6250,
+          "rareResources": {
+            "ore": 8,
+            "mercury": 8
+          },
+          "raw": "8 ore / 8 mercury / 6250 gold"
+        },
+        "prerequisites": "Tower of Darkness level 1 / Barrow mound or kennels"
+      },
+      {
+        "category": "Creature production",
+        "name": "Dragon graveyard",
+        "description": "Generates Bone Dragons. Building the Dragon Graveyard prevents the construction of the Temple of the Damned.",
+        "cost": {
+          "gold": 14000,
+          "rareResources": {
+            "wood": 12,
+            "ore": 14,
+            "mercury": 6,
+            "sulfur": 6,
+            "crystal": 6,
+            "gems": 6
+          },
+          "raw": "12 wood / 14 ore / 6 mercury / 6 sulfur / 6 crystal / 6 gems / 14000 gold"
+        },
+        "prerequisites": "Necromancy amplifier / Mansion or spawning pit"
+      },
+      {
+        "category": "Creature production",
+        "name": "Temple of the Damned",
+        "description": "Generates Devils. Building the Temple of the Damned prevents the construction of the Dragon Graveyard.",
+        "cost": {
+          "gold": 14000,
+          "rareResources": {
+            "wood": 6,
+            "ore": 8,
+            "sulfur": 20,
+            "gems": 10
+          },
+          "raw": "6 wood / 8 ore / 20 sulfur / 10 gems / 14000 gold"
+        },
+        "prerequisites": "Chaos annex / Mansion or spawning pit"
+      }
+    ]
+  },
+  {
+    "id": "asylum",
+    "name": "Asylum",
+    "alignment": "Chaos",
+    "alignmentZh": "混乱（疯人院 Asylum）",
+    "nativeTerrain": "Swamp",
+    "heroClasses": [
+      "Thief (might)",
+      "Sorcerer (magic)"
+    ],
+    "magicSchools": [
+      "Chaos",
+      "Death",
+      "Nature"
+    ],
+    "grailBuilding": "Eye of Chaos",
+    "buildings": [
+      {
+        "category": "Basic",
+        "name": "Village hall",
+        "description": "Provides 500 gold per day. It is required before you can build any other town structure.",
+        "cost": {
+          "gold": null,
+          "rareResources": {},
+          "raw": "N/A"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Basic",
+        "name": "Town hall",
+        "description": "Provides 750 gold per day.",
+        "cost": {
+          "gold": 2500,
+          "rareResources": {
+            "wood": 10,
+            "ore": 10
+          },
+          "raw": "10 wood / 10 ore / 2500 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Basic",
+        "name": "City hall",
+        "description": "Provides 1000 gold per day.",
+        "cost": {
+          "gold": 2500,
+          "rareResources": {
+            "wood": 10,
+            "ore": 10,
+            "gems": 5,
+            "crystal": 5
+          },
+          "raw": "10 wood / 10 ore / 5 gems / 5 crystals / 2500 gold"
+        },
+        "prerequisites": "Town hall"
+      },
+      {
+        "category": "Basic",
+        "name": "Tavern",
+        "description": "Allows the recruitment of heroes",
+        "cost": {
+          "gold": 500,
+          "rareResources": {
+            "wood": 2
+          },
+          "raw": "2 wood / 500 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Basic",
+        "name": "Prison",
+        "description": "Holds captured enemy heroes.* (This building cannot be constructed; it is added to the town by default.)",
+        "cost": {
+          "gold": null,
+          "rareResources": {},
+          "raw": "N/A"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Basic",
+        "name": "Fort",
+        "description": "Builds a level one city wall. It is required to build 1st level creature dwellings.",
+        "cost": {
+          "gold": 5000,
+          "rareResources": {
+            "wood": 20,
+            "ore": 20
+          },
+          "raw": "20 wood / 20 ore / 5000 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Basic",
+        "name": "Citadel",
+        "description": "Builds a moat and level two city wall.",
+        "cost": {
+          "gold": 7500,
+          "rareResources": {
+            "wood": 10,
+            "ore": 10
+          },
+          "raw": "10 wood / 10 ore / 7500 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Basic",
+        "name": "Castle",
+        "description": "Builds a keep and level three city wall.",
+        "cost": {
+          "gold": 7500,
+          "rareResources": {
+            "wood": 10,
+            "ore": 10
+          },
+          "raw": "10 wood / 10 ore / 7500 gold"
+        },
+        "prerequisites": "Citadel"
+      },
+      {
+        "category": "Basic",
+        "name": "Caravan",
+        "description": "Sends heroes and creatures to remote locations. Travel time is computed using a high (30 move / day) movement rate.",
+        "cost": {
+          "gold": 4000,
+          "rareResources": {
+            "wood": 10
+          },
+          "raw": "10 wood / 4000 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Basic",
+        "name": "Shipyard",
+        "description": "Builds ships, and allows caravans to travel across bodies of water.",
+        "cost": {
+          "gold": 2000,
+          "rareResources": {
+            "wood": 20
+          },
+          "raw": "20 wood / 2000 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Other",
+        "name": "Mana vortex",
+        "description": "Temporarily gives the hero twice their normal number of spell points.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "crystal": 1,
+            "mercury": 1,
+            "sulfur": 1,
+            "gems": 1
+          },
+          "raw": "1 crystal / 1 mercury / 1 sulfur / 1 gem / 1000 gold"
+        },
+        "prerequisites": "Sorcerer's guild level 2"
+      },
+      {
+        "category": "Other",
+        "name": "Battle academy",
+        "description": "Provides each hero with +1,000 experience.",
+        "cost": {
+          "gold": 2000,
+          "rareResources": {
+            "wood": 5,
+            "ore": 5
+          },
+          "raw": "5 wood / 5 ore / 2000 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Other",
+        "name": "Rogue's guild",
+        "description": "Sells Greatswords, Crossbows, Vials of Acid, Demon Fire, and Potions of Restoration, Immortality, and Mana.",
+        "cost": {
+          "gold": 3000,
+          "rareResources": {
+            "wood": 4,
+            "ore": 10
+          },
+          "raw": "4 wood / 10 ore / 3000 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Other",
+        "name": "Thieves gauntlet",
+        "description": "Increases the hero's Melee Attack by 3 and Ranged Attack by 2.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "ore": 6
+          },
+          "raw": "6 ore / 1000 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Other",
+        "name": "Eye of Chaos",
+        "description": "Provides 3000 gold per day. Also, the strength of all Chaos Magic spells are increased by 50%.",
+        "cost": {
+          "gold": null,
+          "rareResources": {},
+          "raw": "Grail"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Mage guild",
+        "name": "Sorcerer's guild level 1",
+        "description": "Teaches 3 Level One Chaos Magic spells. Heroes who visit regain up to 35% of their spell points. Heroes who spend the night recover all of their spell points.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "wood": 2,
+            "ore": 2,
+            "sulfur": 1
+          },
+          "raw": "2 wood / 2 ore / 1 sulfur / 1000 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Mage guild",
+        "name": "Sorcerer's guild level 2",
+        "description": "Teaches 3 Level Two Chaos Magic spells. Heroes who visit regain up to 50% of their spell points. Heroes who spend the night recover all of their spell points.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "sulfur": 1
+          },
+          "raw": "1 sulfur / 1000 gold"
+        },
+        "prerequisites": "Sorcerer's guild level 1"
+      },
+      {
+        "category": "Mage guild",
+        "name": "Sorcerer's guild level 3",
+        "description": "Teaches 2 Level Three Chaos Magic spells. Heroes who visit regain up to 65% of their spell points. Heroes who spend the night recover all of their spell points.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "sulfur": 1
+          },
+          "raw": "1 sulfur / 1000 gold"
+        },
+        "prerequisites": "Sorcerer's guild level 2"
+      },
+      {
+        "category": "Mage guild",
+        "name": "Sorcerer's guild level 4",
+        "description": "Teaches 2 Level Four Chaos Magic spells. Heroes who visit regain up to 80% of their spell points. Heroes who spend the night recover all of their spell points.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "sulfur": 1
+          },
+          "raw": "1 sulfur / 1000 gold"
+        },
+        "prerequisites": "Sorcerer's guild level 3"
+      },
+      {
+        "category": "Mage guild",
+        "name": "Sorcerer's guild level 5",
+        "description": "Teaches 1 Level Five Chaos Magic spell. Heroes who visit or spend the night recover 100% of their spell points.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "sulfur": 1
+          },
+          "raw": "1 sulfur / 1000 gold"
+        },
+        "prerequisites": "Sorcerer's guild level 4"
+      },
+      {
+        "category": "Mage guild",
+        "name": "Hall of the Dead",
+        "description": "Teaches Death Magic spells. Depending on the level of the mage guild, it teaches 2 spells for Level One, Two and Three and 1 spell each for Levels Four and Five.",
+        "cost": {
+          "gold": 2500,
+          "rareResources": {
+            "wood": 2,
+            "ore": 2,
+            "sulfur": 2
+          },
+          "raw": "2 wood / 2 ore / 2 sulfur / 2500 gold"
+        },
+        "prerequisites": "Sorcerer's guild level 1"
+      },
+      {
+        "category": "Mage guild",
+        "name": "Witch hall",
+        "description": "Teaches Nature Magic spells. Depending on the level of the mage guild, it teaches 2 spells for Level One, Two and Three and 1 spell each for Levels Four and Five.",
+        "cost": {
+          "gold": 2500,
+          "rareResources": {
+            "wood": 2,
+            "ore": 2,
+            "crystal": 2
+          },
+          "raw": "2 wood / 2 ore / 2 crystal / 2500 gold"
+        },
+        "prerequisites": "Sorcerer's guild level 1"
+      },
+      {
+        "category": "Creature production",
+        "name": "Den of thieves",
+        "description": "Generates Bandits.",
+        "cost": {
+          "gold": 1500,
+          "rareResources": {},
+          "raw": "1500 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Creature production",
+        "name": "Orc towers",
+        "description": "Generates Orcs.",
+        "cost": {
+          "gold": 1500,
+          "rareResources": {},
+          "raw": "1500 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Creature production",
+        "name": "Statuary garden",
+        "description": "Generates Medusas. Building the Statuary Garden prevents the construction of the Labyrinth.",
+        "cost": {
+          "gold": 3000,
+          "rareResources": {
+            "ore": 6
+          },
+          "raw": "6 ore / 3000 gold"
+        },
+        "prerequisites": "Sorcerer's guild level 1 / Den of thieves or orc towers"
+      },
+      {
+        "category": "Creature production",
+        "name": "Labyrinth",
+        "description": "Generates Minotaurs. Building the Labyrinth prevents the construction of the Statuary Garden.",
+        "cost": {
+          "gold": 3000,
+          "rareResources": {
+            "gems": 3
+          },
+          "raw": "3 gems / 3000 gold"
+        },
+        "prerequisites": "Thieves gauntlet / Den of thieves or orc towers"
+      },
+      {
+        "category": "Creature production",
+        "name": "Black wood",
+        "description": "Generates Nightmares. Building the Black Wood prevents the construction of the Volcanic Vent.",
+        "cost": {
+          "gold": 6250,
+          "rareResources": {
+            "wood": 14,
+            "mercury": 5
+          },
+          "raw": "14 wood / 5 mercury / 6250 gold"
+        },
+        "prerequisites": "Caravan / Statuary garden or labyrinth"
+      },
+      {
+        "category": "Creature production",
+        "name": "Volcanic vent",
+        "description": "Generates Efreeti. Building the Volcanic Vent prevents the construction of the Black Wood.",
+        "cost": {
+          "gold": 6250,
+          "rareResources": {
+            "ore": 14,
+            "sulfur": 5
+          },
+          "raw": "14 ore / 5 sulfur / 6250 gold"
+        },
+        "prerequisites": "Rogue's guild / Statuary garden or labyrinth"
+      },
+      {
+        "category": "Creature production",
+        "name": "Hydra pond",
+        "description": "Generates Hydras. Building the Hydra Pond prevents the construction of the Dragon Cave.",
+        "cost": {
+          "gold": 14000,
+          "rareResources": {
+            "wood": 16,
+            "mercury": 20,
+            "sulfur": 6,
+            "crystal": 4
+          },
+          "raw": "16 wood / 20 mercury / 6 sulfur / 4 crystal / 14000 gold"
+        },
+        "prerequisites": "Witch hall / Black wood or volcanic vent"
+      },
+      {
+        "category": "Creature production",
+        "name": "Dragon cave",
+        "description": "Generates Black Dragons. Building the Dragon Cave prevents the construction of the Hydra Pond.",
+        "cost": {
+          "gold": 14000,
+          "rareResources": {
+            "wood": 6,
+            "ore": 6,
+            "sulfur": 30
+          },
+          "raw": "6 wood / 6 ore / 30 sulfur / 14000 gold"
+        },
+        "prerequisites": "Hall of the Dead / Black wood or volcanic vent"
+      }
+    ]
+  },
+  {
+    "id": "preserve",
+    "name": "Preserve",
+    "alignment": "Nature",
+    "alignmentZh": "自然（自然保护区 Preserve）",
+    "nativeTerrain": "Grass",
+    "heroClasses": [
+      "Archer (might)",
+      "Druid (magic)"
+    ],
+    "magicSchools": [
+      "Nature",
+      "Chaos",
+      "Life"
+    ],
+    "grailBuilding": "Summoning stone",
+    "buildings": [
+      {
+        "category": "Basic",
+        "name": "Village hall",
+        "description": "Provides 500 gold per day. It is required before you can build any other town structure.",
+        "cost": {
+          "gold": null,
+          "rareResources": {},
+          "raw": "N/A"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Basic",
+        "name": "Town hall",
+        "description": "Provides 750 gold per day.",
+        "cost": {
+          "gold": 2500,
+          "rareResources": {
+            "wood": 10,
+            "ore": 10
+          },
+          "raw": "10 wood / 10 ore / 2500 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Basic",
+        "name": "City hall",
+        "description": "Provides 1000 gold per day.",
+        "cost": {
+          "gold": 2500,
+          "rareResources": {
+            "wood": 10,
+            "ore": 10,
+            "gems": 5,
+            "crystal": 5
+          },
+          "raw": "10 wood / 10 ore / 5 gems / 5 crystal / 2500 gold"
+        },
+        "prerequisites": "Town hall"
+      },
+      {
+        "category": "Basic",
+        "name": "Tavern",
+        "description": "Allows the recruitment of heroes",
+        "cost": {
+          "gold": 500,
+          "rareResources": {
+            "wood": 2
+          },
+          "raw": "2 wood / 500 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Basic",
+        "name": "Prison",
+        "description": "Holds captured enemy heroes.* (This building cannot be constructed; it is added to the town by default.)",
+        "cost": {
+          "gold": null,
+          "rareResources": {},
+          "raw": "N/A"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Basic",
+        "name": "Fort",
+        "description": "Builds a level one city wall. It is required to build 1st level creature dwellings.",
+        "cost": {
+          "gold": 5000,
+          "rareResources": {
+            "wood": 20,
+            "ore": 20
+          },
+          "raw": "20 wood / 20 ore / 5000 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Basic",
+        "name": "Citadel",
+        "description": "Builds a moat and level two city wall.",
+        "cost": {
+          "gold": 7500,
+          "rareResources": {
+            "wood": 10,
+            "ore": 10
+          },
+          "raw": "10 wood / 10 ore / 7500 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Basic",
+        "name": "Castle",
+        "description": "Builds a keep and level three city wall.",
+        "cost": {
+          "gold": 7500,
+          "rareResources": {
+            "wood": 10,
+            "ore": 10
+          },
+          "raw": "10 wood / 10 ore / 7500 gold"
+        },
+        "prerequisites": "Citadel"
+      },
+      {
+        "category": "Basic",
+        "name": "Caravan",
+        "description": "Sends heroes and creatures to remote locations. Travel time is computed using a high (30 move / day) movement rate.",
+        "cost": {
+          "gold": 4000,
+          "rareResources": {
+            "wood": 10
+          },
+          "raw": "10 wood / 4000 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Basic",
+        "name": "Shipyard",
+        "description": "Builds ships, and allows caravans to travel across bodies of water.",
+        "cost": {
+          "gold": 2000,
+          "rareResources": {
+            "wood": 20
+          },
+          "raw": "20 wood / 2000 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Other",
+        "name": "Sacred grove",
+        "description": "Permanently provides the hero with +3 spell points.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "wood": 4,
+            "crystal": 1
+          },
+          "raw": "4 wood / 1 crystal / 1000 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Other",
+        "name": "Rainbow",
+        "description": "Gives all creatures +2 luck until the next combat.",
+        "cost": {
+          "gold": 1500,
+          "rareResources": {
+            "crystal": 1,
+            "gems": 1
+          },
+          "raw": "1 crystal / 1 gem / 1500 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Other",
+        "name": "Ranger's guild",
+        "description": "Sells longbows, leather, shields, and Potions of Restoration, Immortality, Strength, Toughness and Mana",
+        "cost": {
+          "gold": 3500,
+          "rareResources": {
+            "wood": 20
+          },
+          "raw": "20 wood / 3500 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Other",
+        "name": "Creature portal",
+        "description": "Allows you to summon a variety of magical creatures.",
+        "cost": {
+          "gold": 6500,
+          "rareResources": {
+            "ore": 10,
+            "gems": 5
+          },
+          "raw": "10 ore / 5 gems / 6500 gold"
+        },
+        "prerequisites": "Druid's hall level 1 / Unicorn glade or griffin cliffs"
+      },
+      {
+        "category": "Other",
+        "name": "Summoning stone",
+        "description": "Provides 3000 gold per day. Also, the strength of all Nature Magic spells are increased by 25%.",
+        "cost": {
+          "gold": null,
+          "rareResources": {},
+          "raw": "Grail"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Mage guild",
+        "name": "Druid's hall level 1",
+        "description": "Teaches 3 Level One Nature Magic spells. Heroes who visit regain up to 35% of their spell points. Heroes who spend the night recover all of their spell points.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "wood": 2,
+            "ore": 2,
+            "crystal": 1
+          },
+          "raw": "2 wood / 2 ore / 1 crystal / 1000 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Mage guild",
+        "name": "Druid's hall level 2",
+        "description": "Teaches 3 Level Two Nature Magic spells. Heroes who visit regain up to 50% of their spell points. Heroes who spend the night recover all of their spell points.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "crystal": 1
+          },
+          "raw": "1 crystal / 1000 gold"
+        },
+        "prerequisites": "Druid's hall level 1"
+      },
+      {
+        "category": "Mage guild",
+        "name": "Druid's hall level 3",
+        "description": "Teaches 2 Level Three Nature Magic spells. Heroes who visit regain up to 65% of their spell points. Heroes who spend the night recover all of their spell points.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "crystal": 1
+          },
+          "raw": "1 crystal / 1000 gold"
+        },
+        "prerequisites": "Druid's hall level 2"
+      },
+      {
+        "category": "Mage guild",
+        "name": "Druid's hall level 4",
+        "description": "Teaches 2 Level Four Nature Magic spells. Heroes who visit regain up to 80% of their spell points. Heroes who spend the night recover all of their spell points.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "crystal": 1
+          },
+          "raw": "1 crystal / 1000 gold"
+        },
+        "prerequisites": "Druid's hall level 3"
+      },
+      {
+        "category": "Mage guild",
+        "name": "Druid's hall level 5",
+        "description": "Teaches 1 Level Five Nature Magic spell. Heroes who visit or spend the night recover 100% of their spell points.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "crystal": 1
+          },
+          "raw": "1 crystal / 1000 gold"
+        },
+        "prerequisites": "Druid's hall level 4"
+      },
+      {
+        "category": "Mage guild",
+        "name": "Conservatory of Chaos",
+        "description": "Teaches Chaos Magic spells. Depending on the level of the mage guild, it teaches 2 spells for Level One, Two and Three and 1 spell each for Levels Four and Five.",
+        "cost": {
+          "gold": 2500,
+          "rareResources": {
+            "wood": 2,
+            "ore": 2,
+            "mercury": 2
+          },
+          "raw": "2 wood / 2 ore / 2 mercury / 2500 gold"
+        },
+        "prerequisites": "Druid's hall level 1"
+      },
+      {
+        "category": "Mage guild",
+        "name": "Conservatory of Life",
+        "description": "Teaches Life Magic spells. Depending on the level of the mage guild, it teaches 2 spells for Level One, Two and Three and 1 spell each for Levels Four and Five.",
+        "cost": {
+          "gold": 2500,
+          "rareResources": {
+            "wood": 4,
+            "ore": 4
+          },
+          "raw": "4 wood / 4 ore / 2500 gold"
+        },
+        "prerequisites": "Druid's hall level 1"
+      },
+      {
+        "category": "Creature production",
+        "name": "Wolf den",
+        "description": "Generates Wolves.",
+        "cost": {
+          "gold": 1500,
+          "rareResources": {},
+          "raw": "1500 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Creature production",
+        "name": "Fae trees",
+        "description": "Generates Sprites.",
+        "cost": {
+          "gold": 1500,
+          "rareResources": {},
+          "raw": "1500 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Creature production",
+        "name": "Tiger den",
+        "description": "Generates White Tigers. Building the Tiger Den prevents the construction of the Treetop Lodge.",
+        "cost": {
+          "gold": 3000,
+          "rareResources": {
+            "ore": 6
+          },
+          "raw": "6 ore / 3000 gold"
+        },
+        "prerequisites": "Sacred grove / Wolf den or fae trees"
+      },
+      {
+        "category": "Creature production",
+        "name": "Treetop lodge",
+        "description": "Generates Elves. Building the Treetop Lodge prevents the construction of the Tiger Den.",
+        "cost": {
+          "gold": 3000,
+          "rareResources": {
+            "wood": 6
+          },
+          "raw": "6 wood / 3000 gold"
+        },
+        "prerequisites": "Ranger's guild / Wolf den or fae trees"
+      },
+      {
+        "category": "Creature production",
+        "name": "Griffin cliffs",
+        "description": "Generates Griffins. Building the Griffin Cliffs prevents the construction of the Unicorn Glade.",
+        "cost": {
+          "gold": 6500,
+          "rareResources": {
+            "wood": 6,
+            "ore": 10,
+            "crystal": 4
+          },
+          "raw": "6 wood / 10 ore / 4 crystal / 6500 gold"
+        },
+        "prerequisites": "Citadel / Tiger den or treetop lodge"
+      },
+      {
+        "category": "Creature production",
+        "name": "Unicorn glade",
+        "description": "Generates Unicorns. Building the Unicorn Glade prevents the construction of the Griffin Cliffs.",
+        "cost": {
+          "gold": 6500,
+          "rareResources": {
+            "wood": 12,
+            "gems": 6
+          },
+          "raw": "12 wood / 6 gems / 6500 gold"
+        },
+        "prerequisites": "Rainbow / Tiger den or treetop lodge"
+      },
+      {
+        "category": "Creature production",
+        "name": "Pyre",
+        "description": "Generates Phoenixes. Building the Pyre prevents the construction of the Magic Forest.",
+        "cost": {
+          "gold": 14000,
+          "rareResources": {
+            "wood": 16,
+            "mercury": 20,
+            "sulfur": 10
+          },
+          "raw": "16 wood / 20 mercury / 10 sulfur / 14000 gold"
+        },
+        "prerequisites": "Creature portal / Unicorn glade or griffin cliffs"
+      },
+      {
+        "category": "Creature production",
+        "name": "Magic forest",
+        "description": "Generates Faerie Dragons. Building the Magic Forest prevents the construction of the Pyre.",
+        "cost": {
+          "gold": 14000,
+          "rareResources": {
+            "wood": 14,
+            "ore": 6,
+            "gems": 7,
+            "crystal": 7,
+            "mercury": 7,
+            "sulfur": 7
+          },
+          "raw": "14 wood / 6 ore / 7 gems / 7 crystal / 7 mercury / 7 sulfur / 14000 gold"
+        },
+        "prerequisites": "Conservatory of Chaos / Unicorn glade or griffin cliffs"
+      }
+    ]
+  },
+  {
+    "id": "stronghold",
+    "name": "Stronghold",
+    "alignment": "Might",
+    "alignmentZh": "力量（据点 Stronghold）",
+    "nativeTerrain": "Rough",
+    "heroClasses": [
+      "Barbarians"
+    ],
+    "magicSchools": [],
+    "grailBuilding": "Festival of Life",
+    "buildings": [
+      {
+        "category": "Basic",
+        "name": "Village hall",
+        "description": "Provides 500 gold per day. It is required before you can build any other town structure.",
+        "cost": {
+          "gold": null,
+          "rareResources": {},
+          "raw": "N/A"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Basic",
+        "name": "Town hall",
+        "description": "Provides 750 gold per day.",
+        "cost": {
+          "gold": 2500,
+          "rareResources": {
+            "wood": 10,
+            "ore": 10
+          },
+          "raw": "10 wood / 10 ore / 2500 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Basic",
+        "name": "City hall",
+        "description": "Provides 1000 gold per day.",
+        "cost": {
+          "gold": 2500,
+          "rareResources": {
+            "wood": 10,
+            "ore": 10,
+            "gems": 5,
+            "crystal": 5
+          },
+          "raw": "10 wood / 10 ore / 5 gems / 5 crystal / 2500 gold"
+        },
+        "prerequisites": "Town hall"
+      },
+      {
+        "category": "Basic",
+        "name": "Tavern",
+        "description": "Allows the recruitment of heroes",
+        "cost": {
+          "gold": 500,
+          "rareResources": {
+            "wood": 2
+          },
+          "raw": "2 wood / 500 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Basic",
+        "name": "Prison",
+        "description": "Holds captured enemy heroes.* (This building cannot be constructed; it is added to the town by default.)",
+        "cost": {
+          "gold": null,
+          "rareResources": {},
+          "raw": "N/A"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Basic",
+        "name": "Fort",
+        "description": "Builds a level one city wall. It is required to build 1st level creature dwellings.",
+        "cost": {
+          "gold": 5000,
+          "rareResources": {
+            "wood": 20,
+            "ore": 20
+          },
+          "raw": "20 wood / 20 ore / 5000 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Basic",
+        "name": "Citadel",
+        "description": "Builds a moat and level two city wall.",
+        "cost": {
+          "gold": 7500,
+          "rareResources": {
+            "wood": 10,
+            "ore": 10
+          },
+          "raw": "10 wood / 10 ore / 7500 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Basic",
+        "name": "Castle",
+        "description": "Builds a keep and level three city wall.",
+        "cost": {
+          "gold": 7500,
+          "rareResources": {
+            "wood": 10,
+            "ore": 10
+          },
+          "raw": "10 wood / 10 ore / 7500 gold"
+        },
+        "prerequisites": "Citadel"
+      },
+      {
+        "category": "Basic",
+        "name": "Caravan",
+        "description": "Sends heroes and creatures to remote locations. Travel time is computed using a high (30 move / day) movement rate.",
+        "cost": {
+          "gold": 4000,
+          "rareResources": {
+            "wood": 10
+          },
+          "raw": "10 wood / 4000 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Basic",
+        "name": "Shipyard",
+        "description": "Builds ships, and allows caravans to travel across bodies of water.",
+        "cost": {
+          "gold": 2000,
+          "rareResources": {
+            "wood": 20
+          },
+          "raw": "20 wood / 2000 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Other",
+        "name": "Arena of Honor",
+        "description": "Increases the hero's Melee and Ranged Defense by 3.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "ore": 6
+          },
+          "raw": "6 ore / 1000 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Other",
+        "name": "Wrestling pits",
+        "description": "Increases the hero's Melee Attack by 3 and Ranged Attack by 2.",
+        "cost": {
+          "gold": 1000,
+          "rareResources": {
+            "ore": 6
+          },
+          "raw": "6 ore / 1000 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Other",
+        "name": "Breeding pens",
+        "description": "This town gains +50% creature growth.",
+        "cost": {
+          "gold": 15000,
+          "rareResources": {
+            "wood": 10,
+            "ore": 30
+          },
+          "raw": "10 wood / 30 ore / 15000 gold"
+        },
+        "prerequisites": "Cyclops cave or ogre fort"
+      },
+      {
+        "category": "Other",
+        "name": "Magic dampener",
+        "description": "All heroes gain +10% magic resistance for each Magic Dampener. The Dampeners act separately of each other, not cumulatively.",
+        "cost": {
+          "gold": 2000,
+          "rareResources": {
+            "ore": 10
+          },
+          "raw": "10 ore / 2000 gold / Fort"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Other",
+        "name": "Arsenal",
+        "description": "Sells Axes, Greatswords, Leather, Shields, and Potions of Immortality, Restoration, Resistance, Endurance, Quickness.",
+        "cost": {
+          "gold": 5000,
+          "rareResources": {
+            "wood": 12,
+            "ore": 12
+          },
+          "raw": "12 wood / 12 ore / 5000 gold"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Other",
+        "name": "Festival of Life",
+        "description": "Provides 3000 gold per day. Also, the creature growth in this town increases by 100%, and the creature growth in all of the player's other Strongholds increases by 25%.",
+        "cost": {
+          "gold": null,
+          "rareResources": {},
+          "raw": "Grail"
+        },
+        "prerequisites": null
+      },
+      {
+        "category": "Creature production",
+        "name": "Longhouse",
+        "description": "Generates Berserkers.",
+        "cost": {
+          "gold": 1500,
+          "rareResources": {},
+          "raw": "1500 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Creature production",
+        "name": "Centaur stables",
+        "description": "Generates Centaurs.",
+        "cost": {
+          "gold": 1500,
+          "rareResources": {},
+          "raw": "1500 gold"
+        },
+        "prerequisites": "Fort"
+      },
+      {
+        "category": "Creature production",
+        "name": "Nomad tents",
+        "description": "Generates Nomads. Building the Nomad Tents prevents the construction of the Harpy Peak.",
+        "cost": {
+          "gold": 3000,
+          "rareResources": {
+            "wood": 6
+          },
+          "raw": "6 wood / 3000 gold"
+        },
+        "prerequisites": "Caravan / Longhouse or centaur stables"
+      },
+      {
+        "category": "Creature production",
+        "name": "Harpy peak",
+        "description": "Generates Harpies. Building the Harpy Peak prevents the construction of the Nomad Tents.",
+        "cost": {
+          "gold": 3000,
+          "rareResources": {
+            "wood": 4,
+            "mercury": 1
+          },
+          "raw": "4 wood / 1 mercury / 3000 gold"
+        },
+        "prerequisites": "Citadel / Longhouse or centaur stables"
+      },
+      {
+        "category": "Creature production",
+        "name": "Ogre fort",
+        "description": "Generates Ogre Magi. Building the Ogre Fort prevents the construction of the Cyclops Cave.",
+        "cost": {
+          "gold": 6250,
+          "rareResources": {
+            "wood": 8,
+            "ore": 8,
+            "mercury": 1,
+            "gems": 1,
+            "sulfur": 1,
+            "crystal": 1
+          },
+          "raw": "8 wood / 8 ore / 1 mercury / 1 gem / 1 sulfur / 1 crystal / 6250 gold"
+        },
+        "prerequisites": "Tavern / Nomad tents or harpy peak"
+      },
+      {
+        "category": "Creature production",
+        "name": "Cyclops cave",
+        "description": "Generates Cyclopses. Building the Cyclops Cave prevents the construction of the Ogre Fort.",
+        "cost": {
+          "gold": 6500,
+          "rareResources": {
+            "ore": 4,
+            "crystal": 10
+          },
+          "raw": "4 ore / 10 crystal / 6500 gold"
+        },
+        "prerequisites": "Wrestling pits / Nomad tents or harpy peak"
+      },
+      {
+        "category": "Creature production",
+        "name": "Cliff nest",
+        "description": "Generates Thunderbirds. Building the Cliff Nest prevents the construction of the Behemoth Crag.",
+        "cost": {
+          "gold": 14000,
+          "rareResources": {
+            "wood": 20,
+            "mercury": 16,
+            "sulfur": 6,
+            "crystal": 6
+          },
+          "raw": "20 wood / 16 mercury / 6 sulfur / 6 crystal / 14000 gold"
+        },
+        "prerequisites": "Castle / Cyclops cave or ogre fort"
+      },
+      {
+        "category": "Creature production",
+        "name": "Behemoth crag",
+        "description": "Generates Behemoths. Building the Behemoth Crag prevents the construction of the Cliff Nest.",
+        "cost": {
+          "gold": 14000,
+          "rareResources": {
+            "wood": 6,
+            "ore": 20,
+            "crystal": 24
+          },
+          "raw": "6 wood / 20 ore / 24 crystal / 14000 gold"
+        },
+        "prerequisites": "Arena of Honor / Arsenal / Cyclops cave or ogre fort"
+      }
+    ]
+  }
+]

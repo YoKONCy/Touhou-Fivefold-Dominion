@@ -1,0 +1,1683 @@
+[
+  {
+    "id": "3_headed_attack",
+    "name": "3-Headed Attack",
+    "description": "With the 3-Headed Attack all enemies standing to the left, front and right of the creature are attacked simultaneously.",
+    "owners": [
+      {
+        "id": "cerberus",
+        "name": "Cerberus",
+        "alignment": "Death",
+        "tier": 2
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "aging",
+    "name": "Aging",
+    "description": "This creature's attack has a chance of temporarily Aging the enemy. An Aged target has its Attack skill decreased by 25%, its Defense skill decreased by 20%, and its Speed and Movement decreased by 50%.",
+    "owners": [
+      {
+        "id": "ghost",
+        "name": "Ghost",
+        "alignment": "Death",
+        "tier": 2
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "area_attack",
+    "name": "Area Attack",
+    "description": "This creature's Area Attack allows its ranged attacks to strike all targets, friendly or hostile, in a small area (3x3 yards).",
+    "owners": [
+      {
+        "id": "gargantuan",
+        "name": "Gargantuan",
+        "alignment": "Nature",
+        "tier": 4
+      },
+      {
+        "id": "cyclops",
+        "name": "Cyclops",
+        "alignment": "Might",
+        "tier": 3
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "berserk",
+    "name": "Berserk",
+    "description": "A Berserk creature must attack or move to attack every turn. They cannot wait. They are also immune to all forms of fear.",
+    "owners": [
+      {
+        "id": "berserker",
+        "name": "Berserker",
+        "alignment": "Might",
+        "tier": 1
+      },
+      {
+        "id": "frenzied_gnasher",
+        "name": "Frenzied gnasher",
+        "alignment": "Might",
+        "tier": 4
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "binding",
+    "name": "Binding",
+    "description": "Binding allows the creature to Bind the last creature it attacks with its forelimbs. Bound enemies cannot move, though they can still attack, retaliate and cast spells. Bound creatures do half damage when they attack. If the attacking creature moves, the Binding is also removed.",
+    "owners": [
+      {
+        "id": "mantis",
+        "name": "Mantis",
+        "alignment": "Nature",
+        "tier": 4
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "blind",
+    "name": "Blind",
+    "description": "This creature's attack has a chance of Blinding an enemy.",
+    "owners": [
+      {
+        "id": "unicorn",
+        "name": "Unicorn",
+        "alignment": "Nature",
+        "tier": 3
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "block",
+    "name": "Block",
+    "description": "Block gives this creature a chance of completely blocking any melee, ranged, or area effect attack. Even if the attack is blocked, the target will receive damage from the Stone Gaze ability.",
+    "owners": [
+      {
+        "id": "minotaur",
+        "name": "Minotaur",
+        "alignment": "Chaos",
+        "tier": 2
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "bloodlust",
+    "name": "Bloodlust",
+    "description": "This creature can cast the Chaos Magic spell Bloodlust.",
+    "owners": [
+      {
+        "id": "ogre_mage",
+        "name": "Ogre mage",
+        "alignment": "Might",
+        "tier": 3
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "bonuses_at_sea",
+    "name": "Bonuses at Sea",
+    "description": "Bonuses at Sea makes this creature faster and allows it to do more damage when fighting on the deck of a ship. Its Melee and Ranged Defense also increases.",
+    "owners": [
+      {
+        "id": "pirate",
+        "name": "Pirate",
+        "alignment": "Chaos",
+        "tier": 1
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "breath_attack",
+    "name": "Breath Attack",
+    "description": "This creature's Breath Attack allows it to attack with a blast of fire that may also harm creatures directly behind an enemy target.",
+    "owners": [
+      {
+        "id": "black_dragon",
+        "name": "Black dragon",
+        "alignment": "Chaos",
+        "tier": 4
+      },
+      {
+        "id": "megadragon",
+        "name": "Megadragon",
+        "alignment": "Chaos",
+        "tier": 4
+      },
+      {
+        "id": "phoenix",
+        "name": "Phoenix",
+        "alignment": "Nature",
+        "tier": 4
+      }
+    ],
+    "creatureNotes": [
+      {
+        "creature": "Megadragon",
+        "description": "This creature's arc-shaped Breath Attack allows it to attack with a blast of fire that may also harm creatures behind an enemy target."
+      }
+    ]
+  },
+  {
+    "id": "chaos_ward",
+    "name": "Chaos Ward",
+    "description": "Chaos Ward makes this creature 50% resistant to Chaos spells, and its Melee and Ranged Defense is increased by 50% against Chaos-aligned opponents.",
+    "owners": [
+      {
+        "id": "titan",
+        "name": "Titan",
+        "alignment": "Order",
+        "tier": 4
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "charge",
+    "name": "Charge",
+    "description": "Charge allows this creature to do more damage after it charges for a long distance before attacking.",
+    "owners": [
+      {
+        "id": "champion",
+        "name": "Champion",
+        "alignment": "Life",
+        "tier": 4
+      },
+      {
+        "id": "dark_champion",
+        "name": "Dark champion",
+        "alignment": "Death",
+        "tier": 4
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "cold_attack",
+    "name": "Cold Attack",
+    "description": "In combat, this creature's normal attack is a Cold Attack, so targets with Cold Resistance will take less damage.",
+    "owners": [
+      {
+        "id": "ice_demon",
+        "name": "Ice demon",
+        "alignment": "Death",
+        "tier": 3
+      },
+      {
+        "id": "water_elemental",
+        "name": "Water elemental",
+        "alignment": "Nature",
+        "tier": 3
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "cold_resistance",
+    "name": "Cold Resistance",
+    "description": "Cold Resistance makes this creature immune to cold-based spells. It also takes half damage from enemies with cold-based attacks.",
+    "owners": [
+      {
+        "id": "ice_demon",
+        "name": "Ice demon",
+        "alignment": "Death",
+        "tier": 3
+      },
+      {
+        "id": "water_elemental",
+        "name": "Water elemental",
+        "alignment": "Nature",
+        "tier": 3
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "curse",
+    "name": "Curse",
+    "description": "Curse causes this creature's normal attack to also act as the Death Magic spell Curse.",
+    "owners": [
+      {
+        "id": "mummy",
+        "name": "Mummy",
+        "alignment": "Death",
+        "tier": 2
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "death_ward",
+    "name": "Death Ward",
+    "description": "Death Ward makes this creature 50% resistant to Death spells, and its Melee and Ranged Defense is increased by 50% against Death-aligned opponents.",
+    "owners": [
+      {
+        "id": "crusader",
+        "name": "Crusader",
+        "alignment": "Life",
+        "tier": 3
+      },
+      {
+        "id": "monk",
+        "name": "Monk",
+        "alignment": "Life",
+        "tier": 3
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "devouring",
+    "name": "Devouring",
+    "description": "This creature's Devouring ability gives it a chance of swallowing an enemy whole when it attacks.",
+    "owners": [
+      {
+        "id": "sea_monster",
+        "name": "Sea monster",
+        "alignment": "Might",
+        "tier": 4
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "elemental",
+    "name": "Elemental",
+    "description": "Elementals are immune to certain spells (such as Poison) that only work on normal, living creatures.",
+    "owners": [
+      {
+        "id": "gargoyle",
+        "name": "Gargoyle",
+        "alignment": "Death",
+        "tier": 2
+      },
+      {
+        "id": "air_elemental",
+        "name": "Air elemental",
+        "alignment": "Nature",
+        "tier": 3
+      },
+      {
+        "id": "water_elemental",
+        "name": "Water elemental",
+        "alignment": "Nature",
+        "tier": 3
+      },
+      {
+        "id": "fire_elemental",
+        "name": "Fire elemental",
+        "alignment": "Nature",
+        "tier": 3
+      },
+      {
+        "id": "earth_elemental",
+        "name": "Earth elemental",
+        "alignment": "Nature",
+        "tier": 3
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "fear",
+    "name": "Fear",
+    "description": "Fear prevents the opponent from retaliating. Anyone struck by fear runs away a short distance.",
+    "owners": [
+      {
+        "id": "bone_dragon",
+        "name": "Bone dragon",
+        "alignment": "Death",
+        "tier": 4
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "fire_attack",
+    "name": "Fire Attack",
+    "description": "In combat, this creature's normal attack is a Fire Attack, so targets with Fire Resistance will take less damage.",
+    "owners": [
+      {
+        "id": "efreet",
+        "name": "Efreet",
+        "alignment": "Chaos",
+        "tier": 3
+      },
+      {
+        "id": "fire_elemental",
+        "name": "Fire elemental",
+        "alignment": "Nature",
+        "tier": 3
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "fire_resistance",
+    "name": "Fire Resistance",
+    "description": "Fire Resistance makes this creature immune to fire-based spells, and to damage from breath attacks if the creature is a secondary target. The creature also takes half damage from enemies with fire-based attacks.",
+    "owners": [
+      {
+        "id": "efreet",
+        "name": "Efreet",
+        "alignment": "Chaos",
+        "tier": 3
+      },
+      {
+        "id": "phoenix",
+        "name": "Phoenix",
+        "alignment": "Nature",
+        "tier": 4
+      },
+      {
+        "id": "fire_elemental",
+        "name": "Fire elemental",
+        "alignment": "Nature",
+        "tier": 3
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "fire_shield",
+    "name": "Fire Shield",
+    "description": "Fire Shield surrounds this creature in a wall of fire, allowing it to do fire damage in addition to its normal attack to an enemy.",
+    "owners": [
+      {
+        "id": "efreet",
+        "name": "Efreet",
+        "alignment": "Chaos",
+        "tier": 3
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "first_strike",
+    "name": "First Strike",
+    "description": "First Strike allows this creature to strike an opponent in melee combat before it can retaliate.",
+    "owners": [
+      {
+        "id": "champion",
+        "name": "Champion",
+        "alignment": "Life",
+        "tier": 4
+      },
+      {
+        "id": "dragon_golem",
+        "name": "Dragon golem",
+        "alignment": "Order",
+        "tier": 4
+      },
+      {
+        "id": "white_tiger",
+        "name": "White tiger",
+        "alignment": "Nature",
+        "tier": 2
+      },
+      {
+        "id": "mantis",
+        "name": "Mantis",
+        "alignment": "Nature",
+        "tier": 4
+      },
+      {
+        "id": "nomad",
+        "name": "Nomad",
+        "alignment": "Might",
+        "tier": 2
+      }
+    ],
+    "creatureNotes": [
+      {
+        "creature": "Dragon golem",
+        "description": "First strike allows this creature to strike an opponent in melee combat before it can retaliate."
+      }
+    ]
+  },
+  {
+    "id": "flying",
+    "name": "Flying",
+    "description": "Flying allows this creature to fly over obstacles, creatures, heroes, and castle walls.",
+    "owners": [
+      {
+        "id": "angel",
+        "name": "Angel",
+        "alignment": "Life",
+        "tier": 4
+      },
+      {
+        "id": "imp",
+        "name": "Imp",
+        "alignment": "Death",
+        "tier": 1
+      },
+      {
+        "id": "ghost",
+        "name": "Ghost",
+        "alignment": "Death",
+        "tier": 2
+      },
+      {
+        "id": "vampire",
+        "name": "Vampire",
+        "alignment": "Death",
+        "tier": 3
+      },
+      {
+        "id": "bone_dragon",
+        "name": "Bone dragon",
+        "alignment": "Death",
+        "tier": 4
+      },
+      {
+        "id": "gargoyle",
+        "name": "Gargoyle",
+        "alignment": "Death",
+        "tier": 2
+      },
+      {
+        "id": "efreet",
+        "name": "Efreet",
+        "alignment": "Chaos",
+        "tier": 3
+      },
+      {
+        "id": "black_dragon",
+        "name": "Black dragon",
+        "alignment": "Chaos",
+        "tier": 4
+      },
+      {
+        "id": "evil_eye",
+        "name": "Evil eye",
+        "alignment": "Chaos",
+        "tier": 2
+      },
+      {
+        "id": "sprite",
+        "name": "Sprite",
+        "alignment": "Nature",
+        "tier": 1
+      },
+      {
+        "id": "griffin",
+        "name": "Griffin",
+        "alignment": "Nature",
+        "tier": 3
+      },
+      {
+        "id": "phoenix",
+        "name": "Phoenix",
+        "alignment": "Nature",
+        "tier": 4
+      },
+      {
+        "id": "faerie_dragon",
+        "name": "Faerie dragon",
+        "alignment": "Nature",
+        "tier": 4
+      },
+      {
+        "id": "air_elemental",
+        "name": "Air elemental",
+        "alignment": "Nature",
+        "tier": 3
+      },
+      {
+        "id": "mantis",
+        "name": "Mantis",
+        "alignment": "Nature",
+        "tier": 4
+      },
+      {
+        "id": "harpy",
+        "name": "Harpy",
+        "alignment": "Might",
+        "tier": 2
+      },
+      {
+        "id": "thunderbird",
+        "name": "Thunderbird",
+        "alignment": "Might",
+        "tier": 4
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "fortune",
+    "name": "Fortune",
+    "description": "Fortune allows this creature to cast the Nature Magic spell Fortune.",
+    "owners": [
+      {
+        "id": "leprechaun",
+        "name": "Leprechaun",
+        "alignment": "Nature",
+        "tier": 1
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "freezing_attack",
+    "name": "Freezing Attack",
+    "description": "This creature's Freezing Attack has a chance of freezing an enemy in a block of ice for two turns.",
+    "owners": [
+      {
+        "id": "ice_demon",
+        "name": "Ice demon",
+        "alignment": "Death",
+        "tier": 3
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "giantslayer",
+    "name": "Giantslayer",
+    "description": "Giantslayer allows this creature to do extra damage to 4th level creatures.",
+    "owners": [
+      {
+        "id": "halfling",
+        "name": "Halfling",
+        "alignment": "Order",
+        "tier": 1
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "greek_fire",
+    "name": "Greek Fire",
+    "description": "This creature's Area Attack allows its ranged attacks to strike all targets, friendly or hostile near the target, with deadly fire.",
+    "owners": [
+      {
+        "id": "catapult",
+        "name": "Catapult",
+        "alignment": "Life",
+        "tier": 4
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "hypnotize",
+    "name": "Hypnotize",
+    "description": "In addition to this creature's normal attack, its Hypnotize ability has a chance of taking control of an enemy opponent for one turn.",
+    "owners": [
+      {
+        "id": "mermaid",
+        "name": "Mermaid",
+        "alignment": "Might",
+        "tier": 2
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "immune_to_magic",
+    "name": "Immune to Magic",
+    "description": "This creature is completely Immune to Magic, including spells cast by friendly troops.",
+    "owners": [
+      {
+        "id": "black_dragon",
+        "name": "Black dragon",
+        "alignment": "Chaos",
+        "tier": 4
+      },
+      {
+        "id": "frenzied_gnasher",
+        "name": "Frenzied gnasher",
+        "alignment": "Might",
+        "tier": 4
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "immune_to_visual_attacks",
+    "name": "Immune to Visual Attacks",
+    "description": "Naturally blind creatures are Immune to Visual Attacks. All abilities and spells that influence vision (like Blind and Stone Gaze) do not work on it.",
+    "owners": [
+      {
+        "id": "troglodyte",
+        "name": "Troglodyte",
+        "alignment": "Chaos",
+        "tier": 1
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "insubstantial",
+    "name": "Insubstantial",
+    "description": "Insubstantial increases this creature's Melee and Ranged Defense by 100%.",
+    "owners": [
+      {
+        "id": "ghost",
+        "name": "Ghost",
+        "alignment": "Death",
+        "tier": 2
+      },
+      {
+        "id": "air_elemental",
+        "name": "Air elemental",
+        "alignment": "Nature",
+        "tier": 3
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "life_draining",
+    "name": "Life Draining",
+    "description": "This creature's Life Draining attack sucks the life force from its enemies. This life force will heal damage received in combat and even resurrect those who have died.",
+    "owners": [
+      {
+        "id": "vampire",
+        "name": "Vampire",
+        "alignment": "Death",
+        "tier": 3
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "life_ward",
+    "name": "Life Ward",
+    "description": "Life Ward makes this creature 50% resistant to Life spells, and its Melee and Ranged Defense is increased by 50% against Life-aligned opponents.",
+    "owners": [
+      {
+        "id": "devil",
+        "name": "Devil",
+        "alignment": "Death",
+        "tier": 4
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "lightning_attack",
+    "name": "Lightning Attack",
+    "description": "This creature's Lightning Attack summons a bolt of lightning that strikes its opponent immediately after its normal attack.",
+    "owners": [
+      {
+        "id": "thunderbird",
+        "name": "Thunderbird",
+        "alignment": "Might",
+        "tier": 4
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "long_range",
+    "name": "Long Range",
+    "description": "Long Range allows this creature to ignore all ranged attack damage penalties for distance.",
+    "owners": [
+      {
+        "id": "crossbowman",
+        "name": "Crossbowman",
+        "alignment": "Life",
+        "tier": 1
+      },
+      {
+        "id": "ballista",
+        "name": "Ballista",
+        "alignment": "Life",
+        "tier": 2
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "long_weapon",
+    "name": "Long Weapon",
+    "description": "Long Weapon allows this creature to attack enemies that are at a short distance out of reach of normal melee attacks.",
+    "owners": [
+      {
+        "id": "pikeman",
+        "name": "Pikeman",
+        "alignment": "Life",
+        "tier": 2
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "magic_mirror",
+    "name": "Magic Mirror",
+    "description": "This creature's Magic Mirror ability allows it to reflect hostile spells back upon the caster like the Magic Mirror spell.",
+    "owners": [
+      {
+        "id": "evil_sorceress",
+        "name": "Evil sorceress",
+        "alignment": "Order",
+        "tier": 4
+      },
+      {
+        "id": "faerie_dragon",
+        "name": "Faerie dragon",
+        "alignment": "Nature",
+        "tier": 4
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "magic_resistance",
+    "name": "Magic Resistance",
+    "description": "The Dwarf is 50% likely to resist offensive spells, and will only take half damage from Direct Damage spells.",
+    "owners": [
+      {
+        "id": "dwarf",
+        "name": "Dwarf",
+        "alignment": "Order",
+        "tier": 1
+      },
+      {
+        "id": "gold_golem",
+        "name": "Gold golem",
+        "alignment": "Order",
+        "tier": 2
+      },
+      {
+        "id": "goblin_knight",
+        "name": "Goblin knight",
+        "alignment": "Chaos",
+        "tier": 3
+      },
+      {
+        "id": "megadragon",
+        "name": "Megadragon",
+        "alignment": "Chaos",
+        "tier": 4
+      },
+      {
+        "id": "earth_elemental",
+        "name": "Earth elemental",
+        "alignment": "Nature",
+        "tier": 3
+      }
+    ],
+    "creatureNotes": [
+      {
+        "creature": "Gold golem",
+        "description": "The gold golem will resist 75% of the offensive spells targetting him. Likewise, he will only take 1/4 damage from direct damage spells cast his way."
+      },
+      {
+        "creature": "Goblin knight",
+        "description": "This creature's Magic Resistance gives it a chance of resisting most hostile spells. The creature also takes less damage from spells that cause direct damage."
+      },
+      {
+        "creature": "Megadragon",
+        "description": "This creature's Magic Resistance gives it a chance of resisting most hostile spells. The creature also takes less damage from spells that cause direct damage."
+      },
+      {
+        "creature": "Earth elemental",
+        "description": "This creature's Magic Resistance gives it a chance of resisting most hostile spells. The creature also takes less damage from spells that cause direct damage."
+      }
+    ]
+  },
+  {
+    "id": "mana_leech",
+    "name": "Mana Leech",
+    "description": "Mana Leech allows this creature to drain mana from enemy spellcasters each turn and transfer it to a nearby friendly spellcaster.",
+    "owners": [
+      {
+        "id": "imp",
+        "name": "Imp",
+        "alignment": "Death",
+        "tier": 1
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "mechanical",
+    "name": "Mechanical",
+    "description": "Mechanical creatures are not affected by morale, or by spells or abilities that only work on living creatures.",
+    "owners": [
+      {
+        "id": "ballista",
+        "name": "Ballista",
+        "alignment": "Life",
+        "tier": 2
+      },
+      {
+        "id": "catapult",
+        "name": "Catapult",
+        "alignment": "Life",
+        "tier": 4
+      },
+      {
+        "id": "gold_golem",
+        "name": "Gold golem",
+        "alignment": "Order",
+        "tier": 2
+      },
+      {
+        "id": "dragon_golem",
+        "name": "Dragon golem",
+        "alignment": "Order",
+        "tier": 4
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "mirth",
+    "name": "Mirth",
+    "description": "Mirth allows this creature to cast the Life Magic spell Mirth.",
+    "owners": [
+      {
+        "id": "satyr",
+        "name": "Satyr",
+        "alignment": "Nature",
+        "tier": 2
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "multiple_attack",
+    "name": "Multiple Attack",
+    "description": "Multiple Attack allows this creature to attack all nearby enemies simultaneously.",
+    "owners": [
+      {
+        "id": "hydra",
+        "name": "Hydra",
+        "alignment": "Chaos",
+        "tier": 4
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "negate_first_strike",
+    "name": "Negate First Strike",
+    "description": "Negate First Strike allows this creature to counter First Strike abilities or spells.",
+    "owners": [
+      {
+        "id": "pikeman",
+        "name": "Pikeman",
+        "alignment": "Life",
+        "tier": 2
+      },
+      {
+        "id": "dragon_golem",
+        "name": "Dragon golem",
+        "alignment": "Order",
+        "tier": 4
+      },
+      {
+        "id": "goblin_knight",
+        "name": "Goblin knight",
+        "alignment": "Chaos",
+        "tier": 3
+      }
+    ],
+    "creatureNotes": [
+      {
+        "creature": "Dragon golem",
+        "description": "Negate First strike allows this creature to counter First strike abilities or spells."
+      }
+    ]
+  },
+  {
+    "id": "no_obstacle_penalty",
+    "name": "No Obstacle Penalty",
+    "description": "No Obstacle Penalty allows this creature to do full damage to targets behind castle walls and other obstacles.",
+    "owners": [
+      {
+        "id": "ballista",
+        "name": "Ballista",
+        "alignment": "Life",
+        "tier": 2
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "no_retaliation",
+    "name": "No Retaliation",
+    "description": "This creature's No Retaliation ability allows it to attack without any chance of retaliation.",
+    "owners": [
+      {
+        "id": "naga",
+        "name": "Naga",
+        "alignment": "Order",
+        "tier": 3
+      },
+      {
+        "id": "cerberus",
+        "name": "Cerberus",
+        "alignment": "Death",
+        "tier": 2
+      },
+      {
+        "id": "vampire",
+        "name": "Vampire",
+        "alignment": "Death",
+        "tier": 3
+      },
+      {
+        "id": "hydra",
+        "name": "Hydra",
+        "alignment": "Chaos",
+        "tier": 4
+      },
+      {
+        "id": "sprite",
+        "name": "Sprite",
+        "alignment": "Nature",
+        "tier": 1
+      },
+      {
+        "id": "harpy",
+        "name": "Harpy",
+        "alignment": "Might",
+        "tier": 2
+      }
+    ],
+    "creatureNotes": [
+      {
+        "creature": "Harpy",
+        "description": "No Retaliation ability allows it to attack without any chance of retaliation."
+      }
+    ]
+  },
+  {
+    "id": "normal_melee",
+    "name": "Normal Melee",
+    "description": "This creature's Normal Melee means it doesn't suffer the melee combat damage penalty suffered by most ranged creatures.",
+    "owners": [
+      {
+        "id": "titan",
+        "name": "Titan",
+        "alignment": "Order",
+        "tier": 4
+      },
+      {
+        "id": "orc",
+        "name": "Orc",
+        "alignment": "Chaos",
+        "tier": 1
+      },
+      {
+        "id": "medusa",
+        "name": "Medusa",
+        "alignment": "Chaos",
+        "tier": 2
+      },
+      {
+        "id": "gargantuan",
+        "name": "Gargantuan",
+        "alignment": "Nature",
+        "tier": 4
+      },
+      {
+        "id": "centaur",
+        "name": "Centaur",
+        "alignment": "Might",
+        "tier": 1
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "poison",
+    "name": "Poison",
+    "description": "This creature's Poison attack damages a target and then do additional damage every turn until combat ends (as long as that target is living).",
+    "owners": [
+      {
+        "id": "venom_spawn",
+        "name": "Venom spawn",
+        "alignment": "Death",
+        "tier": 3
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "random_harmful_spells",
+    "name": "Random Harmful Spells",
+    "description": "This creature attacks with random Harmful Spells, casting a random Chaos Magic or Death Magic spell on its enemy.",
+    "owners": [
+      {
+        "id": "evil_eye",
+        "name": "Evil eye",
+        "alignment": "Chaos",
+        "tier": 2
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "ranged",
+    "name": "Ranged",
+    "description": "The Ranged ability allows this creature to attack enemies at a distance, but in melee combat this creature does half damage unless it has the Normal Melee ability.",
+    "owners": [
+      {
+        "id": "crossbowman",
+        "name": "Crossbowman",
+        "alignment": "Life",
+        "tier": 1
+      },
+      {
+        "id": "ballista",
+        "name": "Ballista",
+        "alignment": "Life",
+        "tier": 2
+      },
+      {
+        "id": "monk",
+        "name": "Monk",
+        "alignment": "Life",
+        "tier": 3
+      },
+      {
+        "id": "catapult",
+        "name": "Catapult",
+        "alignment": "Life",
+        "tier": 4
+      },
+      {
+        "id": "halfling",
+        "name": "Halfling",
+        "alignment": "Order",
+        "tier": 1
+      },
+      {
+        "id": "titan",
+        "name": "Titan",
+        "alignment": "Order",
+        "tier": 4
+      },
+      {
+        "id": "venom_spawn",
+        "name": "Venom spawn",
+        "alignment": "Death",
+        "tier": 3
+      },
+      {
+        "id": "orc",
+        "name": "Orc",
+        "alignment": "Chaos",
+        "tier": 1
+      },
+      {
+        "id": "medusa",
+        "name": "Medusa",
+        "alignment": "Chaos",
+        "tier": 2
+      },
+      {
+        "id": "evil_eye",
+        "name": "Evil eye",
+        "alignment": "Chaos",
+        "tier": 2
+      },
+      {
+        "id": "elf",
+        "name": "Elf",
+        "alignment": "Nature",
+        "tier": 2
+      },
+      {
+        "id": "fire_elemental",
+        "name": "Fire elemental",
+        "alignment": "Nature",
+        "tier": 3
+      },
+      {
+        "id": "waspwort",
+        "name": "Waspwort",
+        "alignment": "Nature",
+        "tier": 3
+      },
+      {
+        "id": "gargantuan",
+        "name": "Gargantuan",
+        "alignment": "Nature",
+        "tier": 4
+      },
+      {
+        "id": "centaur",
+        "name": "Centaur",
+        "alignment": "Might",
+        "tier": 1
+      },
+      {
+        "id": "cyclops",
+        "name": "Cyclops",
+        "alignment": "Might",
+        "tier": 3
+      }
+    ],
+    "creatureNotes": [
+      {
+        "creature": "Ballista",
+        "description": "Ranged ability allows this creature to attack enemies at a distance, but in melee combat this creature does half damage unless it has the Normal Melee ability."
+      },
+      {
+        "creature": "Monk",
+        "description": "Ranged ability allows this creature to attack enemies at a distance, but in melee combat this creature does half damage unless it has the Normal Melee ability."
+      },
+      {
+        "creature": "Catapult",
+        "description": "Ranged ability allows this creature to attack enemies at a distance, but in melee combat this creature does half damage unless it has the Normal Melee ability."
+      },
+      {
+        "creature": "Medusa",
+        "description": "The Ranged abilityallows this creature to attack enemies at a distance, but in melee combat this creature does half damage unless it has the Normal Melee ability."
+      },
+      {
+        "creature": "Elf",
+        "description": "The Ranged ability allows this creature to attack enemies at a distance, but in melee combat this creature does half damage unless she has the Normal Melee ability."
+      }
+    ]
+  },
+  {
+    "id": "ranged_first_strike",
+    "name": "Ranged First Strike",
+    "description": "Ranged First Strike allows this creature to strike a target in ranged combat before its target can retaliate.",
+    "owners": [
+      {
+        "id": "elf",
+        "name": "Elf",
+        "alignment": "Nature",
+        "tier": 2
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "rebirth",
+    "name": "Rebirth",
+    "description": "This creature can use the Rebirth ability to return to life after it is killed in combat. If all are killed before they have used this ability, a portion will automatically be reborn.",
+    "owners": [
+      {
+        "id": "phoenix",
+        "name": "Phoenix",
+        "alignment": "Nature",
+        "tier": 4
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "regeneration",
+    "name": "Regeneration",
+    "description": "This creature's Regeneration ability allows it to completely heal all of its wounds at the end of each turn. Regenerates up to 50 hit points per turn.",
+    "owners": [
+      {
+        "id": "dark_champion",
+        "name": "Dark champion",
+        "alignment": "Death",
+        "tier": 4
+      },
+      {
+        "id": "troll",
+        "name": "Troll",
+        "alignment": "Chaos",
+        "tier": 2
+      }
+    ],
+    "creatureNotes": [
+      {
+        "creature": "Troll",
+        "description": "This creature's Regeneration ability allows it to completely heal all of his wounds at the end of each turn. Regenerates up to 50 hit points per turn."
+      }
+    ]
+  },
+  {
+    "id": "resurrection",
+    "name": "Resurrection",
+    "description": "Resurrection ability allows it to target friendly dead creatures and bring them back to life.",
+    "owners": [
+      {
+        "id": "angel",
+        "name": "Angel",
+        "alignment": "Life",
+        "tier": 4
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "shoots_twice",
+    "name": "Shoots Twice",
+    "description": "Shoots Twice allows this ranged creature to fire twice each time it attacks. The second attack occurs after any enemy retaliation.",
+    "owners": [
+      {
+        "id": "elf",
+        "name": "Elf",
+        "alignment": "Nature",
+        "tier": 2
+      },
+      {
+        "id": "gargantuan",
+        "name": "Gargantuan",
+        "alignment": "Nature",
+        "tier": 4
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "short_range",
+    "name": "Short Range",
+    "description": "Short Range dramatically decreases the damage of this ranged creature's attack at long range.",
+    "owners": [
+      {
+        "id": "orc",
+        "name": "Orc",
+        "alignment": "Chaos",
+        "tier": 1
+      },
+      {
+        "id": "centaur",
+        "name": "Centaur",
+        "alignment": "Might",
+        "tier": 1
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "siege_capable",
+    "name": "Siege Capable",
+    "description": "This creature ignores all ranged attack damage penalties for distance and does full damage to targets behind castle walls and other obstacles.",
+    "owners": [
+      {
+        "id": "catapult",
+        "name": "Catapult",
+        "alignment": "Life",
+        "tier": 4
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "skeletal",
+    "name": "Skeletal",
+    "description": "Skeletal increases this creature's Ranged Defense by 100%.",
+    "owners": [
+      {
+        "id": "skeleton",
+        "name": "Skeleton",
+        "alignment": "Death",
+        "tier": 1
+      },
+      {
+        "id": "bone_dragon",
+        "name": "Bone dragon",
+        "alignment": "Death",
+        "tier": 4
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "spellcaster",
+    "name": "Spellcaster",
+    "description": "Mages can cast Blur, Magic Fist, Curse, Poison, and Raise skeletons. Each mage does 4.8 points of damage with Magic Fist, 2.4 points of Poison damage, and can raise 1.6 Skeletons. Each stack will start combat with 18 spell points.",
+    "owners": [
+      {
+        "id": "mage",
+        "name": "Mage",
+        "alignment": "Order",
+        "tier": 2
+      },
+      {
+        "id": "genie",
+        "name": "Genie",
+        "alignment": "Order",
+        "tier": 3
+      },
+      {
+        "id": "evil_sorceress",
+        "name": "Evil sorceress",
+        "alignment": "Order",
+        "tier": 4
+      },
+      {
+        "id": "faerie_dragon",
+        "name": "Faerie dragon",
+        "alignment": "Nature",
+        "tier": 4
+      },
+      {
+        "id": "water_elemental",
+        "name": "Water elemental",
+        "alignment": "Nature",
+        "tier": 3
+      }
+    ],
+    "creatureNotes": [
+      {
+        "creature": "Genie",
+        "description": "The Genie has access to Cowardice, Create illusion, Slow, Mirth, Song of Peace and Ice Bolt. Each genie does 15.2 points of damage with Ice Bolt, and can create 15.2 hit points of illusions."
+      },
+      {
+        "creature": "Evil sorceress",
+        "description": "Spellcaster allows this creature to cast Banish, Mass cancellation, Implosion, and Mass Slow during combat."
+      },
+      {
+        "creature": "Faerie dragon",
+        "description": "Spellcaster allows this creature to use a variety of spells during combat."
+      },
+      {
+        "creature": "Water elemental",
+        "description": "Spellcaster allows this creature to cast Fatigue, Ice bolt, Quicksand, and Weakness during combat."
+      }
+    ]
+  },
+  {
+    "id": "stealth",
+    "name": "Stealth",
+    "description": "With Stealth, this creature is invisible at a distance on the Adventure Map to 2nd level creatures and heroes with Basic Scouting. The creature is invisible to adjacent 1st level creatures and heroes with no Scouting.",
+    "owners": [
+      {
+        "id": "bandit",
+        "name": "Bandit",
+        "alignment": "Chaos",
+        "tier": 1
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "stone_gaze",
+    "name": "Stone Gaze",
+    "description": "This creature's Stone Gaze attack has a chance (depending on the strength of the creature) of killing enemies instantly by turning them into stone. The Stone Gaze damaged is dealt even if the target blocked the normal attack.",
+    "owners": [
+      {
+        "id": "medusa",
+        "name": "Medusa",
+        "alignment": "Chaos",
+        "tier": 2
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "stone_skin",
+    "name": "Stone Skin",
+    "description": "This creature's Stone Skin increases its Melee and Ranged Defense by 25%. The Stoneskin spell has no additional effect.",
+    "owners": [
+      {
+        "id": "gargoyle",
+        "name": "Gargoyle",
+        "alignment": "Death",
+        "tier": 2
+      },
+      {
+        "id": "goblin_knight",
+        "name": "Goblin knight",
+        "alignment": "Chaos",
+        "tier": 3
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "strength",
+    "name": "Strength",
+    "description": "Strength increases the creature's combat damage.",
+    "owners": [
+      {
+        "id": "behemoth",
+        "name": "Behemoth",
+        "alignment": "Might",
+        "tier": 4
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "strike_and_return",
+    "name": "Strike and Return",
+    "description": "Strike and Return allows this creature to fly back to its starting point after attacking.",
+    "owners": [
+      {
+        "id": "harpy",
+        "name": "Harpy",
+        "alignment": "Might",
+        "tier": 2
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "stun",
+    "name": "Stun",
+    "description": "This creature's Stun ability gives it a chance of stunning enemies when it attacks in melee combat. Stunned enemies cannot take any action or retaliate for one turn.",
+    "owners": [
+      {
+        "id": "squire",
+        "name": "Squire",
+        "alignment": "Life",
+        "tier": 1
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "summon_demons",
+    "name": "Summon Demons",
+    "description": "Summon Demons allows this creature to summon Ice Demons during combat.",
+    "owners": [
+      {
+        "id": "devil",
+        "name": "Devil",
+        "alignment": "Death",
+        "tier": 4
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "taxpayer",
+    "name": "Taxpayer",
+    "description": "Taxpayer allows this creature to generate 1 gold per day for every individual unit the player controls.",
+    "owners": [
+      {
+        "id": "peasant",
+        "name": "Peasant",
+        "alignment": "Life",
+        "tier": 1
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "teleport",
+    "name": "Teleport",
+    "description": "Teleport allows this creature to move instantly to any point on the battlefield.",
+    "owners": [
+      {
+        "id": "evil_sorceress",
+        "name": "Evil sorceress",
+        "alignment": "Order",
+        "tier": 4
+      },
+      {
+        "id": "devil",
+        "name": "Devil",
+        "alignment": "Death",
+        "tier": 4
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "terror",
+    "name": "Terror",
+    "description": "Terror allows this creature to cast Terror on an opponent. Enemies who are frozen by Terror cannot take any actions for one turn.",
+    "owners": [
+      {
+        "id": "dark_champion",
+        "name": "Dark champion",
+        "alignment": "Death",
+        "tier": 4
+      },
+      {
+        "id": "nightmare",
+        "name": "Nightmare",
+        "alignment": "Chaos",
+        "tier": 3
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "toughness",
+    "name": "Toughness",
+    "description": "Toughness increases this creature's hit points.",
+    "owners": [
+      {
+        "id": "zombie",
+        "name": "Zombie",
+        "alignment": "Death",
+        "tier": 1
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "two_attacks",
+    "name": "Two Attacks",
+    "description": "Two Attacks allows this creature to attack twice in melee combat. The second attack occurs after the enemy's retaliation.",
+    "owners": [
+      {
+        "id": "crusader",
+        "name": "Crusader",
+        "alignment": "Life",
+        "tier": 3
+      },
+      {
+        "id": "wolf",
+        "name": "Wolf",
+        "alignment": "Nature",
+        "tier": 1
+      },
+      {
+        "id": "berserker",
+        "name": "Berserker",
+        "alignment": "Might",
+        "tier": 1
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "undead",
+    "name": "Undead",
+    "description": "Undead creatures are not affected by morale, or by spells and abilities that only work on living creatures. Some spells and artifacts (such as Holy Water) have special effects on Undead creatures. Undead creatures, however, give an additional -2 morale penalty to all non-Death creatures.",
+    "owners": [
+      {
+        "id": "skeleton",
+        "name": "Skeleton",
+        "alignment": "Death",
+        "tier": 1
+      },
+      {
+        "id": "ghost",
+        "name": "Ghost",
+        "alignment": "Death",
+        "tier": 2
+      },
+      {
+        "id": "vampire",
+        "name": "Vampire",
+        "alignment": "Death",
+        "tier": 3
+      },
+      {
+        "id": "bone_dragon",
+        "name": "Bone dragon",
+        "alignment": "Death",
+        "tier": 4
+      },
+      {
+        "id": "zombie",
+        "name": "Zombie",
+        "alignment": "Death",
+        "tier": 1
+      },
+      {
+        "id": "mummy",
+        "name": "Mummy",
+        "alignment": "Death",
+        "tier": 2
+      },
+      {
+        "id": "dark_champion",
+        "name": "Dark champion",
+        "alignment": "Death",
+        "tier": 4
+      }
+    ],
+    "creatureNotes": [
+      {
+        "creature": "Ghost",
+        "description": "Undead creatures are not affected by morale, or by spells and abilities that only work on living creatures. Some spells and artifact (such as Holy Water) have special effects on Undead creatures. Undead creatures, however, give an additional -2 morale penalty to all non-Death creatures."
+      }
+    ]
+  },
+  {
+    "id": "unlimited_retaliation",
+    "name": "Unlimited Retaliation",
+    "description": "Unlimited Retaliation allows this creature to retaliate against any number of attacks in a single turn.",
+    "owners": [
+      {
+        "id": "griffin",
+        "name": "Griffin",
+        "alignment": "Nature",
+        "tier": 3
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "unlimited_shots",
+    "name": "Unlimited Shots",
+    "description": "Unlimited Shots assures that this creature never runs out of ammunition when making ranged attacks.",
+    "owners": [
+      {
+        "id": "medusa",
+        "name": "Medusa",
+        "alignment": "Chaos",
+        "tier": 2
+      }
+    ],
+    "creatureNotes": []
+  },
+  {
+    "id": "weakness",
+    "name": "Weakness",
+    "description": "Weakness causes this creature's attack to cast the Weakness spell on its target. Weakened creatures do less damage in combat.",
+    "owners": [
+      {
+        "id": "waspwort",
+        "name": "Waspwort",
+        "alignment": "Nature",
+        "tier": 3
+      }
+    ],
+    "creatureNotes": []
+  }
+]

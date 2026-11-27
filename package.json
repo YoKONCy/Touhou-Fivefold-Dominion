@@ -1,0 +1,31 @@
+{
+  "name": "touhou-fivefold-dominion",
+  "description": "东方五律战记 (Touhou: Fivefold Dominion) — 东方 Project × 英雄无敌 IV 结构同构纯前端六角格战棋游戏",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "typecheck": "vue-tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "pinia": "^2.3.1",
+    "pixelfx": "github:patch-gg/pixelfx",
+    "pixi.js": "^8.9.2",
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.0",
+    "@types/node": "^22.13.0",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "tailwindcss": "^4.1.0",
+    "typescript": "^5.8.2",
+    "vite": "^6.2.2",
+    "vitest": "^3.0.8",
+    "vue-tsc": "^2.2.8"
+  }
+}

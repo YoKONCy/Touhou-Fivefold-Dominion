@@ -1,0 +1,1543 @@
+{
+  "classes": [
+    {
+      "id": "archer",
+      "name": "Archer",
+      "wikiTitle": "Archer (H4)",
+      "kind": "base",
+      "requiredSkills": [],
+      "startingSkills": [
+        "Basic Combat",
+        "Basic Archery"
+      ],
+      "bonusEffect": null,
+      "skillPriorities": {
+        "0": [
+          "Death Magic, Order Magic, Stealth"
+        ],
+        "1": [
+          "Charm, Demonology, Enchantment, Necromancy, Occultism, Seamanship, Wizardry",
+          "Chaos Magic, Life Magic, Nobility and Tactics, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Scouting, Pathfinding",
+          "Nature Magic, as well as all of its related skills, have a priority of 2."
+        ],
+        "4": [
+          "Combat, Melee, Magic Resistance"
+        ],
+        "5": [
+          "Archery"
+        ]
+      },
+      "summary": "The Archer is the basic might class of the Preserve faction in Heroes of Might and Magic IV. It starts with Basic Combat and Basic Archery. Its magic counterpart is the Druid."
+    },
+    {
+      "id": "barbarian",
+      "name": "Barbarian",
+      "wikiTitle": "Barbarian (H4)",
+      "kind": "base",
+      "requiredSkills": [],
+      "startingSkills": [
+        "Basic Combat",
+        "Basic Melee",
+        "and Basic Magic Resistance"
+      ],
+      "bonusEffect": null,
+      "skillPriorities": {
+        "0": [
+          "Chaos Magic, Charm, Life Magic, Death Magic, Nature Magic, Necromancy, Nobility, Order Magic, Resurrection, Sorcery, Stealth, Summoning"
+        ],
+        "1": [
+          "Conjuration, Demonology, Diplomacy, Enchantment, Estates, Healing, Herbalism, Meditation, Mining, Occultism, Pyromancy, Seamanship, Spirituality, Wizardry",
+          "Tactics, as well as all of its related skills, have a priority of 1."
+        ],
+        "2": [
+          "Archery, Scouting, Pathfinding"
+        ],
+        "4": [
+          "Combat, Melee"
+        ],
+        "5": [
+          "Magic Resistance"
+        ]
+      },
+      "summary": "The Barbarian is the basic might class of the Stronghold faction in Heroes of Might and Magic IV. It starts with Basic Combat, Basic Melee, and Basic Magic Resistance. Unlike the other factions, the Stronghold doesn't have a magic class."
+    },
+    {
+      "id": "death_knight",
+      "name": "Death Knight",
+      "wikiTitle": "Death Knight (H4)",
+      "kind": "base",
+      "requiredSkills": [],
+      "startingSkills": [
+        "Basic Tactics",
+        "Basic Offense"
+      ],
+      "bonusEffect": null,
+      "skillPriorities": {
+        "0": [
+          "Life Magic, Nature Magic, Stealth"
+        ],
+        "1": [
+          "Archery, Herbalism, Healing, Meditation, Pathfinding, Resurrection, Scouting, Seamanship, Spirituality",
+          "Nobility and Order Magic, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Combat, Magic Resistance, Melee",
+          "Death Magic and Chaos Magic, as well as all of their related skills, have a priority of 2."
+        ],
+        "4": [
+          "Tactics, as well as all of its related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Death Knight is the basic might class of the Necropolis faction in Heroes of Might and Magic IV. It starts with Basic Tactics and Basic Offense. Its magic counterpart is the Necromancer."
+    },
+    {
+      "id": "druid",
+      "name": "Druid",
+      "wikiTitle": "Druid (H4)",
+      "kind": "base",
+      "requiredSkills": [],
+      "startingSkills": [
+        "Basic Nature Magic",
+        "Basic Herbalism"
+      ],
+      "bonusEffect": null,
+      "skillPriorities": {
+        "0": [
+          "Death Magic, Order Magic, Stealth"
+        ],
+        "1": [
+          "Charm, Combat, Demonology, Enchantment, Melee, Magic Resistance, Necromancy, Occultism, Seamanship, Wizardry",
+          "Nobility and Tactics, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Archery, Pathfinding, Scouting",
+          "Life Magic and Chaos Magic, as well as all of their related skills, have a priority of 2."
+        ],
+        "4": [
+          "Nature Magic, as well as all of its related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Druid is the basic magic class of the Preserve faction in Heroes of Might and Magic IV. It starts with Basic Nature Magic and Basic Herbalism. Its might counterpart is the Archer."
+    },
+    {
+      "id": "knight",
+      "name": "Knight",
+      "wikiTitle": "Knight (H4)",
+      "kind": "base",
+      "requiredSkills": [],
+      "startingSkills": [
+        "Basic Tactics",
+        "Basic Defense"
+      ],
+      "bonusEffect": null,
+      "skillPriorities": {
+        "0": [
+          "Chaos Magic, Death Magic, Stealth"
+        ],
+        "1": [
+          "Archery, Conjuration, Demonology, Necromancy, Occultism, Pathfinding, Pyromancy, Resurrection, Scouting, Seamanship, Sorcery",
+          "Nature Magic, Nobility and Order Magic, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Combat and Life Magic, as well as all of their related skills, have a priority of 2."
+        ],
+        "4": [
+          "Tactics, as well as all of its related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Knight is the basic might class of the Haven faction in Heroes of Might and Magic IV. It starts with Basic Tactics and Basic Defense. Its magic counterpart is the Priest."
+    },
+    {
+      "id": "lord",
+      "name": "Lord",
+      "wikiTitle": "Lord (H4)",
+      "kind": "base",
+      "requiredSkills": [],
+      "startingSkills": [
+        "Basic Nobility",
+        "Basic Estates"
+      ],
+      "bonusEffect": null,
+      "skillPriorities": {
+        "0": [
+          "Chaos Magic, Nature Magic, Stealth"
+        ],
+        "1": [
+          "Conjuration, Herbalism, Meditation, Pathfinding, Pyromancy, Scouting, Seamanship, Sorcery",
+          "Death Magic, Life Magic and Tactics, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Combat and Order Magic, as well as all of their related skills, have a priority of 2."
+        ],
+        "4": [
+          "Nobility, as well as all of its related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Lord is the basic might class of the Academy in Heroes of Might and Magic IV. It starts with Basic Nobility and Basic Estates. Its magic counterpart is the Mage."
+    },
+    {
+      "id": "mage",
+      "name": "Mage",
+      "wikiTitle": "Mage (H4 class)",
+      "kind": "base",
+      "requiredSkills": [],
+      "startingSkills": [
+        "Basic Order Magic",
+        "Basic Enchantment"
+      ],
+      "bonusEffect": null,
+      "skillPriorities": {
+        "0": [
+          "Chaos Magic, Nature Magic, Stealth"
+        ],
+        "1": [
+          "Conjuration, Herbalism, Meditation, Pathfinding, Pyromancy, Resurrection, Scouting, Seamanship, Sorcery, Spirituality",
+          "Combat, Nobility and Tactics, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Death Magic and Life Magic, as well as all of their related skills, have a priority of 2."
+        ],
+        "4": [
+          "Order Magic, as well as all of its related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Mage is the basic magic class of the Academy faction in Heroes of Might and Magic IV. It starts with Basic Order Magic and Basic Enchantment. Its might counterpart is the Lord."
+    },
+    {
+      "id": "necromancer",
+      "name": "Necromancer",
+      "wikiTitle": "Necromancer (H4)",
+      "kind": "base",
+      "requiredSkills": [],
+      "startingSkills": [
+        "Basic Death Magic",
+        "Basic Occultism"
+      ],
+      "bonusEffect": null,
+      "skillPriorities": {
+        "0": [
+          "Life Magic, Nature Magic, Stealth"
+        ],
+        "1": [
+          "Healing, Herbalism, Meditation, Pathfinding, Resurrection, Scouting, Seamanship, Spirituality",
+          "Combat, Nobility and Tactics, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Chaos Magic and Order Magic, as well as all of their related skills, have a priority of 2."
+        ],
+        "4": [
+          "Death Magic, Demonology, Occultism"
+        ],
+        "5": [
+          "Necromancy"
+        ]
+      },
+      "summary": "The Necromancer is the basic magic class of the Necropolis faction in Heroes of Might and Magic IV. It starts with Basic Death Magic and Basic Occultism. Its might counterpart is the Death Knight."
+    },
+    {
+      "id": "priest",
+      "name": "Priest",
+      "wikiTitle": "Priest (H4)",
+      "kind": "base",
+      "requiredSkills": [],
+      "startingSkills": [
+        "Basic Life Magic",
+        "Basic Healing"
+      ],
+      "bonusEffect": null,
+      "skillPriorities": {
+        "0": [
+          "Archery, Chaos Magic, Death Magic, Necromancy, Stealth"
+        ],
+        "1": [
+          "Combat, Demonology, Magic Resistance, Melee, Conjuration, Herbalism, Meditation, Occultism, Pathfinding, Pyromancy, Resurrection, Scouting, Seamanship, Sorcery",
+          "Nobility and Tactics, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Nature Magic and Order Magic, as well as all of their related skills, have a priority of 2."
+        ],
+        "4": [
+          "Life Magic, as well as all of its related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Priest is the basic magic class of the Haven faction in Heroes of Might and Magic IV. It starts with Basic Life Magic and Basic Healing. Its might counterpart is the Knight."
+    },
+    {
+      "id": "sorcerer",
+      "name": "Sorcerer",
+      "wikiTitle": "Sorcerer (H4)",
+      "kind": "base",
+      "requiredSkills": [],
+      "startingSkills": [
+        "Basic Chaos Magic",
+        "Basic Conjuration"
+      ],
+      "bonusEffect": null,
+      "skillPriorities": {
+        "0": [
+          "Life Magic, Order Magic, Stealth"
+        ],
+        "1": [
+          "Charm, Enchantment, Healing, Pathfinding, Resurrection, Scouting, Seamanship, Spirituality, Wizardry",
+          "Combat, Nobility and Tactics, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Death Magic and Nature Magic, as well as all of their related skills, have a priority of 2."
+        ],
+        "4": [
+          "Chaos Magic, as well as all of its related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Sorcerer is the basic magic class of the Asylum faction in Heroes of Might and Magic IV. It starts with Basic Chaos Magic and Basic Conjuration. Its might counterpart is the Thief."
+    },
+    {
+      "id": "thief",
+      "name": "Thief",
+      "wikiTitle": "Thief (H4)",
+      "kind": "base",
+      "requiredSkills": [],
+      "startingSkills": [
+        "Basic Scouting",
+        "Basic Stealth"
+      ],
+      "bonusEffect": null,
+      "skillPriorities": {
+        "0": [
+          "Life Magic, Nobility, Order Magic"
+        ],
+        "1": [
+          "Charm, Diplomacy, Estates, Enchantment, Healing, Mining, Resurrection, Seamanship, Spirituality, Wizardry",
+          "Death Magic, Nature Magic and Tactics, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Chaos Magic and Combat, as well as all of their related skills, have a priority of 2."
+        ],
+        "4": [
+          "Pathfinding, Scouting, Stealth"
+        ]
+      },
+      "summary": "The Thief is the basic might class of the Asylum faction in Heroes of Might and Magic IV. It starts with Basic Scouting and Basic Stealth. Its magic counterpart is the Sorcerer."
+    },
+    {
+      "id": "archmage",
+      "name": "Archmage",
+      "wikiTitle": "Archmage (H4)",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Any 3 of 5 Magic Skills"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "An Archmage sees the effectiveness of all their spells increase by 20%.",
+      "skillPriorities": {
+        "0": [
+          "Archery, Combat, Magic Resistance, Scouting, Tactics"
+        ],
+        "1": [
+          "Defense, Leadership, Melee, Offense, Pathfinding, Seamanship",
+          "Nobility, as well as all of its related skills, have a priority of 1."
+        ],
+        "4": [
+          "Chaos Magic, Death Magic, Life Magic, Nature Magic and Order Magic, as well as all of their related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Archmage is an advanced class in Heroes of Might and Magic IV. It requires specialization in at least three magic skills, either Chaos, Death, Life, Order or Nature Magic."
+    },
+    {
+      "id": "assassin",
+      "name": "Assassin",
+      "wikiTitle": "Assassin (H4)",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Combat",
+        "Death Magic"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "An Assassin has permanent Haste cast upon them, giving a +3 bonus to speed and movement, allowing them to usually strike first.",
+      "skillPriorities": {
+        "0": [
+          "Life Magic, Nature Magic, Nobility, Resurrection, Summoning"
+        ],
+        "1": [
+          "Diplomacy, Estates, Healing, Herbalism, Meditation, Mining, Pathfinding, Seamanship, Spirituality",
+          "Order Magic and Tactics, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Scouting",
+          "Chaos Magic, as well as all of its related skills, have a priority of 2."
+        ],
+        "4": [
+          "Combat and Death Magic, as well as all of their related skills, have a priority of 4."
+        ],
+        "5": [
+          "Stealth"
+        ]
+      },
+      "summary": "Assassin is an advanced class in Heroes of Might and Magic IV. It requires specialization in Combat and Death Magic.\n\nDue to having already one of these skills, Archers, Barbarians and Necromancers are likely candidates for this class."
+    },
+    {
+      "id": "bard",
+      "name": "Bard",
+      "wikiTitle": "Bard",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Scouting",
+        "Nature Magic"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "The class bonus for bard grants them Fortune, which sets their Luck at maximum (+10). The Bard is also immune to the misfortune spell.",
+      "skillPriorities": {
+        "0": [
+          "Death Magic, Order Magic, Stealth"
+        ],
+        "1": [
+          "Charm, Combat, Defense, Demonology, Enchantment, Magic Resistance, Melee, Necromancy, Occultism, Seamanship, Offense, Tactics, Wizardry",
+          "Chaos Magic and Nobility, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Archery, Leadership",
+          "Life Magic, as well as all of its related skills, have a priority of 2."
+        ],
+        "4": [
+          "Pathfinding, Scouting",
+          "Nature Magic, as well as all of its related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Bard is an advanced class in Heroes of Might and Magic IV. It requires specialization in Scouting and Nature Magic.\n\nDue to having already one of these skills, Druids and Thieves are likely candidates for this class."
+    },
+    {
+      "id": "battle_mage",
+      "name": "Battle Mage",
+      "wikiTitle": "Battle Mage (H4)",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Combat",
+        "Order Magic"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "The class bonus for the battle mage grants +20% damage to the ice bolt and magic fist Order Magic spells.",
+      "skillPriorities": {
+        "0": [
+          "Chaos Magic, Nature Magic"
+        ],
+        "1": [
+          "Archery, Charm, Conjuration, Enchantment, Magic Resistance, Pyromancy, Sorcery, Wizardry",
+          "Nobility and Tactics, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Pathfinding, Scouting",
+          "Life Magic and Death Magic, as well as all of their related skills, have a priority of 2."
+        ],
+        "4": [
+          "Combat, Melee",
+          "Order Magic, as well as all of its related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Battle Mage is an Advanced class from Heroes of Might and Magic IV. It requires specialization in Combat and Order Magic.\n\nDue to having already one of these skills, Archers, Barbarians and Mages are likely candidates for this class."
+    },
+    {
+      "id": "beast_lord",
+      "name": "Beast Lord",
+      "wikiTitle": "Beast Lord",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Nobility",
+        "Nature Magic"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "The class bonus for the Beast Lord lets them cast the summon wolf and summon white tiger spells with 20% more power.",
+      "skillPriorities": {
+        "0": [
+          "Death Magic, Order Magic, Stealth"
+        ],
+        "1": [
+          "Charm, Demonology, Enchantment, Necromancy, Occultism, Seamanship, Wizardry",
+          "Chaos Magic and Life Magic, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Combat, Magic Resistance, Melee, Pathfinding, Scouting",
+          "Tactics, as well as all of its related skills, have a priority of 2."
+        ],
+        "3": [
+          "Archery"
+        ],
+        "4": [
+          "Nature Magic and Nobility, as well as all of their related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Beast Lord is an Advanced class from Heroes of Might and Magic IV. It requires specialization in Nobility and Nature Magic.\n\nDue to having already one of these skills, Druids and Lords are likely candidates for this class."
+    },
+    {
+      "id": "beastmaster",
+      "name": "Beastmaster",
+      "wikiTitle": "Beastmaster (H4)",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Combat",
+        "Nature Magic"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "Beastmasters get a 20% bonus to the summon wolf spell.",
+      "skillPriorities": {
+        "0": [
+          "Death Magic, Order Magic, Stealth"
+        ],
+        "1": [
+          "Charm, Demonology, Enchantment, Necromancy, Occultism, Seamanship, Wizardry",
+          "Chaos Magic and Nobility, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Archery, Pathfinding, Scouting",
+          "Life Magic and Tactics, as well as all of their related skills, have a priority of 2."
+        ],
+        "4": [
+          "Combat, Magic Resistance, Melee",
+          "Nature Magic, as well as all of its related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Beastmaster is an advanced class in Heroes of Might and Magic IV. It requires specialization in Combat and Nature Magic.\n\nDue to having already one of these skills, Archers, Barbarians and Druids are likely candidates for this class."
+    },
+    {
+      "id": "cardinal",
+      "name": "Cardinal",
+      "wikiTitle": "Cardinal",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Nobility",
+        "Life Magic"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "Cardinals get a 5% bonus to the Resurrection skill.",
+      "skillPriorities": {
+        "0": [
+          "Archery, Chaos Magic, Death Magic, Necromancy, Stealth"
+        ],
+        "1": [
+          "Combat, Conjuration, Demonology, Magic Resistance, Melee, Occultism, Pathfinding, Pyromancy, Scouting, Seamanship, Sorcery",
+          "Tactics, as well as all of its related skills, have a priority of 1."
+        ],
+        "2": [
+          "Nature Magic and Order Magic, as well as all of their related skills, have a priority of 2."
+        ],
+        "4": [
+          "Life Magic and Nobility, as well as all of their related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Cardinal is an advanced class in Heroes of Might and Magic IV. It requires specialization in Nobility and Life Magic.\n\nDue to having already one of these skills, Lords and Priests are likely candidates for this class."
+    },
+    {
+      "id": "crusader",
+      "name": "Crusader",
+      "wikiTitle": "Crusader (H4 class)",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Tactics",
+        "Life Magic"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "A Crusader always has the mirth ability, which grants maximum morale (+10). The Crusader is also immune to the sorrow spell.",
+      "skillPriorities": {
+        "0": [
+          "Archery, Chaos Magic, Nature Magic, Necromancy, Stealth"
+        ],
+        "1": [
+          "Conjuration, Demonology, Occultism, Pathfinding, Pyromancy, Scouting, Seamanship, Sorcery",
+          "Nature Magic and Order Magic, as well as all of its related skills, have a priority of 1."
+        ],
+        "2": [
+          "Combat, Magic Resistance, Melee",
+          "Nobility, as well as all of its related skills, have a priority of 2."
+        ],
+        "4": [
+          "Life Magic and Tactics, as well as all of their related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Crusader is an advanced class from Heroes of Might and Magic IV. It requires specialization in Tactics and Life Magic.\n\nDue to having already one of these skills, Knights and Priests are likely candidates for this class."
+    },
+    {
+      "id": "dark_lord",
+      "name": "Dark Lord",
+      "wikiTitle": "Dark Lord (H4)",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Nobility",
+        "Death Magic"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "When the Dark Lord attacks, the sorrow spell is cast on their target.",
+      "skillPriorities": {
+        "0": [
+          "Life Magic, Nature Magic, Resurrection, Summoning, Stealth"
+        ],
+        "1": [
+          "Healing, Leadership, Magic Resistance, Pathfinding, Scouting, Seamanship, Spirituality",
+          "Order Magic, as well as all of its related skills, have a priority of 1."
+        ],
+        "2": [
+          "Archery, Combat, Defense, Melee, Offense, Tactics",
+          "Chaos Magic, as well as all of its related skills, have a priority of 2."
+        ],
+        "4": [
+          "Death Magic and Nobility, as well as all of their related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Dark Lord is an advanced class in Heroes of Might and Magic IV. It requires specialization in Nobility and Death Magic.\n\nDue to having already one of these skills, Lords and Necromancers are likely candidates for this class."
+    },
+    {
+      "id": "dark_priest",
+      "name": "Dark Priest",
+      "wikiTitle": "Dark Priest",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Life Magic",
+        "Death Magic"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "A Dark Priest hero gains vampirism: for every 2 HP of Damage inflicted to the enemy in melee combat, 1 HP is recovered.",
+      "skillPriorities": {
+        "0": [
+          "Stealth"
+        ],
+        "1": [
+          "Pathfinding, Scouting, Seamanship",
+          "Combat, Nobility, and Tactics, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Chaos Magic, Nature Magic and Order Magic, as well as all of their related skills, have a priority of 2."
+        ],
+        "4": [
+          "Life Magic and Death Magic, as well as all of their related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Dark Priest is an advanced class in Heroes of Might and Magic IV. It requires specialization in Life Magic and Death Magic.\n\nDue to having already one of these skills, Necromancers and Priests are likely candidates for this class."
+    },
+    {
+      "id": "demonologist",
+      "name": "Demonologist",
+      "wikiTitle": "Demonologist",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Nature Magic",
+        "Death Magic"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "The bonus of the Demonologist gives +50% efficiency to demon summoning spells (summon imp, cerberus, ice demon, venom spawn and devil).",
+      "skillPriorities": {
+        "0": [
+          "Life Magic, Resurrection, Stealth"
+        ],
+        "1": [
+          "Healing, Pathfinding, Scouting, Seamanship, Spirituality",
+          "Combat, Nobility, Order Magic and Tactics, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Chaos Magic, as well as all of its related skills, have a priority of 2."
+        ],
+        "4": [
+          "Death Magic and Nature Magic, as well as all of their related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Demonologist is an advanced class in Heroes of Might and Magic IV. It requires specialization in Nature Magic and Death Magic.\n\nDue to having already one of these skills, Druids and Necromancers are likely candidates for this class."
+    },
+    {
+      "id": "enchanter",
+      "name": "Enchanter",
+      "wikiTitle": "Enchanter (H4)",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Order Magic",
+        "Nature Magic"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "The bonus of the Enchanter gives +20% to summoning and illusion spells.",
+      "skillPriorities": {
+        "0": [
+          "Stealth"
+        ],
+        "1": [
+          "Seamanship",
+          "Combat, Nobility and Tactics, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Pathfinding, Scouting",
+          "Chaos Magic, Death Magic and Life Magic, as well as all of their related skills, have a priority of 2."
+        ],
+        "4": [
+          "Nature Magic and Order Magic, as well as all of their related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Enchanter is an advanced class in Heroes of Might and Magic IV. It requires specialization in Order Magic and Nature Magic.\n\nDue to having already one of these skills, Druids and Mages are likely candidates for this class."
+    },
+    {
+      "id": "field_marshal",
+      "name": "Field Marshal",
+      "wikiTitle": "Field Marshal",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Tactics",
+        "Scouting"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "The bonus of the Field Marshal gives +10% to the attack of the hero's creatures.",
+      "skillPriorities": {
+        "0": [
+          "Stealth"
+        ],
+        "1": [
+          "Seamanship",
+          "Chaos Magic, Death Magic, Life Magic, Nature Magic, Nobility and Order Magic, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Combat, as well as all of its related skills, have a priority of 2."
+        ],
+        "4": [
+          "Pathfinding, Scouting",
+          "Tactics, as well as all of its related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Field Marshal is an advanced class in Heroes of Might and Magic IV. It requires specialization in Tactics and Scouting.\n\nDue to having already one of these skills, Death Knights, Knights and Thieves are likely candidates for this class."
+    },
+    {
+      "id": "fire_diviner",
+      "name": "Fire Diviner",
+      "wikiTitle": "Fire Diviner",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Chaos Magic",
+        "Scouting"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "The bonus of the Fire Diviner lets them do 20% more damage with all fire spells.",
+      "skillPriorities": {
+        "0": [
+          "Archery, Life Magic, Order Magic, Stealth"
+        ],
+        "1": [
+          "Combat, Healing, Herbalism, Magic Resistance, Meditation, Melee, Resurrection, Spirituality, Seamanship, Summoning",
+          "Nobility and Tactics, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Death Magic and Nature Magic, as well as all of their related skills, have a priority of 2."
+        ],
+        "4": [
+          "Pathfinding, Scouting",
+          "Chaos Magic, as well as all of its related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Fire Diviner is an advanced class in Heroes of Might and Magic IV. It requires specialization in Chaos Magic and Scouting.\n\nDue to having already one of these skills, Sorcerers and Thieves are likely candidates for this class."
+    },
+    {
+      "id": "fireguard",
+      "name": "Fireguard",
+      "wikiTitle": "Fireguard",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Combat",
+        "Chaos Magic"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "A fireguard is immune to fire effects (just like efreeti and phoenixes).",
+      "skillPriorities": {
+        "0": [
+          "Life Magic, Order Magic, Stealth"
+        ],
+        "1": [
+          "Archery, Enchantment, Healing, Nobility, Pathfinding, Scouting, Seamanship, Spirituality, Wizardry"
+        ],
+        "2": [
+          "Death Magic, Nature Magic and Tactics, as well as all of their related skills, have a priority of 2."
+        ],
+        "4": [
+          "Combat, Magic Resistance, Melee",
+          "Chaos Magic, as well as all of its related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Fireguard is an advanced class in Heroes of Might and Magic IV. It requires specialization in Combat and Chaos Magic.\n\nDue to having already one of these skills, Archers, Barbarians and Sorcerers are likely candidates for this class."
+    },
+    {
+      "id": "general",
+      "name": "General",
+      "wikiTitle": "General",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Combat",
+        "Tactics"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "The General gives +1 morale for all friendly units, including the hero themselves.",
+      "skillPriorities": {
+        "0": [
+          "Stealth"
+        ],
+        "1": [
+          "Seamanship",
+          "Chaos Magic, Death Magic, Life Magic, Nature Magic, Nobility and Order Magic, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Archery, Magic Resistance, Pathfinding, Scouting"
+        ],
+        "4": [
+          "Combat, Melee",
+          "Tactics, as well as all of its related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The General is an advanced class in Heroes of Might and Magic IV. It requires specialization in Combat and Tactics.\n\nDue to having already one of these skills, Archers, Barbarians, Death Knights and Knights are likely candidates for this class."
+    },
+    {
+      "id": "guildmaster",
+      "name": "Guildmaster",
+      "wikiTitle": "Guildmaster",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Scouting",
+        "Nobility"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "The bonus of the Guildmaster gives a chance to stun with every melee attack, like a Squire.",
+      "skillPriorities": {
+        "0": [
+          "Stealth"
+        ],
+        "1": [
+          "Chaos Magic, Death Magic, Life Magic, Nature Magic and Order Magic, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Combat and Tactics, as well as all of their related skills, have a priority of 2."
+        ],
+        "4": [
+          "Pathfinding, Scouting",
+          "Nobility, as well as all of its related skills, have a priority of 4."
+        ],
+        "5": [
+          "Seamanship"
+        ]
+      },
+      "summary": "The Guildmaster is an advanced class in Heroes of Might and Magic IV. It requires specialization in Scouting and Nobility.\n\nDue to having already one of these skills, Lords and Thieves are likely candidates for this class."
+    },
+    {
+      "id": "heretic",
+      "name": "Heretic",
+      "wikiTitle": "Heretic (H4)",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Life Magic",
+        "Chaos Magic"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "The bonus of the Heretic lets them ignore all Wards when casting spells.",
+      "skillPriorities": {
+        "0": [
+          "Archery, Stealth"
+        ],
+        "1": [
+          "Combat, Magic Resistance, Melee, Pathfinding, Scouting, Seamanship",
+          "Nobility and Tactics, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Death Magic, Nature Magic, Order Magic, as well as all of its related skills, have a priority of 2."
+        ],
+        "4": [
+          "Chaos Magic and Life Magic, as well as all of their related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Heretic is an advanced class in Heroes of Might and Magic IV. It requires specialization in Life Magic and Chaos Magic.\n\nDue to having already one of these skills, Priests and Sorcerers are likely candidates for this class."
+    },
+    {
+      "id": "illusionist",
+      "name": "Illusionist",
+      "wikiTitle": "Illusionist (H4)",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Tactics",
+        "Order Magic"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "The bonus of the Illusionist gives +20% to the hero's Illusion spells: create illusion and phantom image.",
+      "skillPriorities": {
+        "0": [
+          "Chaos Magic, Nature Magic, Stealth"
+        ],
+        "1": [
+          "Conjuration, Herbalism, Meditation, Pyromancy, Seamanship, Sorcery, Summoning",
+          "Combat and Nobility, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Pathfinding, Scouting",
+          "Death Magic and Life Magic, as well as all of their related skills, have a priority of 2."
+        ],
+        "4": [
+          "Order Magic and Tactics, as well as all of their related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Illusionist is an advanced class in Heroes of Might and Magic IV. It requires specialization in Tactics and Order Magic."
+    },
+    {
+      "id": "lich",
+      "name": "Lich",
+      "wikiTitle": "Lich (H4)",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Chaos Magic",
+        "Death Magic"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "Liches can temporarily age enemies by attacking them in melee. Aged enemies have their attack reduced by 25%, their defense reduced by 20%, and their speed and movement reduced by 50%.",
+      "skillPriorities": {
+        "0": [
+          "Archery, Stealth",
+          "Life Magic, as well as all of its related skills, have a priority of 0."
+        ],
+        "1": [
+          "Combat, Magic Resistance, Melee, Pathfinding, Scouting, Seamanship",
+          "Nature Magic, Nobility, Order Magic and Tactics, as well as all of their related skills, have a priority of 1."
+        ],
+        "4": [
+          "Death Magic and Chaos Magic, as well as all of their related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Lich is an advanced class in Heroes of Might and Magic IV. It requires specialization in Chaos Magic and Death Magic.\n\nDue to having already one of these skills, Necromancers and Sorcerers are likely candidates for this class."
+    },
+    {
+      "id": "lord_commander",
+      "name": "Lord Commander",
+      "wikiTitle": "Lord Commander",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Tactics",
+        "Nobility"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "The bonus of the Lord Commander gives all friendly creatures +2 morale.",
+      "skillPriorities": {
+        "0": [
+          "Stealth"
+        ],
+        "1": [
+          "Archery, Magic Resistance",
+          "Chaos Magic, Death Magic, Life Magic, Nature Magic and Order Magic, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Combat, Melee, Pathfinding, Scouting, Seamanship"
+        ],
+        "4": [
+          "Nobility and Tactics, as well as all of their related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Lord Commander is an advanced class in Heroes of Might and Magic IV. It requires specialization in Tactics and Nobility.\n\nDue to having already one of these skills, Death Knights, Knights and Lords are likely candidates for this class."
+    },
+    {
+      "id": "monk",
+      "name": "Monk",
+      "wikiTitle": "Monk (H4 class)",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Life Magic",
+        "Order Magic"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "A Monk has Chaos ward at all times, which makes them 50% resistant to Chaos spells, and increases melee and ranged defense by 50% against Chaos-aligned opponents.",
+      "skillPriorities": {
+        "0": [
+          "Archery, Chaos Magic, Necromancy, Stealth"
+        ],
+        "1": [
+          "Combat, Conjuration, Death Magic, Demonology, Magic Resistance, Melee, Occultism, Pathfinding, Pyromancy, Scouting, Seamanship, Sorcery",
+          "Nature Magic, Nobility and Tactics, as well as all of their related skills, have a priority of 1."
+        ],
+        "4": [
+          "Life Magic and Order Magic, as well as all of their related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Monk is an advanced class in Heroes of Might and Magic IV. It requires specialization in Life Magic and Order Magic.\n\nDue to having already one of these skills, Mages and Priests are likely candidates for this class."
+    },
+    {
+      "id": "ninja",
+      "name": "Ninja",
+      "wikiTitle": "Ninja (H4)",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Death Magic",
+        "Scouting"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "A ninja's attacks inflict poison on their target.",
+      "skillPriorities": {
+        "0": [
+          "Life Magic, Nature Magic, Nobility, Resurrection, Summoning"
+        ],
+        "1": [
+          "Diplomacy, Estates, Healing, Herbalism, Meditation, Mining, Seamanship, Spirituality",
+          "Order Magic and Tactics, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Chaos Magic and Combat, as well as all of their related skills, have a priority of 2."
+        ],
+        "4": [
+          "Pathfinding, Scouting",
+          "Death Magic, as well as all of its related skills, have a priority of 4."
+        ],
+        "5": [
+          "Stealth"
+        ]
+      },
+      "summary": "The Ninja is an advanced class in Heroes of Might and Magic IV. It requires specialization in Death Magic and Scouting.\n\nDue to having already one of these skills, Necromancers and Thieves are likely candidates for this class."
+    },
+    {
+      "id": "paladin",
+      "name": "Paladin",
+      "wikiTitle": "Paladin (H4)",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Life Magic",
+        "Combat"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "A Paladin has Death ward at all times, which makes them 50% resistant to Death spells, and increases melee and ranged defense by 50% against Death-aligned opponents.",
+      "skillPriorities": {
+        "0": [
+          "Archery, Chaos Magic, Death Magic, Necromancy, Stealth"
+        ],
+        "1": [
+          "Conjuration, Demonology, Occultism, Pathfinding, Pyromancy, Scouting, Seamanship, Seamanship, Sorcery",
+          "Nature Magic and Order Magic, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Nobility and Tactics, as well as all of their related skills, have a priority of 2."
+        ],
+        "4": [
+          "Combat, Magic Resistance, Melee",
+          "Life Magic, as well as all of its related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Paladin is an advanced class in Heroes of Might and Magic IV. It requires specialization in Life Magic and Combat.\n\nDue to having already one of these skills, Archers, Barbarians and Priests are likely candidates for this class."
+    },
+    {
+      "id": "prophet",
+      "name": "Prophet",
+      "wikiTitle": "Prophet",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Life Magic",
+        "Scouting"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "Prophets have the spiritual armor spell on at all times, which increases Ranged and Melee Defense by 25%.",
+      "skillPriorities": {
+        "0": [
+          "Archery, Chaos Magic, Death Magic, Necromancy, Stealth"
+        ],
+        "1": [
+          "Combat, Conjuration, Demonology, Magic Resistance, Melee, Occultism, Pyromancy, Seamanship, Sorcery",
+          "Nobility and Tactics, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Nature Magic and Order Magic, as well as all of their related skills, have a priority of 2."
+        ],
+        "4": [
+          "Pathfinding, Scouting",
+          "Life Magic, as well as all of its related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Prophet is an advanced class in Heroes of Might and Magic IV. It requires specialization in Life Magic and Scouting.\n\nDue to having already one of these skills, Priests and Thieves are likely candidates for this class."
+    },
+    {
+      "id": "pyromancer",
+      "name": "Pyromancer",
+      "wikiTitle": "Pyromancer (H4)",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Chaos Magic",
+        "Tactics"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "Any unit that performs a melee attack on a pyromancer takes fire damage, just like with the efreeti's Fire Shield ability.",
+      "skillPriorities": {
+        "0": [
+          "Life Magic, Order Magic, Stealth"
+        ],
+        "1": [
+          "Healing, Herbalism, Meditation, Resurrection, Spirituality, Seamanship, Summoning",
+          "Death Magic and Nature Magic, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Pathfinding, Scouting",
+          "Combat and Nobility, as well as all of their related skills, have a priority of 2."
+        ],
+        "4": [
+          "Chaos Magic and Tactics, as well as all of their related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Pyromancer is an advanced class in Heroes of Might and Magic IV. It requires specialization in Chaos Magic and Tactics.\n\nDue to having already one of these skills, Death Knights, Knights and Sorcerers are likely candidates for this class."
+    },
+    {
+      "id": "ranger",
+      "name": "Ranger",
+      "wikiTitle": "Ranger (H4)",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Combat",
+        "Scouting"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "A ranger has their ranged attack increased by +5, and always has a ranged attack even without Archery skill or items.",
+      "skillPriorities": {
+        "0": [
+          "Death Magic, Stealth"
+        ],
+        "1": [
+          "Demonology, Occultism, Necromancy, Seamanship",
+          "Chaos Magic, Life Magic, Nature Magic, Order Magic, Nobility and Tactics, as well as all of their related skills, have a priority of 1."
+        ],
+        "4": [
+          "Combat, Magic Resistance, Melee, Pathfinding, Scouting"
+        ],
+        "5": [
+          "Archery"
+        ]
+      },
+      "summary": "The Ranger is an advanced class in Heroes of Might and Magic IV. It requires specialization in Combat and Scouting.\n\nDue to having already one of these skills, Archers, Barbarians and Thieves are likely candidates for this class."
+    },
+    {
+      "id": "reaver",
+      "name": "Reaver",
+      "wikiTitle": "Reaver (H4)",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Tactics",
+        "Death Magic skills"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "A Reaver has permanent bloodlust cast upon them, giving a +25% bonus to melee damage.",
+      "skillPriorities": {
+        "0": [
+          "Archery, Life Magic, Nature Magic, Resurrection, Stealth, Summoning"
+        ],
+        "1": [
+          "Combat, Healing, Herbalism, Magic Resistance, Meditation, Melee, Pathfinding, Scouting, Seamanship, Spirituality",
+          "Order Magic and Nobility, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Leadership"
+        ],
+        "3": [
+          "Chaos Magic, as well as all of its related skills, have a priority of 3."
+        ],
+        "4": [
+          "Defense, Offense, Tactics",
+          "Death Magic, as well as all of its related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Reaver is an advanced class based on Tactics and Death Magic skills. It requires specialization in Death Magic and Tactics.\n\nDue to having already one of these skills, Death Knights, Knights and Necromancers are likely candidates for this class."
+    },
+    {
+      "id": "seer",
+      "name": "Seer",
+      "wikiTitle": "Seer (H4)",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Order Magic",
+        "Scouting"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "The bonus of the Seer gives a +2 Scouting radius.",
+      "skillPriorities": {
+        "0": [
+          "Chaos Magic, Nature Magic, Stealth"
+        ],
+        "1": [
+          "Conjuration, Herbalism, Meditation, Pyromancy, Seamanship, Sorcery, Summoning",
+          "Combat, Nobility and Tactics, as well as all of its related skills, have a priority of 1."
+        ],
+        "2": [
+          "Death Magic and Life Magic, as well as all of its related skills, have a priority of 2."
+        ],
+        "4": [
+          "Pathfinding, Scouting",
+          "Order Magic, as well as all of its related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Seer is an advanced class in Heroes of Might and Magic IV. It requires specialization in Order Magic and Scouting.\n\nDue to having already one of these skills, Mages and Thieves are likely candidates for this class."
+    },
+    {
+      "id": "shadow_mage",
+      "name": "Shadow Mage",
+      "wikiTitle": "Shadow Mage",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Order Magic",
+        "Death Magic"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "A Shadow Mage has permanent blur cast upon them, giving a +50% bonus to ranged defense.",
+      "skillPriorities": {
+        "0": [
+          "Nature Magic, Stealth, Summoning"
+        ],
+        "1": [
+          "Herbalism, Meditation, Pathfinding, Scouting, Seamanship",
+          "Combat, Nobility, Tactics, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Chaos Magic and Life Magic, as well as all of their related skills, have a priority of 2."
+        ],
+        "4": [
+          "Order Magic and Death Magic, as well as all of their related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Shadow Mage is an advanced class in Heroes of Might and Magic IV. It requires specialization in Order Magic and Death Magic.\n\nDue to having already one of these skills, Mages and Necromancers are likely candidates for this class."
+    },
+    {
+      "id": "summoner",
+      "name": "Summoner",
+      "wikiTitle": "Summoner",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Life Magic",
+        "Nature Magic"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "The bonus of the Summoner gives them +20 experience points worth of creatures summoned every day. It functions like Basic Summoning, if the hero lacks the skill.",
+      "skillPriorities": {
+        "0": [
+          "Death Magic, Stealth"
+        ],
+        "1": [
+          "Combat, Demonology, Magic Resistance, Melee, Necromancy, Occultism, Seamanship",
+          "Chaos Magic, Nobility and Tactics, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Archery, Pathfinding, Scouting",
+          "Order Magic, as well as all of its related skills, have a priority of 2."
+        ],
+        "4": [
+          "Life Magic and Nature Magic, as well as all of their related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Summoner is an advanced class in Heroes of Might and Magic IV. It requires specialization in Life Magic and Nature Magic.\n\nDue to having already one of these skills, Druids and Priests are likely candidates for this class."
+    },
+    {
+      "id": "warden",
+      "name": "Warden",
+      "wikiTitle": "Warden (H4)",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Tactics",
+        "Nature Magic"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "The bonus of the Warden gives +10% to the defense of the hero's creatures.",
+      "skillPriorities": {
+        "0": [
+          "Death Magic, Order Magic, Stealth"
+        ],
+        "1": [
+          "Charm, Demonology, Enchantment, Necromancy, Occultism, Seamanship, Wizardry",
+          "Chaos Magic, Life Magic and Nobility, as well as all of their related skills, have a priority of 4."
+        ],
+        "2": [
+          "Combat, Magic Resistance, Melee, Pathfinding, Scouting"
+        ],
+        "3": [
+          "Archery"
+        ],
+        "4": [
+          "Nature Magic and Tactics, as well as all of their related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Warden is an advanced class in Heroes of Might and Magic IV. It requires specialization in Tactics and Nature Magic.\n\nDue to having already one of these skills, Death Knights, Druids and Knights are likely candidates for this class."
+    },
+    {
+      "id": "warlock",
+      "name": "Warlock",
+      "wikiTitle": "Warlock (H4)",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Nature Magic",
+        "Chaos Magic"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "The Spell points of a Warlock increase by 10 and spell points regenerate by 1 per day.",
+      "skillPriorities": {
+        "0": [
+          "Archery, Order Magic"
+        ],
+        "1": [
+          "Charm, Combat, Enchantment, Magic Resistance, Melee, Pathfinding, Scouting, Seamanship, Wizardry",
+          "Tactics, Life Magic and Nobility, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Death Magic, as well as all of its related skills, have a priority of 2."
+        ],
+        "4": [
+          "Chaos Magic and Nature Magic, as well as all of their related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Warlock is an advanced class in Heroes of Might and Magic IV, based on Nature Magic and Chaos Magic.\n\nDue to having already one of these skills, Druids and Sorcerers are likely candidates for this class."
+    },
+    {
+      "id": "warlord",
+      "name": "Warlord",
+      "wikiTitle": "Warlord (H4)",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Combat",
+        "Nobility"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "The bonus of the Warlord gives +5 to melee attack.",
+      "skillPriorities": {
+        "0": [
+          "Archery"
+        ],
+        "1": [
+          "Pathfinding, Scouting, Seamanship",
+          "Chaos Magic, Death Magic, Life Magic, Nature Magic and Order Magic, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Defense, Offense, Tactics"
+        ],
+        "4": [
+          "Combat, Magic Resistance, Melee, Leadership",
+          "Nobility, as well as all of its related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Warlord is an advanced class in Heroes of Might and Magic IV. It requires specialization in Combat and Nobility.\n\nDue to having already one of these skills, Archers, Barbarians and Lords are likely candidates for this class."
+    },
+    {
+      "id": "witch_king",
+      "name": "Witch King",
+      "wikiTitle": "Witch King",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Nobility",
+        "Chaos Magic"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "The bonus of the Witch King lets them cause Fear in melee targets, which causes the target to run away for a short distance and prevents it from retaliating.",
+      "skillPriorities": {
+        "0": [
+          "Life Magic, Order Magic, Stealth"
+        ],
+        "1": [
+          "Charm, Enchantment, Healing, Pathfinding, Resurrection, Scouting, Seamanship, Spirituality, Wizardry",
+          "Nature Magic, as well as all of its related skills, have a priority of 1."
+        ],
+        "2": [
+          "Combat and Tactics, as well as all of their related skills, have a priority of 2."
+        ],
+        "3": [
+          "Death Magic, as well as all of its related skills, have a priority of 3."
+        ],
+        "4": [
+          "Chaos Magic and Nobility, as well as all of their related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Witch King is an advanced class in Heroes of Might and Magic IV. It requires specialization in Nobility and Chaos Magic.\n\nDue to having already one of these skills, Lords and Sorcerers are likely candidates for this class."
+    },
+    {
+      "id": "wizard",
+      "name": "Wizard",
+      "wikiTitle": "Wizard (H4)",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Order Magic",
+        "Chaos Magic"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "The bonus of the Wizard reduces the cost of all spells by two points.",
+      "skillPriorities": {
+        "0": [
+          "Stealth"
+        ],
+        "1": [
+          "Pathfinding, Scouting, Seamanship",
+          "Combat, Nobility and Tactics, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Death Magic, Life Magic and Nature Magic, as well as all of their related skills, have a priority of 2."
+        ],
+        "4": [
+          "Chaos Magic and Order Magic, as well as all of their related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Wizard is an advanced class in Heroes of Might and Magic IV. It requires specialization in Order Magic and Chaos Magic.\n\nDue to having already one of these skills, Mages and Sorcerers are likely candidates for this class."
+    },
+    {
+      "id": "wizard_king",
+      "name": "Wizard King",
+      "wikiTitle": "Wizard King",
+      "kind": "advanced",
+      "requiredSkills": [
+        "Nobility",
+        "Order Magic"
+      ],
+      "startingSkills": [],
+      "bonusEffect": "The bonus of the Wizard King gives targets struck by its melee or ranged attacks maximum bad luck (which is -10). This is the same as being struck by misfortune spell.",
+      "skillPriorities": {
+        "0": [
+          "Chaos Magic, Nature Magic, Stealth"
+        ],
+        "1": [
+          "Archery, Conjuration, Herbalism, Meditation, Pathfinding, Pyromancy, Scouting, Seamanship, Sorcery, Summoning",
+          "Death Magic and Life Magic, as well as all of their related skills, have a priority of 1."
+        ],
+        "2": [
+          "Combat, Melee, Magic Resistance",
+          "Tactics, as well as all of its related skills, have a priority of 2."
+        ],
+        "4": [
+          "Nobility and Order Magic, as well as all of their related skills, have a priority of 4."
+        ]
+      },
+      "summary": "The Wizard King is an advanced class in Heroes of Might and Magic IV. It requires specialization in Nobility and Order Magic.\n\nDue to having already one of these skills, Mages and Lords are likely candidates for this class."
+    }
+  ],
+  "advancedMatrix": [
+    {
+      "className": "Summoner",
+      "skills": []
+    },
+    {
+      "className": "Demonologist",
+      "skills": []
+    },
+    {
+      "className": "Dark Priest",
+      "skills": []
+    },
+    {
+      "className": "Enchanter",
+      "skills": []
+    },
+    {
+      "className": "Monk",
+      "skills": []
+    },
+    {
+      "className": "Shadow Mage",
+      "skills": []
+    },
+    {
+      "className": "Warlock",
+      "skills": []
+    },
+    {
+      "className": "Heretic",
+      "skills": []
+    },
+    {
+      "className": "Lich",
+      "skills": []
+    },
+    {
+      "className": "Wizard",
+      "skills": []
+    },
+    {
+      "className": "Beastmaster",
+      "skills": []
+    },
+    {
+      "className": "Paladin",
+      "skills": []
+    },
+    {
+      "className": "Assassin",
+      "skills": []
+    },
+    {
+      "className": "Battle Mage",
+      "skills": []
+    },
+    {
+      "className": "Fireguard",
+      "skills": []
+    },
+    {
+      "className": "Bard",
+      "skills": []
+    },
+    {
+      "className": "Prophet",
+      "skills": []
+    },
+    {
+      "className": "Ninja",
+      "skills": []
+    },
+    {
+      "className": "Seer",
+      "skills": []
+    },
+    {
+      "className": "Fire Diviner",
+      "skills": []
+    },
+    {
+      "className": "Ranger",
+      "skills": []
+    },
+    {
+      "className": "Beast Lord",
+      "skills": []
+    },
+    {
+      "className": "Cardinal",
+      "skills": []
+    },
+    {
+      "className": "Dark Lord",
+      "skills": []
+    },
+    {
+      "className": "Wizard King",
+      "skills": []
+    },
+    {
+      "className": "Witch King",
+      "skills": []
+    },
+    {
+      "className": "Warlord",
+      "skills": []
+    },
+    {
+      "className": "Guildmaster",
+      "skills": []
+    },
+    {
+      "className": "Warden",
+      "skills": []
+    },
+    {
+      "className": "Crusader",
+      "skills": []
+    },
+    {
+      "className": "Reaver",
+      "skills": []
+    },
+    {
+      "className": "Illusionist",
+      "skills": []
+    },
+    {
+      "className": "Pyromancer",
+      "skills": []
+    },
+    {
+      "className": "General",
+      "skills": []
+    },
+    {
+      "className": "Field Marshal",
+      "skills": []
+    },
+    {
+      "className": "Lord Commander",
+      "skills": []
+    }
+  ]
+}
