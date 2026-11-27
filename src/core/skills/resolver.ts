@@ -13,6 +13,7 @@ import { H4_ADVANCED_CLASSES, H4_BASE_CLASSES } from './classes';
 import {
   ALL_PRIMARY_SKILL_IDS,
   getSkillTreeTotal,
+  MAGIC_EFFECT_BONUS_PCT_BY_RANK,
   MAGIC_PRIMARY_SKILL_IDS,
 } from './skillTrees';
 
@@ -63,7 +64,7 @@ export function resolveEligibleAdvancedClasses(
   return eligible.map((item) => item.cls);
 }
 
-/** 获取单系基础职业兜底（当尚未满足任何双修进阶职业条件时） */
+/** 获取单系基础职业兜底（当尚未满足任何双修进阶职业条件时，按主导分支细分为对应 11 大基础职业） */
 export function resolveBaseClass(
   skills: Partial<Record<PrimarySkillId, SkillRank>>,
   subSkills?: Partial<Record<SecondarySkillId, SkillRank>>,
@@ -77,6 +78,9 @@ export function resolveBaseClass(
   const top = sorted[0].id;
   if (top === 'combat' && (subSkills?.archery ?? 0) > (subSkills?.melee ?? 0)) {
     return H4_BASE_CLASSES.base_archer;
+  }
+  if (top === 'tactics' && (subSkills?.offense ?? 0) > (subSkills?.defense ?? 0)) {
+    return H4_BASE_CLASSES.base_death_lord;
   }
   const map: Record<PrimarySkillId, string> = {
     tactics: 'base_knight',
@@ -92,9 +96,35 @@ export function resolveBaseClass(
   return H4_BASE_CLASSES[map[top]] ?? null;
 }
 
+/** 单职业资格 O(1) 快速校验（避免每帧属性重算时全量枚举并排序 37 职业） */
+export function isAdvancedClassQualified(
+  skills: Partial<Record<PrimarySkillId, SkillRank>>,
+  subSkills: Partial<Record<SecondarySkillId, SkillRank>> | undefined,
+  cls: AdvancedClassDef,
+): boolean {
+  if (cls.isBaseClass) return false;
+  if (cls.minMagicTrees && cls.minMagicTrees >= 3) {
+    let qualifiedCount = 0;
+    for (const m of MAGIC_PRIMARY_SKILL_IDS) {
+      if ((skills[m] ?? 0) >= 3 || getSkillTreeTotal(skills, subSkills, m) >= 5) {
+        qualifiedCount += 1;
+        if (qualifiedCount >= cls.minMagicTrees) return true;
+      }
+    }
+    return false;
+  }
+  const rankA = skills[cls.primaryA] ?? 0;
+  const rankB = skills[cls.primaryB] ?? 0;
+  if (rankA < 1 || rankB < 1) return false;
+  return (
+    getSkillTreeTotal(skills, subSkills, cls.primaryA) >= ADVANCED_CLASS_TREE_THRESHOLD &&
+    getSkillTreeTotal(skills, subSkills, cls.primaryB) >= ADVANCED_CLASS_TREE_THRESHOLD
+  );
+}
+
 /**
  * 解析英雄当前最终激活的职业：
- * 1. 若英雄已主动指定 `selectedClassId` 且当前仍满足该进阶职业条件 → 尊重玩家自由切换结果！
+ * 1. 若英雄已主动指定 `selectedClassId` 且当前仍满足该进阶职业条件 → O(1) 直接返回，免去全表排序！
  * 2. 否则返回默认最高分进阶组合职业；
  * 3. 若未达任何双修门槛 → 回退至对应单系基础职业。
  */
@@ -104,50 +134,55 @@ export function resolveActiveHeroClass(
   advancedClasses: Record<string, AdvancedClassDef> = H4_ADVANCED_CLASSES,
   selectedClassId?: string | null,
 ): AdvancedClassDef | null {
-  const eligible = resolveEligibleAdvancedClasses(skills, subSkills, advancedClasses);
   if (selectedClassId) {
-    const picked = eligible.find((c) => c.id === selectedClassId);
-    if (picked) return picked;
+    const picked = advancedClasses[selectedClassId];
+    if (picked && isAdvancedClassQualified(skills, subSkills, picked)) {
+      return picked;
+    }
   }
+  const eligible = resolveEligibleAdvancedClasses(skills, subSkills, advancedClasses);
   if (eligible.length > 0) return eligible[0];
   return resolveBaseClass(skills, subSkills);
 }
 
-/** 计算指定法术在英雄 36 技能树 + 激活职业加成下的综合威力倍率 */
+/** 计算指定法术在英雄原版 36 技能树 + 激活职业加成下的综合威力倍率 */
 export function computeHeroSpellEffectivenessMultiplier(
   _skills: Partial<Record<PrimarySkillId, SkillRank>>,
   subSkills: Partial<Record<SecondarySkillId, SkillRank>> | undefined,
   activeClass: AdvancedClassDef | null,
   school: Exclude<Alignment, 'might'>,
   category: 'damage' | 'heal' | 'revive' | 'summon' | 'raise' | 'mind' | 'buff_debuff',
+  opts?: { spellId?: string; isFireSpell?: boolean; isIllusion?: boolean },
 ): number {
   let mult = 1;
   const sub = subSkills ?? {};
 
-  // 1. 混沌子技能「魔力 (Sorcery)」：全五系通用法术威力 +10%/阶
-  mult += (sub.sorcery ?? 0) * 0.1;
+  // 1. 混沌子技能「魔力 (Sorcery)」：原版 HoMM4 规则下全五系直接伤害法术统一 +20%/阶（宗师 +100%）
+  if (category === 'damage') {
+    mult += MAGIC_EFFECT_BONUS_PCT_BY_RANK[sub.sorcery ?? 0];
+  }
 
-  // 2. 各派系专属子技能精准增幅
+  // 2. 五系对称子技能精准增幅（1~5 阶分别对应 +20%/+40%/+60%/+80%/+100%）
   if (school === 'life') {
-    mult += (sub.spirituality ?? 0) * 0.1;
-    if (category === 'heal') mult += (sub.healing ?? 0) * 0.15;
-    if (category === 'revive') mult += (sub.resurrection_skill ?? 0) * 0.18 + (sub.healing ?? 0) * 0.08;
-  } else if (school === 'order') {
-    mult += (sub.enchantment ?? 0) * 0.15;
-    if (category === 'mind') mult += (sub.charm ?? 0) * 0.12;
-  } else if (school === 'death') {
-    mult += (sub.occultism ?? 0) * 0.12;
-    if (category === 'damage' || category === 'buff_debuff') mult += (sub.demonology ?? 0) * 0.15;
-    if (category === 'raise') mult += (sub.necromancy ?? 0) * 0.2;
-  } else if (school === 'chaos') {
-    if (category === 'damage') {
-      mult += (sub.pyromancy ?? 0) * 0.16;
-    } else {
-      mult += (sub.conjuration ?? 0) * 0.12;
+    mult += MAGIC_EFFECT_BONUS_PCT_BY_RANK[sub.healing ?? 0];
+    if (category === 'revive') {
+      mult += (sub.resurrection_skill ?? 0) * 0.15;
     }
+  } else if (school === 'order') {
+    mult += MAGIC_EFFECT_BONUS_PCT_BY_RANK[sub.enchantment ?? 0];
+    if (category === 'mind') {
+      mult += (sub.charm ?? 0) * 0.12;
+    }
+  } else if (school === 'death') {
+    mult += MAGIC_EFFECT_BONUS_PCT_BY_RANK[sub.demonology ?? 0];
+    if (category === 'raise') {
+      mult += (sub.necromancy ?? 0) * 0.15;
+    }
+  } else if (school === 'chaos') {
+    mult += MAGIC_EFFECT_BONUS_PCT_BY_RANK[sub.pyromancy ?? 0];
   } else if (school === 'nature') {
     if (category === 'summon') {
-      mult += (sub.summoning ?? 0) * 0.2;
+      mult += MAGIC_EFFECT_BONUS_PCT_BY_RANK[sub.summoning ?? 0];
     } else {
       mult += (sub.herbalism ?? 0) * 0.15;
     }
@@ -158,6 +193,11 @@ export function computeHeroSpellEffectivenessMultiplier(
   if (passive) {
     if (passive.allSpellBonusPct) mult += passive.allSpellBonusPct;
     if (passive.schoolSpellBonusPct?.[school]) mult += passive.schoolSpellBonusPct[school]!;
+    if (opts?.isFireSpell && passive.fireSpellBonusPct) mult += passive.fireSpellBonusPct;
+    if (opts?.isIllusion && passive.illusionBonusPct) mult += passive.illusionBonusPct;
+    if (opts?.spellId && passive.specificSpellBonusPct?.[opts.spellId]) {
+      mult += passive.specificSpellBonusPct[opts.spellId]!;
+    }
     if ((category === 'heal' || category === 'revive') && passive.healingBonusPct) {
       mult += passive.healingBonusPct;
     }

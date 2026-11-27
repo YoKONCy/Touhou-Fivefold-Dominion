@@ -2,6 +2,7 @@
  * 战场六边形空间查询、多格占位、贴身交战判定与移动/近战贴脸寻位子模块
  */
 
+import { isSpecialNonLivingUnit } from '../creatureTypes';
 import {
   computeReachableHexes,
   getFootprintHexes,
@@ -12,12 +13,25 @@ import {
   type HexTile,
 } from '../hex';
 import { computeUnitStats } from '../modifiers';
+import { validateCorpseSpellTarget } from '../spells/helpers';
 import { hasIgnoreTerrainPenaltyTrait } from '../traits';
-import { getUnitMovementDomain, type BattleState, type BattleUnit } from '../types';
+import { getUnitMovementDomain, type BattleState, type BattleUnit, type SpellDef } from '../types';
 import type { CombatContentCatalog } from './types';
 
+const tileMapCache = new WeakMap<Record<string, HexTile>, { size: number; map: Map<string, HexTile> }>();
+
 export function buildTileMap(state: BattleState): Map<string, HexTile> {
-  return new Map(Object.entries(state.tiles));
+  const keys = Object.keys(state.tiles);
+  const cached = tileMapCache.get(state.tiles);
+  if (cached && cached.size === keys.length) {
+    return cached.map;
+  }
+  const map = new Map<string, HexTile>();
+  for (const k of keys) {
+    map.set(k, state.tiles[k]);
+  }
+  tileMapCache.set(state.tiles, { size: keys.length, map });
+  return map;
 }
 
 /** 获取单个单位当前占据的全部六边形坐标 */
@@ -51,19 +65,49 @@ export function findUnitAtHex(
   return knockedOutFallback;
 }
 
-/** 反查站在目标六边形上可用于招魂/操纵死尸的兵种单位（含仍有可用残骸生命池的阵亡残骸或减员存活堆叠） */
+/** 反查站在目标六边形上可用于招魂/操纵死尸的兵种单位（优先返回对当前法术合法的残骸，可选回退无效残骸供 UI 精准提示原因） */
 export function findCorpseTargetAtHex(
   state: BattleState,
   hex: HexCoord,
   catalog?: CombatContentCatalog,
+  opts?: {
+    spell?: SpellDef;
+    caster?: BattleUnit;
+    includeInvalidFallback?: boolean;
+  },
 ): BattleUnit | null {
-  let deadFallback: BattleUnit | null = null;
+  let validAlive: BattleUnit | null = null;
+  let validDead: BattleUnit | null = null;
+  let invalidFallback: BattleUnit | null = null;
+
   for (const unit of Object.values(state.units)) {
     if (unit.kind !== 'creature') continue;
-    if (unit.statusEffects?.disintegrated) continue;
     const occupied = getUnitOccupiedHexes(unit);
     if (!occupied.some((h) => hexEquals(h, hex))) continue;
+
     const lostModels = unit.status === 'dead' ? unit.maxCount : Math.max(0, unit.maxCount - unit.count);
+
+    // 传入施法者与法术定义时，统一按 validateCorpseSpellTarget 校验（区分纯招魂与友方反魂起尸）
+    if (opts?.spell && opts?.caster && catalog) {
+      if (validateCorpseSpellTarget(opts.spell, opts.caster, unit, state, catalog).ok) {
+        if (unit.status === 'alive' && unit.count < unit.maxCount) {
+          validAlive ??= unit;
+        } else if (unit.status === 'dead') {
+          validDead ??= unit;
+        }
+      } else if (
+        opts.includeInvalidFallback &&
+        !invalidFallback &&
+        (lostModels > 0 || Boolean(unit.statusEffects?.disintegrated))
+      ) {
+        invalidFallback = unit;
+      }
+      continue;
+    }
+
+    // 缺省模式仅匹配可供纯招魂提取的活体残骸（严禁机械、亡灵、元素、幻象）
+    if (unit.statusEffects?.disintegrated) continue;
+    if (isSpecialNonLivingUnit(unit)) continue;
     if (lostModels <= 0) continue;
     const maxHp = catalog
       ? Math.max(1, computeUnitStats(unit, state, catalog).maxHp)
@@ -73,11 +117,12 @@ export function findCorpseTargetAtHex(
     if (unit.status === 'alive' && unit.count < unit.maxCount) {
       return unit;
     }
-    if (unit.status === 'dead' && !deadFallback) {
-      deadFallback = unit;
+    if (unit.status === 'dead' && !validDead) {
+      validDead = unit;
     }
   }
-  return deadFallback;
+
+  return validAlive ?? validDead ?? (opts?.includeInvalidFallback ? invalidFallback : null);
 }
 
 export function getOccupiedHexKeys(state: BattleState, excludeUnitId?: string): Set<string> {
@@ -120,12 +165,14 @@ export function getUnitReachableMap(
 
   // H4 自然法术「流沙陷阱 (Quicksand)」：非飞行且无地形通行的陆地单位踩入流沙格立即耗尽剩余移动力停步
   const qsKeys = state.battleSpellFlags?.quicksandHexKeys ?? [];
+  let effectiveTiles = tiles;
   if (qsKeys.length > 0 && domain === 'ground' && !ignoreTerrain) {
+    effectiveTiles = new Map(tiles);
     const stopCost = Math.max(1, stats.speed);
     for (const k of qsKeys) {
-      const t = tiles.get(k);
+      const t = effectiveTiles.get(k);
       if (t) {
-        tiles.set(k, { ...t, moveCost: Math.max(t.moveCost, stopCost) });
+        effectiveTiles.set(k, { ...t, moveCost: Math.max(t.moveCost, stopCost) });
       }
     }
   }
@@ -133,7 +180,7 @@ export function getUnitReachableMap(
   return computeReachableHexes(
     unit.pos,
     stats.speed,
-    tiles,
+    effectiveTiles,
     occupied,
     domain,
     ignoreTerrain,

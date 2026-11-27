@@ -2,7 +2,7 @@
  * 战场初始化与英雄/兵种单位实例化工厂子模块
  */
 
-import { clampSubSkillsToPrimaries } from '../h4Skills';
+import { clampSkillsToPrerequisites } from '../h4Skills';
 import { offsetToAxial, type HexCoord } from '../hex';
 import { computeUnitStats, resolveAdvancedClass } from '../modifiers';
 import { createRngState } from '../rng';
@@ -25,9 +25,11 @@ function createHeroUnit(
   pos: HexCoord,
   catalog: CombatContentCatalog,
 ): BattleUnit {
-  const initSub = clampSubSkillsToPrimaries(def.initialSkills, def.initialSubSkills ?? {});
+  const normalized = clampSkillsToPrerequisites(def.initialSkills, def.initialSubSkills ?? {});
+  const initSkills = normalized.skills;
+  const initSub = normalized.subSkills;
   const advClass = resolveAdvancedClass(
-    def.initialSkills,
+    initSkills,
     catalog.advancedClasses,
     initSub,
     def.initialSelectedClassId,
@@ -85,7 +87,7 @@ function createHeroUnit(
     knownSpellIds: [...def.knownSpellIds],
     signatureSpellCardId: def.signatureSpellCardId,
     potions: def.initialPotions.map((p) => ({ ...p })),
-    skills: { ...def.initialSkills },
+    skills: { ...initSkills },
     subSkills: initSub,
     advancedClassId: advClass?.id,
     selectedAdvancedClassId: def.initialSelectedClassId ?? null,

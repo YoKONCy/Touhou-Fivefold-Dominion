@@ -69,8 +69,11 @@ export {
   getCreaturePerUnitSpellFactor,
   getEffectiveSpellManaCost,
   getEffectiveSpellRange,
+  getNecromancyCorpseRejection,
   getSchoolSpellMultiplier,
+  isTargetResistingHostileSpell,
   isUnitOnHighlandPlatform,
+  validateCorpseSpellTarget,
   validateSpellUnitTarget,
 } from './spells/helpers';
 export type { IllusionCastEvaluation, SpellTargetValidationResult } from './spells/helpers';
@@ -147,6 +150,11 @@ export function executeH4CastSpell(
           activeHeroClass,
           spell.alignment,
           spellCategory,
+          {
+            spellId: spell.id,
+            isFireSpell: Boolean(spell.isFireSpell),
+            isIllusion: eff === 'create_illusion' || eff === 'phantom_image',
+          },
         )
       : 1;
   const lifeDurationBonus =

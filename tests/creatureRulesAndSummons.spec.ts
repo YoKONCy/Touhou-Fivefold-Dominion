@@ -11,6 +11,7 @@ import {
   createBattleState,
   dispatchCombatCommand,
   evaluateIllusionSpell,
+  findCorpseTargetAtHex,
   getAvailableCorpseHp,
   getUnitReachableMap,
   previewAttack,
@@ -32,6 +33,8 @@ import { buildShrineNightBattleMap } from '@data/definitions';
 import { ALL_H4_SPELL_IDS } from '@data/h4Spells';
 import { buildUnitSpecialtyBadges } from '@ui/hudMetadata';
 import { getUnitHeaderCreatureTags, SUMMON_KIND_HP_THEME } from '@ui/semanticFormat';
+import { buildBattleOverlayHints } from '@ui/store/overlayHints';
+import { computeHoverSpellContext } from '@ui/store/targeting';
 import { castSpellAsUnit, clearMapObstacles } from './helpers/testUtils';
 
 describe('士气、双向幸运与厄运核心机制', () => {
@@ -535,9 +538,9 @@ describe('召唤、招魂残骸池、镜像幻象与召唤物三分类体系', (
     const raisedGhost = Object.values(state.units).find((u) => u.defId === 'wraith_spirit' && u.isSummoned)!;
     expect(raisedGhost).toBeDefined();
     expect(raisedGhost.voxelBlueprintId).toBe('creature_wraith_spirit');
-    // 90 HP / 28 HP = 3 满血 + 1 只 6/28 残兵
-    expect(raisedGhost.count).toBe(4);
-    expect(raisedGhost.currentHp).toBe(6);
+    const expectedGhost = allocateHpPoolToStack(90, TOUHOU_CATALOG.creatures.wraith_spirit.baseStats.maxHp);
+    expect(raisedGhost.count).toBe(expectedGhost.count);
+    expect(raisedGhost.currentHp).toBe(expectedGhost.currentHp);
 
     enemyBlade.count = 9; // 阵亡 1 只剑士，按其真实单兵生命池精确转化为正式「尸壳」含残兵
     const bladeHp = TOUHOU_CATALOG.creatures.exorcist_blade.baseStats.maxHp;
@@ -647,9 +650,10 @@ describe('召唤、招魂残骸池、镜像幻象与召唤物三分类体系', (
     const titanClone = Object.values(state.units).find((u) => u.isIllusion && u.defId === 'hisoutensoku')!;
     expect(titanClone).toBeDefined();
     expect(titanClone.count).toBe(1);
-    // 目标仅 1 只 255 HP，85% 上限 = 216 HP，必为残血非想天则幻象
-    expect(titanClone.currentHp).toBeLessThan(TOUHOU_CATALOG.creatures.hisoutensoku.baseStats.maxHp);
-    expect(titanClone.currentHp).toBeLessThanOrEqual(216);
+    // 目标仅 1 只非想天则，85% 生命上限内必为残血非想天则幻象
+    const titanMaxHp = TOUHOU_CATALOG.creatures.hisoutensoku.baseStats.maxHp;
+    expect(titanClone.currentHp).toBeLessThan(titanMaxHp);
+    expect(titanClone.currentHp).toBeLessThanOrEqual(Math.floor(titanMaxHp * 0.85));
 
     // 4. 禁止对幻象单位再次套娃复制
     const nestedEval = evaluateIllusionSpell(
@@ -775,5 +779,198 @@ describe('召唤、招魂残骸池、镜像幻象与召唤物三分类体系', (
     expect(getUnitHeaderCreatureTags(illusionUnit!).some((t) => t.id === 'illusion')).toBe(true);
     expect(getUnitHeaderCreatureTags(summonedUnit!).some((t) => t.id === 'summoned')).toBe(true);
     expect(getUnitHeaderCreatureTags(raisedUnit!).some((t) => t.id === 'raised')).toBe(true);
+  });
+
+  it('死亡招魂系法术严禁从机械、亡灵、元素、幻象尸体招魂，并同步驱动棋盘高亮与悬停拒绝诊断', () => {
+    const map = buildShrineNightBattleMap();
+    clearMapObstacles(map.tiles);
+    const { state } = createBattleState(
+      {
+        mapWidth: map.width,
+        mapHeight: map.height,
+        tiles: map.tiles,
+        leftSlots: [
+          { kind: 'hero', defId: 'hero_remilia', col: 4, row: 10 },
+          { kind: 'creature', defId: 'corpse_husk', count: 10, col: 5, row: 8 },
+          { kind: 'creature', defId: 'arcane_colossus', count: 2, col: 5, row: 12 },
+          { kind: 'creature', defId: 'starfire_efreet', count: 2, col: 3, row: 12 },
+        ],
+        rightSlots: [
+          { kind: 'hero', defId: 'hero_marisa', col: 14, row: 10 },
+          { kind: 'creature', defId: 'koakuma_imp', count: 10, col: 8, row: 10 },
+          { kind: 'creature', defId: 'arcane_colossus', count: 2, col: 8, row: 6 },
+          { kind: 'creature', defId: 'corpse_husk', count: 10, col: 8, row: 14 },
+          { kind: 'creature', defId: 'starfire_efreet', count: 2, col: 10, row: 10 },
+          { kind: 'creature', defId: 'kedama', count: 8, col: 10, row: 14 },
+        ],
+        controllers: { left: 'human', right: 'human' },
+        seed: 9527,
+      },
+      TOUHOU_CATALOG,
+    );
+
+    const remilia = Object.values(state.units).find((u) => u.defId === 'hero_remilia')!;
+    const allyUndead = Object.values(state.units).find((u) => u.side === 'left' && u.defId === 'corpse_husk')!;
+    const allyMech = Object.values(state.units).find((u) => u.side === 'left' && u.defId === 'arcane_colossus')!;
+    const allyElem = Object.values(state.units).find((u) => u.side === 'left' && u.defId === 'starfire_efreet')!;
+
+    const enemyLiving = Object.values(state.units).find((u) => u.side === 'right' && u.defId === 'koakuma_imp')!;
+    const enemyMech = Object.values(state.units).find((u) => u.side === 'right' && u.defId === 'arcane_colossus')!;
+    const enemyUndead = Object.values(state.units).find((u) => u.side === 'right' && u.defId === 'corpse_husk')!;
+    const enemyElem = Object.values(state.units).find((u) => u.side === 'right' && u.defId === 'starfire_efreet')!;
+    const enemyIllusion = Object.values(state.units).find((u) => u.side === 'right' && u.defId === 'kedama')!;
+    enemyIllusion.isIllusion = true;
+    enemyIllusion.summonKind = 'illusion';
+
+    // 将测试目标全部置为阵亡/减员残骸态
+    for (const u of [allyUndead, allyMech, allyElem, enemyLiving, enemyMech, enemyUndead, enemyElem, enemyIllusion]) {
+      u.count = 0;
+      u.currentHp = 0;
+      u.status = 'dead';
+    }
+
+    // 1. 缺省残骸生命池仅认可活体，四类非活体一律返回 0
+    expect(getAvailableCorpseHp(state, enemyLiving, TOUHOU_CATALOG)).toBeGreaterThan(0);
+    expect(getAvailableCorpseHp(state, enemyMech, TOUHOU_CATALOG)).toBe(0);
+    expect(getAvailableCorpseHp(state, enemyUndead, TOUHOU_CATALOG)).toBe(0);
+    expect(getAvailableCorpseHp(state, enemyElem, TOUHOU_CATALOG)).toBe(0);
+    expect(getAvailableCorpseHp(state, enemyIllusion, TOUHOU_CATALOG)).toBe(0);
+    expect(getAvailableCorpseHp(state, allyUndead, TOUHOU_CATALOG)).toBe(0);
+    // 友方原地复生模式放行亡灵，但仍严禁机械/元素/幻象
+    expect(getAvailableCorpseHp(state, allyUndead, TOUHOU_CATALOG, { allowUndead: true })).toBeGreaterThan(0);
+    expect(getAvailableCorpseHp(state, allyMech, TOUHOU_CATALOG, { allowUndead: true })).toBe(0);
+    expect(getAvailableCorpseHp(state, allyElem, TOUHOU_CATALOG, { allowUndead: true })).toBe(0);
+    expect(getAvailableCorpseHp(state, enemyIllusion, TOUHOU_CATALOG, { allowUndead: true })).toBe(0);
+
+    // 2. 纯招魂三术（招魂·尸壳 / 怨灵 / 血族）对敌我机械、亡灵、元素、幻象一律失败
+    for (const spellId of ['death_raise_skeletons', 'death_raise_ghost', 'death_raise_vampires'] as const) {
+      for (const badTarget of [enemyMech, enemyUndead, enemyElem, enemyIllusion, allyUndead, allyMech, allyElem]) {
+        const res = castSpellAsUnit(state, remilia, { spellId, targetUnitId: badTarget.id });
+        expect(res.ok, `${spellId} 不应允许从 ${badTarget.name} 招魂`).toBe(false);
+      }
+    }
+
+    // 3. 反魂起尸 / 黄泉呼唤：转化敌骸严禁机械/亡灵/元素/幻象；友军复生严禁机械/元素/幻象，允许己方亡灵复生
+    for (const spellId of ['death_animate_dead', 'death_death_call'] as const) {
+      for (const badEnemy of [enemyMech, enemyUndead, enemyElem, enemyIllusion]) {
+        const res = castSpellAsUnit(state, remilia, { spellId, targetUnitId: badEnemy.id });
+        expect(res.ok, `${spellId} 不应允许转化敌方非活体 ${badEnemy.name}`).toBe(false);
+      }
+      for (const badAlly of [allyMech, allyElem]) {
+        const res = castSpellAsUnit(state, remilia, { spellId, targetUnitId: badAlly.id });
+        expect(res.ok, `${spellId} 不应允许复生己方非活体 ${badAlly.name}`).toBe(false);
+      }
+    }
+
+    // 4. 空间查骸、棋盘高亮与悬停诊断保持单一真相源
+    const raiseSpell = TOUHOU_CATALOG.spells.death_raise_skeletons;
+    const animateSpell = TOUHOU_CATALOG.spells.death_animate_dead;
+    expect(findCorpseTargetAtHex(state, enemyMech.pos, TOUHOU_CATALOG)).toBeNull();
+    expect(findCorpseTargetAtHex(state, enemyLiving.pos, TOUHOU_CATALOG)?.id).toBe(enemyLiving.id);
+
+    const raiseHints = buildBattleOverlayHints({
+      state,
+      activeUnit: remilia,
+      inspectedUnitId: remilia.id,
+      hoveredHex: null,
+      hoveredUnitId: null,
+      isHumanTurn: true,
+      isAnimating: false,
+      declaringSpellCard: false,
+      selectedSpellId: raiseSpell.id,
+      pendingSpellFirstUnitId: null,
+      hoverSpellContext: null,
+      hoverAttackContext: null,
+      activeReachableMap: null,
+      activeReachableHexKeys: new Set(),
+      activeAttackableUnitIds: new Set(),
+    });
+    expect(raiseHints.validSpellUnitIds.has(enemyLiving.id)).toBe(true);
+    expect(raiseHints.validSpellUnitIds.has(enemyMech.id)).toBe(false);
+    expect(raiseHints.validSpellUnitIds.has(enemyUndead.id)).toBe(false);
+    expect(raiseHints.validSpellUnitIds.has(enemyElem.id)).toBe(false);
+    expect(raiseHints.validSpellUnitIds.has(enemyIllusion.id)).toBe(false);
+    expect(raiseHints.validSpellUnitIds.has(allyUndead.id)).toBe(false);
+
+    const animateHints = buildBattleOverlayHints({
+      state,
+      activeUnit: remilia,
+      inspectedUnitId: remilia.id,
+      hoveredHex: null,
+      hoveredUnitId: null,
+      isHumanTurn: true,
+      isAnimating: false,
+      declaringSpellCard: false,
+      selectedSpellId: animateSpell.id,
+      pendingSpellFirstUnitId: null,
+      hoverSpellContext: null,
+      hoverAttackContext: null,
+      activeReachableMap: null,
+      activeReachableHexKeys: new Set(),
+      activeAttackableUnitIds: new Set(),
+    });
+    expect(animateHints.validSpellUnitIds.has(enemyLiving.id)).toBe(true);
+    expect(animateHints.validSpellUnitIds.has(allyUndead.id)).toBe(true);
+    expect(animateHints.validSpellUnitIds.has(enemyUndead.id)).toBe(false);
+    expect(animateHints.validSpellUnitIds.has(enemyMech.id)).toBe(false);
+    expect(animateHints.validSpellUnitIds.has(enemyElem.id)).toBe(false);
+    expect(animateHints.validSpellUnitIds.has(enemyIllusion.id)).toBe(false);
+    expect(animateHints.validSpellUnitIds.has(allyMech.id)).toBe(false);
+    expect(animateHints.validSpellUnitIds.has(allyElem.id)).toBe(false);
+
+    // 悬停诊断精准给出四种中文拒绝标签
+    const hoverMech = computeHoverSpellContext({
+      state,
+      activeUnit: remilia,
+      spell: raiseSpell,
+      hoveredHex: enemyMech.pos,
+      pendingSpellFirstUnitId: null,
+    });
+    expect(hoverMech.canCast).toBe(false);
+    expect(hoverMech.shortLabel).toBe('机械不可招魂');
+
+    const hoverUndead = computeHoverSpellContext({
+      state,
+      activeUnit: remilia,
+      spell: raiseSpell,
+      hoveredHex: enemyUndead.pos,
+      pendingSpellFirstUnitId: null,
+    });
+    expect(hoverUndead.canCast).toBe(false);
+    expect(hoverUndead.shortLabel).toBe('亡灵不可招魂');
+
+    const hoverElem = computeHoverSpellContext({
+      state,
+      activeUnit: remilia,
+      spell: raiseSpell,
+      hoveredHex: enemyElem.pos,
+      pendingSpellFirstUnitId: null,
+    });
+    expect(hoverElem.canCast).toBe(false);
+    expect(hoverElem.shortLabel).toBe('元素不可招魂');
+
+    const hoverIllusion = computeHoverSpellContext({
+      state,
+      activeUnit: remilia,
+      spell: raiseSpell,
+      hoveredHex: enemyIllusion.pos,
+      pendingSpellFirstUnitId: null,
+    });
+    expect(hoverIllusion.canCast).toBe(false);
+    expect(hoverIllusion.shortLabel).toBe('幻象不可招魂');
+
+    // 5. 正向对照：活体残骸可招魂，己方亡灵可反魂原地复生
+    const okRaise = castSpellAsUnit(state, remilia, {
+      spellId: 'death_raise_skeletons',
+      targetUnitId: enemyLiving.id,
+    });
+    expect(okRaise.ok, okRaise.error).toBe(true);
+
+    const okReviveAllyUndead = castSpellAsUnit(state, remilia, {
+      spellId: 'death_animate_dead',
+      targetUnitId: allyUndead.id,
+    });
+    expect(okReviveAllyUndead.ok, okReviveAllyUndead.error).toBe(true);
+    expect(allyUndead.status).toBe('alive');
   });
 });

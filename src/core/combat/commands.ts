@@ -7,6 +7,7 @@ import {
   isDarkMagicVulnerable,
   isImmuneToLivingEffects,
   isImmuneToLivingHeal,
+  isImmuneToMorale,
   isUndeadUnit,
 } from '../creatureTypes';
 import { resolveActiveHeroClass } from '../h4Skills';
@@ -35,6 +36,7 @@ import {
   computePoisonAttackDamage,
   grantGrazeReward,
   handlePostKillRewards,
+  hasDoubleStrikeForMode,
   previewAttack,
   resolveAreaMeleeEffects,
   resolveFireShield,
@@ -233,6 +235,16 @@ function executeAttackCommand(
     handlePostKillRewards(state, striker, victim, strike.kills);
     applyHitStatusEffect(state, victim, strike.appliedStatus);
 
+    const strikerHeroCls =
+      striker.kind === 'hero'
+        ? resolveActiveHeroClass(
+            striker.skills,
+            striker.subSkills,
+            catalog.advancedClasses,
+            striker.selectedAdvancedClassId,
+          )
+        : null;
+
     if (
       striker.abilities.poisonAttack &&
       strike.damage > 0 &&
@@ -241,19 +253,41 @@ function executeAttackCommand(
       !victim.abilities.magicImmune
     ) {
       const pDmg = computePoisonAttackDamage(striker, victim, state, catalog, strikerCountOverride);
-      const pKills = applyDamageToUnit(state, victim, pDmg, catalog, events);
-      strike.poisonInstantDamage = pDmg;
-      strike.poisonInstantKills = pKills;
-      handlePostKillRewards(state, striker, victim, pKills);
-      if (victim.status === 'alive') {
-        victim.statusEffects.poisonPower = Math.max(victim.statusEffects.poisonPower ?? 0, pDmg);
-        markStatusEffectOrder(victim, state, 'poisonPower');
-        enforceUnitStatusSlotCap(victim);
+      if (pDmg > 0) {
+        const pKills = applyDamageToUnit(state, victim, pDmg, catalog, events);
+        strike.poisonInstantDamage = pDmg;
+        strike.poisonInstantKills = pKills;
+        handlePostKillRewards(state, striker, victim, pKills);
+        if (victim.status === 'alive') {
+          victim.statusEffects.poisonPower = Math.max(victim.statusEffects.poisonPower ?? 0, pDmg);
+          markStatusEffectOrder(victim, state, 'poisonPower');
+          enforceUnitStatusSlotCap(victim);
+        }
+        if (!strike.appliedStatus) strike.appliedStatus = 'poisoned';
+        state.actionLog.push(
+          `☠ ${striker.name} 触发「剧毒喷射」，瞬发毒伤 ${pDmg}${victim.kind === 'creature' ? `（折损 ${pKills} 兵）` : ''}${victim.status === 'alive' ? `，并令 ${victim.name} 每回合持续流失 ${victim.statusEffects.poisonPower} 生命！` : `，直接毒杀 ${victim.name}！`}`,
+        );
       }
-      if (!strike.appliedStatus) strike.appliedStatus = 'poisoned';
-      state.actionLog.push(
-        `☠ ${striker.name} 触发「剧毒喷射」，瞬发毒伤 ${pDmg}${victim.kind === 'creature' ? `（折损 ${pKills} 兵）` : ''}${victim.status === 'alive' ? `，并令 ${victim.name} 每回合持续流失 ${victim.statusEffects.poisonPower} 生命！` : `，直接毒杀 ${victim.name}！`}`,
-      );
+    }
+    if (
+      !strike.isRanged &&
+      strike.damage > 0 &&
+      victim.status === 'alive' &&
+      strikerHeroCls?.passive?.inflictMinMoraleOnHit &&
+      !isImmuneToMorale(victim) &&
+      !victim.abilities.magicImmune
+    ) {
+      upsertUnitModifier(victim, state, {
+        id: 'ability:inflict_min_morale',
+        stat: 'morale',
+        mode: 'flat',
+        value: -20,
+        sourceName: `职业·${strikerHeroCls.name}威压破胆`,
+        remainingRounds: 3,
+        spellPolarity: 'negative',
+      });
+      enforceUnitStatusSlotCap(victim);
+      state.actionLog.push(`💀 ${striker.name} 的王者威压震撼 ${victim.name}，令其士气骤降至最低 -10（持续 3 回合）！`);
     }
     resolveFireShield(state, striker, victim, strike, catalog, events);
 
@@ -279,16 +313,7 @@ function executeAttackCommand(
       }
     }
 
-    const strikerClassVamp =
-      striker.kind === 'hero' &&
-      Boolean(
-        resolveActiveHeroClass(
-          striker.skills,
-          striker.subSkills,
-          catalog.advancedClasses,
-          striker.selectedAdvancedClassId,
-        )?.passive?.grantVampiric,
-      );
+    const strikerClassVamp = Boolean(strikerHeroCls?.passive?.grantVampiric);
     if (
       !strike.isRanged &&
       strike.damage > 0 &&
@@ -297,7 +322,10 @@ function executeAttackCommand(
       (!isImmuneToLivingHeal(striker) || isUndeadUnit(striker)) &&
       !isImmuneToLivingEffects(victim)
     ) {
-      const drainRatio = striker.abilities.lifeDraining || striker.statusEffects?.vampiricTouch ? 0.5 : 0.3;
+      const drainRatio =
+        striker.abilities.lifeDraining || striker.statusEffects?.vampiricTouch
+          ? 0.5
+          : strikerHeroCls?.passive?.vampiricRatio ?? 0.5;
       const drain = Math.max(1, Math.round(strike.damage * drainRatio));
       const sStats = computeUnitStats(striker, state, catalog);
       const maxHp = Math.max(1, sStats.maxHp);
@@ -395,7 +423,7 @@ function executeAttackCommand(
 
   if (
     attackerStrike &&
-    unit.abilities.doubleStrike &&
+    hasDoubleStrikeForMode(unit, useRanged) &&
     unit.status === 'alive' &&
     target.status === 'alive' &&
     unit.statusEffects.stunnedRounds === 0 &&
@@ -549,6 +577,11 @@ function executeSpellCardCommand(
       }
 
       const cStats = computeUnitStats(candidate, state, catalog);
+      if (cStats.magicResistance >= 1) {
+        damageMap[candidate.id] = { damage: 0, kills: 0, grazed: false };
+        state.actionLog.push(`${candidate.name} 凭 100% 魔法抗性，完全抵挡了符卡【${card.name}】！`);
+        continue;
+      }
       let dmg = ((card.damageBase ?? 85) + casterStats.spellPower * 4.2) * castHook.damageMultiplier;
       if (isDarkMagicVulnerable(candidate)) {
         dmg *= DARK_MAGIC_VULNERABILITY_MULT;

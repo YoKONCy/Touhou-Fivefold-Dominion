@@ -251,7 +251,7 @@ export function advanceTurn(
 
         if (unit.status === 'alive' && unit.kind === 'hero') {
           const sub = unit.subSkills ?? {};
-          const passiveHeal = (sub.healing ?? 0) * 4 + (sub.herbalism ?? 0) * 3;
+          const passiveHeal = (sub.healing ?? 0) * 3 + (sub.herbalism ?? 0) * 3;
           if (passiveHeal > 0 && unit.currentHp < stats.maxHp) {
             unit.currentHp = Math.min(stats.maxHp, unit.currentHp + passiveHeal);
           }
@@ -261,8 +261,14 @@ export function advanceTurn(
             catalog.advancedClasses,
             unit.selectedAdvancedClassId,
           );
+          // HoMM4 五系对称自动回蓝（灵性 + 巫术 + 神秘 + 魔咒 + 冥想 各 +1 MP/阶，魔导妖术师 +1 MP/回合）
           const bonusManaRegen =
-            (sub.wizardry ?? 0) + (sub.meditation ?? 0) + (heroCls?.passive?.manaRegenPerRound ?? 0);
+            (sub.spirituality ?? 0) +
+            (sub.wizardry ?? 0) +
+            (sub.occultism ?? 0) +
+            (sub.conjuration ?? 0) +
+            (sub.meditation ?? 0) +
+            (heroCls?.passive?.manaRegenPerRound ?? 0);
           if (bonusManaRegen > 0) {
             unit.mana = Math.min(stats.maxMana, (unit.mana ?? 0) + bonusManaRegen);
           }

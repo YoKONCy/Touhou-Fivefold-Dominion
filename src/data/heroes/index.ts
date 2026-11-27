@@ -223,7 +223,7 @@ export const HERO_DEFINITIONS: Record<string, HeroDefinition> = {
       archery: 3,
       magic_resistance: 2,
     },
-    initialSelectedClassId: 'enchanter',
+    initialSelectedClassId: 'monk',
     initialPotions: [
       { potionId: 'healing_elixir', charges: 2 },
       { potionId: 'spirit_draught', charges: 1 },
@@ -304,13 +304,13 @@ export const HERO_DEFINITIONS: Record<string, HeroDefinition> = {
     },
     initialSubSkills: {
       occultism: 4,
-      demonology: 3,
+      demonology: 4,
       necromancy: 3,
       melee: 2,
       archery: 2,
       magic_resistance: 2,
     },
-    initialSelectedClassId: 'reaver',
+    initialSelectedClassId: 'assassin',
     initialPotions: [
       { potionId: 'healing_elixir', charges: 2 },
       { potionId: 'spirit_draught', charges: 1 },

@@ -13,6 +13,7 @@ import {
   getAvailableCorpseHp,
   reviveAndHealUnit,
   spawnSummonedStack,
+  validateCorpseSpellTarget,
 } from './helpers';
 
 /** 1. 召唤类术式（自然 16 召唤 + 深渊冰魔召唤） */
@@ -57,15 +58,12 @@ export function executeNecromancySpell(ctx: SpellCastContext): SpellBranchOutcom
   if (!tUnit || tUnit.kind !== 'creature') {
     return { ok: false, error: '请选择一支已阵亡或有兵力折损的兵种残骸', events: [] };
   }
-  if (tUnit.statusEffects?.disintegrated) {
-    return { ok: false, error: '该目标已被「星穹湮灭」化为虚无，无法招魂复活！', events: [] };
+  const corpseCheck = validateCorpseSpellTarget(spell, unit, tUnit, state, catalog);
+  if (!corpseCheck.ok) {
+    return { ok: false, error: corpseCheck.reason, events: [] };
   }
   if (effectiveRange > 0 && deps.getUnitMinDistance(unit, tUnit) > effectiveRange) {
     return { ok: false, error: '目标残骸超出施法距离', events: [] };
-  }
-  const lostModels = tUnit.status === 'dead' ? tUnit.maxCount : Math.max(0, tUnit.maxCount - tUnit.count);
-  if (lostModels <= 0) {
-    return { ok: false, error: '目标尚未出现阵亡兵力，无法唤起亡骸', events: [] };
   }
   ctx.targetHex = tUnit.pos;
 

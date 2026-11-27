@@ -7,6 +7,7 @@
 import { describe, expect, it } from 'vitest';
 import { chooseTacticalAiCommand } from '@ai/tacticalAi';
 import {
+  applyHeroBaseClassTemplate,
   canModifyHeroClassOrBuild,
   createBattleState,
   dispatchCombatCommand,
@@ -24,7 +25,9 @@ import {
   ALL_H4_BASE_CLASS_IDS,
   ALL_PRIMARY_SKILL_IDS,
   ALL_SECONDARY_SKILL_IDS,
+  canIncrementPrimarySkill,
   canIncrementSubSkill,
+  clampSkillsToPrerequisites,
   H4_ADVANCED_CLASSES,
   resolveEligibleAdvancedClasses,
 } from '@core/h4Skills';
@@ -269,16 +272,28 @@ describe('英雄固有特质、双修进阶职业、组合神器套装、药水�
     expect(TOUHOU_CATALOG.spells.order_teleport.range).toBe(21);
     expect(TOUHOU_CATALOG.spells.death_hand_of_death.range).toBe(21);
 
-    // 校验方案 B 战中回蓝规则：施法兵种 0 自动回蓝；英雄取消保底与宗师回蓝，仅巫术/冥想/魔导妖术师生效
+    // 校验 H4 五系对称回蓝规则：施法兵种 0 自动回蓝；英雄仅灵性/巫术/神秘/魔咒/冥想（各 +1 MP/阶）与魔导妖术师生效
     const broomUnit = Object.values(state.units).find((u) => u.defId === 'broom_caster');
     if (broomUnit) {
       broomUnit.mana = 0;
     }
     reimu.mana = 20;
     marisa.mana = 10;
-    marisa.subSkills = { ...marisa.subSkills, wizardry: 0, meditation: 0 };
+    marisa.subSkills = {
+      ...marisa.subSkills,
+      spirituality: 0,
+      wizardry: 0,
+      occultism: 0,
+      conjuration: 0,
+      meditation: 0,
+    };
     marisa.selectedAdvancedClassId = 'fire_diviner';
-    const reimuExpectedRegen = (reimu.subSkills?.wizardry ?? 0) + (reimu.subSkills?.meditation ?? 0);
+    const reimuExpectedRegen =
+      (reimu.subSkills?.spirituality ?? 0) +
+      (reimu.subSkills?.wizardry ?? 0) +
+      (reimu.subSkills?.occultism ?? 0) +
+      (reimu.subSkills?.conjuration ?? 0) +
+      (reimu.subSkills?.meditation ?? 0);
     for (const u of Object.values(state.units)) {
       u.hasActedThisRound = true;
     }
@@ -287,9 +302,10 @@ describe('英雄固有特质、双修进阶职业、组合神器套装、药水�
     marisa.hasActedThisRound = false;
     state.activeUnitId = marisa.id;
     expect(dispatchCombatCommand(state, { type: 'DEFEND', unitId: marisa.id }, TOUHOU_CATALOG).ok).toBe(true);
-    // 无巫术/冥想/魔导妖术师的英雄跨回合 0 自动回蓝
+    // 无任何五系回蓝子技能的英雄跨回合 0 自动回蓝
     expect(marisa.mana).toBe(10);
-    // 有巫术(3)+冥想(3)的灵梦跨回合仅回复精确 6 点（无保底+4与宗师+4）
+    // 灵梦拥有 灵性 Lv.4（+4 MP/回合），精准回复 4 点灵力
+    expect(reimuExpectedRegen).toBe(4);
     expect(reimu.mana).toBe(20 + reimuExpectedRegen);
     // 施法兵种跨回合严格 0 自动回蓝
     if (broomUnit) {
@@ -871,52 +887,97 @@ describe('20 格 Buff/Debuff FIFO 上限、36 技能树与 48 职业战前自由
     expect(listActiveUnitStatusSlots(ally).map((r) => r.key)).not.toContain('测试符咒#3');
   });
 
-  it('HoMM4 全部 9 主 × 3 子 = 36 技能树应严格校验前置门槛、支持级联收敛并切实作用于战斗数值', () => {
+  it('HoMM4 全部 9 主 × 3 子 = 36 技能树应严格执行双向阶梯前置、不动点级联收敛与原版属性数值', () => {
     expect(ALL_PRIMARY_SKILL_IDS).toHaveLength(9);
     expect(ALL_SECONDARY_SKILL_IDS).toHaveLength(27);
 
     const { state } = createReimuVsMarisaBattle({ mode: 'hotseat', seed: 4202 });
     const reimu = Object.values(state.units).find((u) => u.defId === 'hero_reimu')!;
     const ally = Object.values(state.units).find((u) => u.side === 'left' && u.kind === 'creature')!;
+    const allyArcher = Object.values(state.units).find(
+      (u) => u.side === 'left' && u.kind === 'creature' && u.abilities.ranged,
+    )!;
 
-    // 1. 格斗主技能降至 2 阶时，第 3 槽子技能「魔抗 (magic_resistance)」必须级联归零并禁止加点
+    // 1. 格斗系阶梯前置与级联收敛：主 1 -> 子 2，主 2 -> 子 4，主 3 -> 子 5
     expect(setHeroPrimarySkillRank(state, reimu.id, 'combat', 2, TOUHOU_CATALOG).ok).toBe(true);
-    expect(reimu.subSkills.magic_resistance ?? 0).toBe(0);
+    expect(reimu.subSkills.magic_resistance).toBe(3); // Combat 2 允许子技能至多 Lv.4
+    expect(setHeroSecondarySkillRank(state, reimu.id, 'magic_resistance', 5, TOUHOU_CATALOG).ok).toBe(false);
+    expect(setHeroPrimarySkillRank(state, reimu.id, 'combat', 1, TOUHOU_CATALOG).ok).toBe(true);
+    expect(reimu.subSkills.magic_resistance).toBe(2); // Combat 1 级联收敛至 Lv.2
     expect(canIncrementSubSkill(reimu.skills, reimu.subSkills, 'magic_resistance').ok).toBe(false);
-    expect(setHeroSecondarySkillRank(state, reimu.id, 'magic_resistance', 1, TOUHOU_CATALOG).ok).toBe(false);
+    expect(setHeroPrimarySkillRank(state, reimu.id, 'combat', 0, TOUHOU_CATALOG).ok).toBe(true);
+    expect(reimu.subSkills.magic_resistance ?? 0).toBe(0);
 
-    // 2. 将格斗升至 5 阶并点满魔抗 5 阶，魔抗必须显著暴涨（含宗师魔抗数值）
-    const mrBefore = computeUnitStats(reimu, state, TOUHOU_CATALOG).magicResistance;
-    expect(setHeroPrimarySkillRank(state, reimu.id, 'combat', 5, TOUHOU_CATALOG).ok).toBe(true);
+    // 格斗主技能提供个人防卫 +20%/+40%/+60%/+80%/+100%，不再虚增最大生命；魔抗 5 阶达到 100%
+    const reimuBaseStats = computeUnitStats(reimu, state, TOUHOU_CATALOG);
+    expect(setHeroPrimarySkillRank(state, reimu.id, 'combat', 3, TOUHOU_CATALOG).ok).toBe(true);
     expect(setHeroSecondarySkillRank(state, reimu.id, 'magic_resistance', 5, TOUHOU_CATALOG).ok).toBe(true);
-    const mrAfter = computeUnitStats(reimu, state, TOUHOU_CATALOG).magicResistance;
-    expect(mrAfter).toBeGreaterThan(mrBefore + 0.5);
+    const reimuCombat3Stats = computeUnitStats(reimu, state, TOUHOU_CATALOG);
+    expect(reimuCombat3Stats.maxHp).toBe(reimuBaseStats.maxHp);
+    expect(reimuCombat3Stats.defense).toBeGreaterThan(reimuBaseStats.defense * 1.45);
+    expect(reimuCombat3Stats.magicResistance).toBe(1);
 
-    // 3. 战术子技能「进攻/防御/领导」与贵族子技能「理财/外交」必须真实提升己方全军攻防、士气与血量！
-    expect(setHeroPrimarySkillRank(state, reimu.id, 'tactics', 5, TOUHOU_CATALOG).ok).toBe(true);
+    // 2. 战术系双向阶梯前置：Lv.1~2 免费，Lv.3 需 进攻+防御 ≥ 1；进攻统一加成近战与远程，领导兼加士气与幸运
+    expect(setHeroPrimarySkillRank(state, reimu.id, 'tactics', 3, TOUHOU_CATALOG).ok).toBe(false);
+    expect(setHeroPrimarySkillRank(state, reimu.id, 'tactics', 2, TOUHOU_CATALOG).ok).toBe(true);
+    expect(canIncrementPrimarySkill(reimu.skills, reimu.subSkills, 'tactics').ok).toBe(false);
+
+    // 战术 Lv.2 提供全军移速 +1、先手 +2，但不直接加攻防
     const allyBeforeTactics = computeUnitStats(ally, state, TOUHOU_CATALOG);
+    expect(setHeroSecondarySkillRank(state, reimu.id, 'offense', 1, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroSecondarySkillRank(state, reimu.id, 'defense', 1, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroPrimarySkillRank(state, reimu.id, 'tactics', 3, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroSecondarySkillRank(state, reimu.id, 'offense', 3, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroSecondarySkillRank(state, reimu.id, 'defense', 3, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroSecondarySkillRank(state, reimu.id, 'leadership', 5, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroPrimarySkillRank(state, reimu.id, 'tactics', 5, TOUHOU_CATALOG).ok).toBe(true);
     expect(setHeroSecondarySkillRank(state, reimu.id, 'offense', 5, TOUHOU_CATALOG).ok).toBe(true);
     expect(setHeroSecondarySkillRank(state, reimu.id, 'defense', 5, TOUHOU_CATALOG).ok).toBe(true);
-    expect(setHeroSecondarySkillRank(state, reimu.id, 'leadership', 5, TOUHOU_CATALOG).ok).toBe(true);
-    const allyAfterTactics = computeUnitStats(ally, state, TOUHOU_CATALOG);
-    expect(allyAfterTactics.attack).toBeGreaterThan(allyBeforeTactics.attack);
-    expect(allyAfterTactics.defense).toBeGreaterThan(allyBeforeTactics.defense);
-    expect(allyAfterTactics.morale).toBeGreaterThan(allyBeforeTactics.morale);
 
-    const allyHpBeforeNobility = computeUnitStats(ally, state, TOUHOU_CATALOG).maxHp;
+    const allyAfterTactics = computeUnitStats(ally, state, TOUHOU_CATALOG);
+    const archerAfterTactics = computeUnitStats(allyArcher, state, TOUHOU_CATALOG);
+    expect(allyAfterTactics.speed).toBe(allyBeforeTactics.speed + 2); // 战术 2 -> +1, 战术 5 -> +3，差值为 +2
+    expect(allyAfterTactics.initiative).toBe(allyBeforeTactics.initiative + 3); // +2 -> +5，差值为 +3
+    expect(allyAfterTactics.attack).toBeGreaterThan(allyBeforeTactics.attack);
+    expect(archerAfterTactics.attack).toBeGreaterThan(allyArcher.baseStats.attack); // 统一提升远程攻击！
+    expect(allyAfterTactics.defense).toBeGreaterThan(allyBeforeTactics.defense);
+    expect(allyAfterTactics.morale).toBe(allyBeforeTactics.morale + 5);
+    expect(allyAfterTactics.luck).toBe(allyBeforeTactics.luck + 5);
+
+    // 双向反向级联：将「进攻」下调回 0 时，战术必须自动跌回 2 阶且不动点收敛
+    expect(setHeroSecondarySkillRank(state, reimu.id, 'offense', 0, TOUHOU_CATALOG).ok).toBe(true);
+    expect(reimu.skills.tactics).toBe(2);
+
+    // 3. 魔法系双向阶梯前置：秩序 Lv.2~5 必须先点 附魔 + 巫术；降级巫术会反向拉低秩序魔法与魅惑！
+    expect(setHeroPrimarySkillRank(state, reimu.id, 'order_magic', 2, TOUHOU_CATALOG).ok).toBe(false);
+    expect(setHeroPrimarySkillRank(state, reimu.id, 'order_magic', 1, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroSecondarySkillRank(state, reimu.id, 'enchantment', 1, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroSecondarySkillRank(state, reimu.id, 'wizardry', 1, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroPrimarySkillRank(state, reimu.id, 'order_magic', 2, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroSecondarySkillRank(state, reimu.id, 'enchantment', 3, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroSecondarySkillRank(state, reimu.id, 'wizardry', 3, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroPrimarySkillRank(state, reimu.id, 'order_magic', 4, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroSecondarySkillRank(state, reimu.id, 'enchantment', 4, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroSecondarySkillRank(state, reimu.id, 'wizardry', 4, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroSecondarySkillRank(state, reimu.id, 'charm', 5, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroPrimarySkillRank(state, reimu.id, 'order_magic', 5, TOUHOU_CATALOG).ok).toBe(true);
+
+    const clampBack = clampSkillsToPrerequisites(reimu.skills, {
+      ...reimu.subSkills,
+      wizardry: 1,
+    });
+    expect(clampBack.skills.order_magic).toBe(2); // wizardry=1 最多支撑 order_magic=2
+    expect(clampBack.subSkills.charm).toBe(3); // order_magic=2 最多允许子技能=3
+
+    // 巫术精确按 +10/阶 提升灵力上限
     expect(setHeroPrimarySkillRank(state, reimu.id, 'nobility', 5, TOUHOU_CATALOG).ok).toBe(true);
     expect(setHeroSecondarySkillRank(state, reimu.id, 'estates', 5, TOUHOU_CATALOG).ok).toBe(true);
-    expect(setHeroSecondarySkillRank(state, reimu.id, 'diplomacy', 5, TOUHOU_CATALOG).ok).toBe(true);
-    expect(computeUnitStats(ally, state, TOUHOU_CATALOG).maxHp).toBeGreaterThan(allyHpBeforeNobility);
-
-    // 4. 秩序子技能「巫术 (wizardry)」应真实拉高英雄最大灵力上限
-    expect(setHeroPrimarySkillRank(state, reimu.id, 'order_magic', 5, TOUHOU_CATALOG).ok).toBe(true);
-    const manaBefore = computeUnitStats(reimu, state, TOUHOU_CATALOG).maxMana;
+    const manaAt4 = computeUnitStats(reimu, state, TOUHOU_CATALOG).maxMana;
     expect(setHeroSecondarySkillRank(state, reimu.id, 'wizardry', 5, TOUHOU_CATALOG).ok).toBe(true);
-    expect(computeUnitStats(reimu, state, TOUHOU_CATALOG).maxMana).toBeGreaterThan(manaBefore);
+    expect(computeUnitStats(reimu, state, TOUHOU_CATALOG).maxMana).toBe(manaAt4 + 10);
   });
 
-  it('11 基础 + 37 进阶职业全量收录：战前整备支持大贤者在多满足职业间自由切职并生效被动，开战后自动锁定', () => {
+  it('11 基础 + 37 进阶职业全量收录：战前支持大贤者自由切职并验证原版核心职业机制，开战后锁定', () => {
     expect(ALL_H4_BASE_CLASS_IDS).toHaveLength(11);
     expect(ALL_H4_ADVANCED_CLASS_IDS).toHaveLength(37);
     expect(Object.keys(TOUHOU_CATALOG.advancedClasses)).toHaveLength(37);
@@ -936,24 +997,63 @@ describe('20 格 Buff/Debuff FIFO 上限、36 技能树与 48 职业战前自由
     expect(archmageCount).toBe(1);
     expect(pairKeys.size).toBe(36);
 
+    // 校验关键配方矫正（刺客 Combat+Death / 掠夺者 Tactics+Death / 驯兽师 Combat+Nature / 守望者 Tactics+Nature / 巫王 Nobility+Order / 暗主 Nobility+Death）
+    expect([H4_ADVANCED_CLASSES.assassin.primaryA, H4_ADVANCED_CLASSES.assassin.primaryB].sort()).toEqual(['combat', 'death_magic']);
+    expect([H4_ADVANCED_CLASSES.reaver.primaryA, H4_ADVANCED_CLASSES.reaver.primaryB].sort()).toEqual(['death_magic', 'tactics']);
+    expect([H4_ADVANCED_CLASSES.beastmaster.primaryA, H4_ADVANCED_CLASSES.beastmaster.primaryB].sort()).toEqual(['combat', 'nature_magic']);
+    expect([H4_ADVANCED_CLASSES.warden.primaryA, H4_ADVANCED_CLASSES.warden.primaryB].sort()).toEqual(['nature_magic', 'tactics']);
+    expect([H4_ADVANCED_CLASSES.wizard_king.primaryA, H4_ADVANCED_CLASSES.wizard_king.primaryB].sort()).toEqual(['nobility', 'order_magic']);
+    expect([H4_ADVANCED_CLASSES.dark_lord.primaryA, H4_ADVANCED_CLASSES.dark_lord.primaryB].sort()).toEqual(['death_magic', 'nobility']);
+
     const { state } = createReimuVsMarisaBattle({ mode: 'hotseat', seed: 4203 });
     const reimu = Object.values(state.units).find((u) => u.defId === 'hero_reimu')!;
+    const marisa = Object.values(state.units).find((u) => u.defId === 'hero_marisa')!;
+    const ally = Object.values(state.units).find((u) => u.side === 'left' && u.kind === 'creature')!;
+    clearMapObstacles(state.tiles, { includePartialLos: true, flattenAllElevation: 1, resetMoveCost: true });
 
-    // 战前整备阶段允许自由调点与切职：在沙盒中模拟修满五系魔法 + 格斗/战术，至少满足 15 个以上进阶职业资格！
+    // 验证 11 大基础职业起始模板切换与零多余属性加成
+    expect(applyHeroBaseClassTemplate(state, reimu.id, 'base_archer', TOUHOU_CATALOG).ok).toBe(true);
+    expect(reimu.advancedClassId).toBe('base_archer');
+    expect(reimu.skills.combat).toBe(1);
+    expect(reimu.subSkills.archery).toBe(1);
+    expect(applyHeroBaseClassTemplate(state, reimu.id, 'base_death_lord', TOUHOU_CATALOG).ok).toBe(true);
+    expect(reimu.advancedClassId).toBe('base_death_lord');
+    expect(reimu.skills.tactics).toBe(1);
+    expect(reimu.subSkills.offense).toBe(1);
+
+    // 按 HoMM4 双向阶梯依次修满多系魔法 + 格斗/战术，验证满足全部进阶职业并自由切换
     expect(state.hasCombatStarted).toBe(false);
     expect(canModifyHeroClassOrBuild(state)).toBe(true);
-    for (const sk of ['order_magic', 'death_magic', 'chaos_magic', 'nature_magic', 'tactics'] as const) {
-      expect(setHeroPrimarySkillRank(state, reimu.id, sk, 5, TOUHOU_CATALOG).ok).toBe(true);
+
+    const climbPairs: Array<[keyof typeof reimu.skills, [keyof typeof reimu.subSkills, keyof typeof reimu.subSkills]]> = [
+      ['life_magic', ['healing', 'spirituality']],
+      ['order_magic', ['enchantment', 'wizardry']],
+      ['death_magic', ['occultism', 'demonology']],
+      ['chaos_magic', ['conjuration', 'pyromancy']],
+      ['nature_magic', ['herbalism', 'meditation']],
+    ];
+    expect(setHeroPrimarySkillRank(state, reimu.id, 'combat', 3, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroSecondarySkillRank(state, reimu.id, 'offense', 1, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroSecondarySkillRank(state, reimu.id, 'defense', 1, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroPrimarySkillRank(state, reimu.id, 'tactics', 3, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroSecondarySkillRank(state, reimu.id, 'offense', 3, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroSecondarySkillRank(state, reimu.id, 'defense', 3, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroPrimarySkillRank(state, reimu.id, 'tactics', 5, TOUHOU_CATALOG).ok).toBe(true);
+    for (const [primary, [subA, subB]] of climbPairs) {
+      expect(setHeroPrimarySkillRank(state, reimu.id, primary, 1, TOUHOU_CATALOG).ok).toBe(true);
+      for (let r = 2 as const; r <= 5; r++) {
+        expect(setHeroSecondarySkillRank(state, reimu.id, subA, (r - 1) as 1 | 2 | 3 | 4, TOUHOU_CATALOG).ok).toBe(true);
+        expect(setHeroSecondarySkillRank(state, reimu.id, subB, (r - 1) as 1 | 2 | 3 | 4, TOUHOU_CATALOG).ok).toBe(true);
+        expect(setHeroPrimarySkillRank(state, reimu.id, primary, r as 2 | 3 | 4 | 5, TOUHOU_CATALOG).ok).toBe(true);
+      }
     }
+    expect(setHeroPrimarySkillRank(state, reimu.id, 'scouting', 3, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroPrimarySkillRank(state, reimu.id, 'nobility', 3, TOUHOU_CATALOG).ok).toBe(true);
 
     const eligible = resolveEligibleAdvancedClasses(reimu.skills, reimu.subSkills, TOUHOU_CATALOG.advancedClasses);
-    expect(eligible.length).toBeGreaterThanOrEqual(15);
-    expect(eligible.some((c) => c.id === 'archmage')).toBe(true);
-    expect(eligible.some((c) => c.id === 'wizard')).toBe(true);
-    expect(eligible.some((c) => c.id === 'paladin')).toBe(true);
-    expect(eligible.some((c) => c.id === 'fireguard')).toBe(true);
+    expect(eligible).toHaveLength(37); // 9 系全 2+ 且 3+ 魔法全 5，理应解锁全量 37 种进阶职业！
 
-    // 1. 自由切换至「星辰大魔导 (wizard)」：所有法术耗蓝应实打实减少 2 MP！
+    // 1. 切换至「星辰大魔导 (wizard)」：所有法术耗蓝恒定 -2 MP
     const baseFireballCost = getEffectiveSpellManaCost(
       state,
       reimu,
@@ -966,20 +1066,97 @@ describe('20 格 Buff/Debuff FIFO 上限、36 技能树与 48 职业战前自由
       getEffectiveSpellManaCost(state, reimu, TOUHOU_CATALOG.spells.chaos_fireball, TOUHOU_CATALOG.advancedClasses),
     ).toBe(Math.max(1, baseFireballCost - 2));
 
-    // 2. 自由切换至「退魔圣巫女 (paladin)」：自动获得抗死结界 deathWard
+    // 2. 切换至「退魔圣巫女 (paladin)」：获抗死结界；切至「炽焰守卫 (fireguard)」：获火免与火抗，且卸除抗死结界与烈焰护盾
     expect(selectHeroAdvancedClass(state, reimu.id, 'paladin', TOUHOU_CATALOG).ok).toBe(true);
-    expect(reimu.advancedClassId).toBe('paladin');
     expect(reimu.abilities.deathWard).toBe(true);
-    expect(reimu.abilities.fireShield).toBeFalsy();
-
-    // 3. 自由切换至「炽焰守卫 (fireguard)」：自动获得烈焰护盾与火抗，且旧职业抗死结界干净卸下！
     expect(selectHeroAdvancedClass(state, reimu.id, 'fireguard', TOUHOU_CATALOG).ok).toBe(true);
-    expect(reimu.advancedClassId).toBe('fireguard');
-    expect(reimu.abilities.fireShield).toBe(true);
     expect(reimu.abilities.fireResistant).toBe(true);
+    expect(reimu.abilities.fireShield).toBeFalsy();
     expect(reimu.abilities.deathWard).toBeFalsy();
 
-    // 4. 切换回「万象结界大贤者 (archmage)」并执行一次正式战斗指令进入交战状态
+    // 验证火守 (fireguard) 完全免疫敌方火焰法术 chaos_fireball！（施法会置 hasCombatStarted=true，随后恢复整备继续测后续切职）
+    marisa.pos = offsetToAxial(6, 8);
+    reimu.pos = offsetToAxial(9, 8);
+    const reimuHpBeforeFire = reimu.currentHp;
+    expect(castSpellAsUnit(state, marisa, { spellId: 'chaos_fireball', targetHex: reimu.pos }, { ensureKnown: true }).ok).toBe(true);
+    expect(reimu.currentHp).toBe(reimuHpBeforeFire);
+    state.hasCombatStarted = false;
+
+    // 3. 切换至「爆炎军师 (pyromancer)」：获得烈焰护盾；切「结界大僧正 (monk)」：获得抗混结界 chaosWard
+    expect(selectHeroAdvancedClass(state, reimu.id, 'pyromancer', TOUHOU_CATALOG).ok).toBe(true);
+    expect(reimu.abilities.fireShield).toBe(true);
+    expect(selectHeroAdvancedClass(state, reimu.id, 'monk', TOUHOU_CATALOG).ok).toBe(true);
+    expect(reimu.abilities.chaosWard).toBe(true);
+    expect(reimu.abilities.fireShield).toBeFalsy();
+
+    // 4. 切换至「禁忌破界使 (heretic)」：施放暗系法术无视魔理沙的抗死/抗混/派系结界
+    marisa.abilities.chaosWard = true;
+    const dmgWithWard = (() => {
+      selectHeroAdvancedClass(state, reimu.id, 'wizard', TOUHOU_CATALOG);
+      const hp = marisa.currentHp;
+      castSpellAsUnit(state, reimu, { spellId: 'chaos_magic_arrow', targetUnitId: marisa.id }, { ensureKnown: true });
+      const dealt = hp - marisa.currentHp;
+      marisa.currentHp = hp;
+      return dealt;
+    })();
+    state.hasCombatStarted = false;
+    expect(selectHeroAdvancedClass(state, reimu.id, 'heretic', TOUHOU_CATALOG).ok).toBe(true);
+    const dmgHeretic = (() => {
+      const hp = marisa.currentHp;
+      castSpellAsUnit(state, reimu, { spellId: 'chaos_magic_arrow', targetUnitId: marisa.id }, { ensureKnown: true });
+      return hp - marisa.currentHp;
+    })();
+    expect(dmgHeretic).toBeGreaterThan(dmgWithWard);
+    state.hasCombatStarted = false;
+
+    // 5. 验证 博丽圣军师 (crusader) 士气 +10 / 红夜刺客 (assassin) 移速 +3 / 巫王术皇 (wizard_king) 近战压制最低士气至 -10
+    expect(selectHeroAdvancedClass(state, reimu.id, 'crusader', TOUHOU_CATALOG).ok).toBe(true);
+    expect(computeUnitStats(reimu, state, TOUHOU_CATALOG).morale).toBe(10);
+    const baseSpd = computeUnitStats(reimu, state, TOUHOU_CATALOG).speed;
+    expect(selectHeroAdvancedClass(state, reimu.id, 'assassin', TOUHOU_CATALOG).ok).toBe(true);
+    expect(computeUnitStats(reimu, state, TOUHOU_CATALOG).speed).toBe(baseSpd + 3);
+    expect(selectHeroAdvancedClass(state, reimu.id, 'wizard_king', TOUHOU_CATALOG).ok).toBe(true);
+    const enemyCreature = Object.values(state.units).find((u) => u.side === 'right' && u.kind === 'creature')!;
+    enemyCreature.pos = offsetToAxial(8, 8);
+    state.activeUnitId = reimu.id;
+    reimu.hasActedThisRound = false;
+    expect(
+      dispatchCombatCommand(
+        state,
+        { type: 'ATTACK', unitId: reimu.id, targetId: enemyCreature.id, forceMelee: true },
+        TOUHOU_CATALOG,
+      ).ok,
+    ).toBe(true);
+    if (enemyCreature.status === 'alive') {
+      expect(computeUnitStats(enemyCreature, state, TOUHOU_CATALOG).morale).toBe(-10);
+    }
+    state.hasCombatStarted = false;
+    reimu.hasActedThisRound = false;
+
+    // 6. 验证 近战/射击各自独立双打 与 100% 魔抗（抵挡敌方诅咒/伤害，放行友方神祝与治疗）
+    expect(setHeroSecondarySkillRank(state, reimu.id, 'melee', 5, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroSecondarySkillRank(state, reimu.id, 'archery', 5, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroSecondarySkillRank(state, reimu.id, 'magic_resistance', 5, TOUHOU_CATALOG).ok).toBe(true);
+    expect(reimu.abilities.firstStrike).toBe(true);
+    expect(reimu.abilities.meleeDoubleStrike).toBe(true);
+    expect(reimu.abilities.rangedFirstStrike).toBe(true);
+    expect(reimu.abilities.rangedDoubleStrike).toBe(true);
+    expect(reimu.abilities.longRange).toBe(true);
+    expect(reimu.abilities.noObstaclePenalty).toBe(true);
+    expect(computeUnitStats(reimu, state, TOUHOU_CATALOG).magicResistance).toBe(1);
+
+    // 100% 魔抗英雄：敌方「厄祟」「死亡诅咒」「魔法箭」被免疫/拒绝；己方或自身「治疗」与「神祝」照常成功！
+    marisa.skills = { chaos_magic: 4, scouting: 3, death_magic: 3 };
+    expect(castSpellAsUnit(state, marisa, { spellId: 'death_curse', targetUnitId: reimu.id }, { ensureKnown: true }).ok).toBe(false);
+    expect(castSpellAsUnit(state, marisa, { spellId: 'chaos_magic_arrow', targetUnitId: reimu.id }, { ensureKnown: true }).ok).toBe(false);
+    reimu.currentHp = 80;
+    expect(castSpellAsUnit(state, ally, { spellId: 'life_bless', targetUnitId: reimu.id }, { ensureKnown: true }).ok).toBe(true);
+    expect(reimu.statusEffects.bless).toBe(true);
+    expect(castSpellAsUnit(state, ally, { spellId: 'life_heal', targetUnitId: reimu.id }, { ensureKnown: true }).ok).toBe(true);
+    expect(reimu.currentHp).toBeGreaterThan(80);
+    state.hasCombatStarted = false;
+
+    // 7. 切回「万象大贤者 (archmage)」并近战打一轮巫王威压 + 锁定交战状态
     expect(selectHeroAdvancedClass(state, reimu.id, 'archmage', TOUHOU_CATALOG).ok).toBe(true);
     const activeUnitId = state.activeUnitId!;
     const defendRes = dispatchCombatCommand(state, { type: 'DEFEND', unitId: activeUnitId }, TOUHOU_CATALOG);
@@ -987,11 +1164,99 @@ describe('20 格 Buff/Debuff FIFO 上限、36 技能树与 48 职业战前自由
     expect(state.hasCombatStarted).toBe(true);
     expect(canModifyHeroClassOrBuild(state)).toBe(false);
 
-    // 5. 交战中切职与改点均被引擎严格拒绝！
+    // 8. 交战中切职与改点均被引擎严格拒绝！
     const lockedSwitch = selectHeroAdvancedClass(state, reimu.id, 'wizard', TOUHOU_CATALOG);
     expect(lockedSwitch.ok).toBe(false);
     expect(reimu.advancedClassId).toBe('archmage');
     expect(setHeroPrimarySkillRank(state, reimu.id, 'nobility', 3, TOUHOU_CATALOG).ok).toBe(false);
     expect(setHeroSecondarySkillRank(state, reimu.id, 'sorcery', 5, TOUHOU_CATALOG).ok).toBe(false);
+  });
+
+  it('格斗·近战/射击兵种天然防御破甲下限10且不削减敌方英雄防御，混沌·魔力仅增幅直接伤害法术', () => {
+    const map = buildShrineNightBattleMap();
+    clearMapObstacles(map.tiles, { includePartialLos: true, flattenAllElevation: 1, resetMoveCost: true });
+    const { state } = createBattleState(
+      {
+        mapWidth: map.width,
+        mapHeight: map.height,
+        tiles: map.tiles,
+        leftSlots: [
+          { kind: 'hero', defId: 'hero_reimu', col: 5, row: 10 },
+          { kind: 'creature', defId: 'kedama', count: 20, col: 4, row: 12 },
+        ],
+        rightSlots: [
+          { kind: 'hero', defId: 'hero_eirin', col: 10, row: 10 },
+          { kind: 'creature', defId: 'hisoutensoku', count: 2, col: 6, row: 10 },
+        ],
+        controllers: { left: 'human', right: 'human' },
+        seed: 5511,
+      },
+      TOUHOU_CATALOG,
+    );
+
+    const reimu = Object.values(state.units).find((u) => u.defId === 'hero_reimu')!;
+    const eirin = Object.values(state.units).find((u) => u.defId === 'hero_eirin')!;
+    const kedama = Object.values(state.units).find((u) => u.defId === 'kedama')!;
+    const soku = Object.values(state.units).find((u) => u.defId === 'hisoutensoku')!;
+
+    // 1. 先降灵梦近战至 0 对比升至 Lv.4（近战攻击 +30，兵种天然防御 ÷4 保底 10）
+    expect(setHeroSecondarySkillRank(state, reimu.id, 'melee', 0, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroSecondarySkillRank(state, reimu.id, 'archery', 0, TOUHOU_CATALOG).ok).toBe(true);
+    soku.baseStats.defense = 48; // 高甲巨像便于测试 ÷4 = 12 >= 10
+    eirin.baseStats.defense = 48; // 等高防御的敌方英雄，绝不被 Melee 破甲！
+    eirin.pos = offsetToAxial(5, 8); // 直线距离 2 格确保近战预览可达
+
+    const prevHero0VsSoku = previewAttack(state, reimu.id, soku.id, TOUHOU_CATALOG, undefined, true);
+    const prevHero0VsEirin = previewAttack(state, reimu.id, eirin.id, TOUHOU_CATALOG, undefined, true);
+    expect(prevHero0VsSoku.valid && prevHero0VsEirin.valid).toBe(true);
+
+    expect(setHeroPrimarySkillRank(state, reimu.id, 'combat', 3, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroSecondarySkillRank(state, reimu.id, 'melee', 4, TOUHOU_CATALOG).ok).toBe(true);
+
+    const prevHero4VsSoku = previewAttack(state, reimu.id, soku.id, TOUHOU_CATALOG, undefined, true);
+    const prevHero4VsEirin = previewAttack(state, reimu.id, eirin.id, TOUHOU_CATALOG, undefined, true);
+
+    expect(prevHero4VsSoku.notes).toContain('近战破甲(÷4保底10)');
+    expect(prevHero4VsEirin.notes).not.toContain('近战破甲(÷4保底10)');
+    // 打高甲兵种收益巨幅高于打等高防英雄（+30 攻之外还吃了 48->12 破甲）
+    expect(prevHero4VsSoku.expectedMaxDamage / prevHero0VsSoku.expectedMaxDamage).toBeGreaterThan(
+      (prevHero4VsEirin.expectedMaxDamage / prevHero0VsEirin.expectedMaxDamage) * 1.4,
+    );
+
+    // 2. 混沌·魔力 (sorcery)：严格仅加成五系直接伤害法术 (+20%/阶)，不加成神圣治疗
+    reimu.knownSpellIds = [...ALL_H4_SPELL_IDS];
+    reimu.mana = 200;
+    expect(setHeroPrimarySkillRank(state, reimu.id, 'chaos_magic', 1, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroSecondarySkillRank(state, reimu.id, 'conjuration', 1, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroSecondarySkillRank(state, reimu.id, 'pyromancy', 1, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroPrimarySkillRank(state, reimu.id, 'chaos_magic', 2, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroSecondarySkillRank(state, reimu.id, 'conjuration', 3, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroSecondarySkillRank(state, reimu.id, 'pyromancy', 3, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroPrimarySkillRank(state, reimu.id, 'chaos_magic', 4, TOUHOU_CATALOG).ok).toBe(true);
+    expect(setHeroSecondarySkillRank(state, reimu.id, 'sorcery', 0, TOUHOU_CATALOG).ok).toBe(true);
+
+    kedama.currentHp = 2;
+    const heal0Res = castSpellAsUnit(state, reimu, { spellId: 'life_heal', targetUnitId: kedama.id });
+    const heal0Evt = heal0Res.events.find((e) => e.type === 'SPELL_CAST');
+    const heal0Amt = heal0Evt?.type === 'SPELL_CAST' ? (heal0Evt.healMap?.[kedama.id] ?? 0) : 0;
+
+    soku.baseStats.magicResistance = 0;
+    soku.baseStats.grazeChance = 0;
+    const sokuHpBefore0 = soku.currentHp;
+    castSpellAsUnit(state, reimu, { spellId: 'order_magic_fist', targetUnitId: soku.id });
+    const dmg0 = sokuHpBefore0 - soku.currentHp;
+
+    state.hasCombatStarted = false;
+    expect(setHeroSecondarySkillRank(state, reimu.id, 'sorcery', 5, TOUHOU_CATALOG).ok).toBe(true);
+    kedama.currentHp = 2;
+    const heal5Res = castSpellAsUnit(state, reimu, { spellId: 'life_heal', targetUnitId: kedama.id });
+    const heal5Evt = heal5Res.events.find((e) => e.type === 'SPELL_CAST');
+    const heal5Amt = heal5Evt?.type === 'SPELL_CAST' ? (heal5Evt.healMap?.[kedama.id] ?? 0) : 0;
+    expect(heal5Amt).toBe(heal0Amt); // 魔力对治疗法术零加成！
+
+    const sokuHpBefore5 = soku.currentHp;
+    castSpellAsUnit(state, reimu, { spellId: 'order_magic_fist', targetUnitId: soku.id });
+    const dmg5 = sokuHpBefore5 - soku.currentHp;
+    expect(dmg5).toBeGreaterThanOrEqual(Math.round(dmg0 * 1.9)); // 宗师魔力 +100% 翻倍跨系直伤！
   });
 });

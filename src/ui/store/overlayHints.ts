@@ -5,10 +5,10 @@
 import {
   canPlaceFootprintAt,
   checkSpellLineOfSight,
-  getAvailableCorpseHp,
   getEffectiveSpellRange,
   getUnitMinDistance,
   getUnitOccupiedHexes,
+  validateCorpseSpellTarget,
   type getUnitReachableMap,
 } from '@core/combatEngine';
 import { validateSpellUnitTarget } from '@core/h4SpellExecutor';
@@ -150,9 +150,8 @@ export function buildBattleOverlayHints(params: {
         const validIds = new Set<string>();
         if (!st.battleSpellFlags?.necromancyWardActive) {
           for (const u of Object.values(st.units)) {
-            if (u.kind !== 'creature' || u.statusEffects?.disintegrated) continue;
             if (effRange > 0 && getUnitMinDistance(act, u) > effRange) continue;
-            if (getAvailableCorpseHp(st, u, TOUHOU_CATALOG) > 0) {
+            if (validateCorpseSpellTarget(spell, act, u, st, TOUHOU_CATALOG).ok) {
               validIds.add(u.id);
             }
           }

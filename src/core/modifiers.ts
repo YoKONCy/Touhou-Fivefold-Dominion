@@ -7,9 +7,16 @@ import { isImmuneToMorale, isUndeadUnit } from './creatureTypes';
 import {
   ALL_PRIMARY_SKILL_IDS,
   ALL_SECONDARY_SKILL_IDS,
+  COMBAT_DEFENSE_PCT_BY_RANK,
+  MAGIC_MANA_BONUS_BY_RANK,
   MAGIC_PRIMARY_SKILL_IDS,
+  MAGIC_RESISTANCE_BY_RANK,
   resolveActiveHeroClass,
   resolveEligibleAdvancedClasses,
+  TACTICS_DEFENSE_PCT_BY_RANK,
+  TACTICS_INITIATIVE_BY_RANK,
+  TACTICS_OFFENSE_PCT_BY_RANK,
+  TACTICS_SPEED_BY_RANK,
 } from './h4Skills';
 import { HERO_TRAIT_REGISTRY } from './traits';
 import type {
@@ -174,36 +181,11 @@ export function collectUnitModifiers(
     }
   }
 
-  // 2a. 战术主技能 + 进攻/防御/领导子技能全军光环
+  // 2a. 战术主技能（移速 +1/+1/+2/+2/+3，先手 +1~+5）+ 进攻/防御/领导子技能全军光环
   const tacticsRank = bestPrimary.tactics ?? 0;
   if (tacticsRank > 0) {
-    list.push(
-      {
-        id: 'sys:tactics_atk',
-        stat: 'attack',
-        mode: 'percent',
-        value: tacticsRank * 0.05,
-        sourceName: `战术光环 Lv.${tacticsRank}`,
-        remainingRounds: null,
-      },
-      {
-        id: 'sys:tactics_def',
-        stat: 'defense',
-        mode: 'percent',
-        value: tacticsRank * 0.05,
-        sourceName: `战术光环 Lv.${tacticsRank}`,
-        remainingRounds: null,
-      },
-      {
-        id: 'sys:tactics_init',
-        stat: 'initiative',
-        mode: 'flat',
-        value: tacticsRank,
-        sourceName: `战术先手 Lv.${tacticsRank}`,
-        remainingRounds: null,
-      },
-    );
-    const tacSpd = countThresholds(tacticsRank, [1, 3, 5]);
+    const tacSpd = TACTICS_SPEED_BY_RANK[tacticsRank] ?? 0;
+    const tacInit = TACTICS_INITIATIVE_BY_RANK[tacticsRank] ?? 0;
     if (tacSpd > 0) {
       list.push({
         id: 'sys:tactics_spd',
@@ -214,6 +196,16 @@ export function collectUnitModifiers(
         remainingRounds: null,
       });
     }
+    if (tacInit > 0) {
+      list.push({
+        id: 'sys:tactics_init',
+        stat: 'initiative',
+        mode: 'flat',
+        value: tacInit,
+        sourceName: `战术先手 Lv.${tacticsRank}`,
+        remainingRounds: null,
+      });
+    }
   }
   const offenseRank = bestSub.offense ?? 0;
   if (offenseRank > 0) {
@@ -221,7 +213,7 @@ export function collectUnitModifiers(
       id: 'sys:sub_offense',
       stat: 'attack',
       mode: 'percent',
-      value: offenseRank * 0.1,
+      value: TACTICS_OFFENSE_PCT_BY_RANK[offenseRank] ?? offenseRank * 0.1,
       sourceName: `子技能·进攻 Lv.${offenseRank}`,
       remainingRounds: null,
     });
@@ -232,16 +224,26 @@ export function collectUnitModifiers(
       id: 'sys:sub_defense',
       stat: 'defense',
       mode: 'percent',
-      value: defenseRank * 0.1,
+      value: TACTICS_DEFENSE_PCT_BY_RANK[defenseRank] ?? defenseRank * 0.1,
       sourceName: `子技能·防御 Lv.${defenseRank}`,
       remainingRounds: null,
     });
   }
   const leadershipRank = bestSub.leadership ?? 0;
-  if (leadershipRank > 0 && !moraleImmune) {
+  if (leadershipRank > 0) {
+    if (!moraleImmune) {
+      list.push({
+        id: 'sys:sub_leadership_morale',
+        stat: 'morale',
+        mode: 'flat',
+        value: leadershipRank,
+        sourceName: `子技能·领导 Lv.${leadershipRank}`,
+        remainingRounds: null,
+      });
+    }
     list.push({
-      id: 'sys:sub_leadership',
-      stat: 'morale',
+      id: 'sys:sub_leadership_luck',
+      stat: 'luck',
       mode: 'flat',
       value: leadershipRank,
       sourceName: `子技能·领导 Lv.${leadershipRank}`,
@@ -249,7 +251,7 @@ export function collectUnitModifiers(
     });
   }
 
-  // 2b. 侦查下属全军光环（寻路移速 / 渡雾闪避敏捷）
+  // 2b. 侦查下属全军光环（寻路移速 / 航海闪避敏捷）
   const pathRank = bestSub.pathfinding ?? 0;
   const pathSpd = countThresholds(pathRank, [3, 5]);
   if (pathSpd > 0) {
@@ -269,8 +271,8 @@ export function collectUnitModifiers(
         id: 'sys:sub_seam_graze',
         stat: 'grazeChance',
         mode: 'flat',
-        value: seamRank * 0.03,
-        sourceName: `子技能·渡雾 Lv.${seamRank}`,
+        value: seamRank * 0.02,
+        sourceName: `子技能·航海 Lv.${seamRank}`,
         remainingRounds: null,
       },
       {
@@ -278,7 +280,7 @@ export function collectUnitModifiers(
         stat: 'attack',
         mode: 'percent',
         value: seamRank * 0.02,
-        sourceName: `子技能·渡雾 Lv.${seamRank}`,
+        sourceName: `子技能·航海 Lv.${seamRank}`,
         remainingRounds: null,
       },
       {
@@ -286,20 +288,20 @@ export function collectUnitModifiers(
         stat: 'defense',
         mode: 'percent',
         value: seamRank * 0.02,
-        sourceName: `子技能·渡雾 Lv.${seamRank}`,
+        sourceName: `子技能·航海 Lv.${seamRank}`,
         remainingRounds: null,
       },
     );
   }
 
-  // 2c. 贵族主/子技能沙盒风味实战彩蛋（精锐动员/理财幸运/采矿锻甲/外交士气）
+  // 2c. 贵族主/子技能战斗等价（精锐动员/理财幸运/采矿锻甲/外交士气）
   const nobilityRank = bestPrimary.nobility ?? 0;
   if (nobilityRank > 0) {
     list.push({
       id: 'sys:nobility_hp',
       stat: 'maxHp',
       mode: 'percent',
-      value: nobilityRank * 0.04,
+      value: nobilityRank * 0.03,
       sourceName: `贵族·精锐动员 Lv.${nobilityRank}`,
       remainingRounds: null,
     });
@@ -322,7 +324,7 @@ export function collectUnitModifiers(
       id: 'sys:sub_mining',
       stat: 'defense',
       mode: 'percent',
-      value: miningRank * 0.03,
+      value: miningRank * 0.02,
       sourceName: `子技能·采矿锻甲 Lv.${miningRank}`,
       remainingRounds: null,
     });
@@ -340,26 +342,27 @@ export function collectUnitModifiers(
     });
   }
 
-  // 2d. 进阶职业全军光环与敌方威压光环
-  if (bestClassAllyMorale > 0 && !moraleImmune) {
+  // 2d. 进阶职业全军光环（注意 H4 原版中 General / Lord Commander / Field Marshal / Warden 仅加成己方生物部队，不叠英雄本身）
+  const isCreature = unit.kind === 'creature';
+  if (bestClassAllyMorale > 0 && !moraleImmune && isCreature) {
     list.push({ id: 'class_aura:morale', stat: 'morale', mode: 'flat', value: bestClassAllyMorale, sourceName: '职业光环·战意鼓舞', remainingRounds: null });
   }
-  if (bestClassAllyLuck > 0) {
+  if (bestClassAllyLuck > 0 && isCreature) {
     list.push({ id: 'class_aura:luck', stat: 'luck', mode: 'flat', value: bestClassAllyLuck, sourceName: '职业光环·福运伴身', remainingRounds: null });
   }
-  if (bestClassAllySpeed > 0) {
+  if (bestClassAllySpeed > 0 && isCreature) {
     list.push({ id: 'class_aura:spd', stat: 'speed', mode: 'flat', value: bestClassAllySpeed, sourceName: '职业光环·疾行军令', remainingRounds: null });
   }
-  if (bestClassAllyInit > 0) {
+  if (bestClassAllyInit > 0 && isCreature) {
     list.push({ id: 'class_aura:init', stat: 'initiative', mode: 'flat', value: bestClassAllyInit, sourceName: '职业光环·奇袭先手', remainingRounds: null });
   }
-  if (bestClassAllyOff > 0) {
-    list.push({ id: 'class_aura:off', stat: 'attack', mode: 'percent', value: bestClassAllyOff, sourceName: '职业光环·铁血统御', remainingRounds: null });
+  if (bestClassAllyOff > 0 && isCreature) {
+    list.push({ id: 'class_aura:off', stat: 'attack', mode: 'percent', value: bestClassAllyOff, sourceName: '职业光环·全军突击', remainingRounds: null });
   }
-  if (bestClassAllyDef > 0) {
+  if (bestClassAllyDef > 0 && isCreature) {
     list.push({ id: 'class_aura:def', stat: 'defense', mode: 'percent', value: bestClassAllyDef, sourceName: '职业光环·铁壁方阵', remainingRounds: null });
   }
-  if (bestClassAllyHp > 0) {
+  if (bestClassAllyHp > 0 && isCreature) {
     list.push({ id: 'class_aura:hp', stat: 'maxHp', mode: 'percent', value: bestClassAllyHp, sourceName: '职业光环·军魂强体', remainingRounds: null });
   }
   if (worstEnemyMorale < 0 && !moraleImmune && !unit.abilities.magicImmune) {
@@ -375,26 +378,35 @@ export function collectUnitModifiers(
   }
 
   // 4. 英雄个人 36 技能树静态加成 + 激活职业加成 + 神器套装
+  let heroMaxMoraleOverride = false;
+  let heroMaxLuckOverride = false;
+
   if (unit.kind === 'hero') {
     const sk = unit.skills;
     const sub = unit.subSkills ?? {};
 
-    // 格斗主技能 & 近战/射击/魔抗子技能
+    // 格斗主技能：个人防卫（+20% / +40% / +60% / +80% / +100% 防御）+ 魔抗（30/50/70/80/100%）
     const combatRank = sk.combat ?? 0;
     if (combatRank > 0) {
-      list.push(
-        { id: 'hero_sk:combat_def', stat: 'defense', mode: 'percent', value: combatRank * 0.08, sourceName: `格斗 Lv.${combatRank}`, remainingRounds: null },
-        { id: 'hero_sk:combat_hp', stat: 'maxHp', mode: 'percent', value: combatRank * 0.12, sourceName: `格斗体魄 Lv.${combatRank}`, remainingRounds: null },
-      );
+      list.push({
+        id: 'hero_sk:combat_def',
+        stat: 'defense',
+        mode: 'percent',
+        value: COMBAT_DEFENSE_PCT_BY_RANK[combatRank] ?? combatRank * 0.2,
+        sourceName: `格斗防卫 Lv.${combatRank}`,
+        remainingRounds: null,
+      });
     }
-    if ((sub.melee ?? 0) > 0) {
-      list.push({ id: 'hero_sub:melee', stat: 'attack', mode: 'flat', value: sub.melee! * 2, sourceName: `子技能·近战 Lv.${sub.melee}`, remainingRounds: null });
-    }
-    if ((sub.archery ?? 0) > 0) {
-      list.push({ id: 'hero_sub:archery', stat: 'attack', mode: 'flat', value: sub.archery! * 2, sourceName: `子技能·射击 Lv.${sub.archery}`, remainingRounds: null });
-    }
-    if ((sub.magic_resistance ?? 0) > 0) {
-      list.push({ id: 'hero_sub:mres', stat: 'magicResistance', mode: 'flat', value: sub.magic_resistance! * 0.14, sourceName: `子技能·魔抗 Lv.${sub.magic_resistance}`, remainingRounds: null });
+    const mrRank = sub.magic_resistance ?? 0;
+    if (mrRank > 0) {
+      list.push({
+        id: 'hero_sub:mres',
+        stat: 'magicResistance',
+        mode: 'flat',
+        value: MAGIC_RESISTANCE_BY_RANK[mrRank] ?? mrRank * 0.2,
+        sourceName: `子技能·魔抗 Lv.${mrRank}`,
+        remainingRounds: null,
+      });
     }
 
     // 侦查主技能 & 潜行子技能
@@ -402,14 +414,14 @@ export function collectUnitModifiers(
     if (scoutRank > 0) {
       list.push(
         { id: 'hero_sk:scout_init', stat: 'initiative', mode: 'flat', value: scoutRank, sourceName: `侦查 Lv.${scoutRank}`, remainingRounds: null },
-        { id: 'hero_sk:scout_graze', stat: 'grazeChance', mode: 'flat', value: scoutRank * 0.04, sourceName: `侦查洞察 Lv.${scoutRank}`, remainingRounds: null },
+        { id: 'hero_sk:scout_graze', stat: 'grazeChance', mode: 'flat', value: scoutRank * 0.03, sourceName: `侦查洞察 Lv.${scoutRank}`, remainingRounds: null },
       );
     }
     if ((sub.stealth ?? 0) > 0) {
-      list.push({ id: 'hero_sub:stealth', stat: 'grazeChance', mode: 'flat', value: sub.stealth! * 0.06, sourceName: `子技能·潜行 Lv.${sub.stealth}`, remainingRounds: null });
+      list.push({ id: 'hero_sub:stealth', stat: 'grazeChance', mode: 'flat', value: sub.stealth! * 0.05, sourceName: `子技能·潜行 Lv.${sub.stealth}`, remainingRounds: null });
     }
 
-    // 五系魔法主技能法强 + 灵力池子技能（灵性/巫术/神秘/魔咒/冥想）
+    // 五系魔法主技能法强 + 五系对称灵力上限子技能（灵性/巫术/神秘/魔咒/冥想：各 +10/阶 最大灵力）
     let magicRankSum = 0;
     for (const mk of MAGIC_PRIMARY_SKILL_IDS) {
       magicRankSum += sk[mk] ?? 0;
@@ -420,23 +432,28 @@ export function collectUnitModifiers(
         list.push({ id: 'hero_sk:magic_sp', stat: 'spellPower', mode: 'flat', value: spBonus, sourceName: `五系魔导修为 (+${spBonus})`, remainingRounds: null });
       }
     }
-    if ((sub.spirituality ?? 0) > 0) {
-      list.push({ id: 'hero_sub:spirituality', stat: 'maxMana', mode: 'flat', value: sub.spirituality! * 6, sourceName: `子技能·灵性 Lv.${sub.spirituality}`, remainingRounds: null });
-    }
-    if ((sub.wizardry ?? 0) > 0) {
-      list.push({ id: 'hero_sub:wizardry', stat: 'maxMana', mode: 'flat', value: sub.wizardry! * 10, sourceName: `子技能·巫术 Lv.${sub.wizardry}`, remainingRounds: null });
-    }
-    if ((sub.occultism ?? 0) > 0) {
-      list.push({ id: 'hero_sub:occultism', stat: 'maxMana', mode: 'flat', value: sub.occultism! * 8, sourceName: `子技能·神秘 Lv.${sub.occultism}`, remainingRounds: null });
-    }
-    if ((sub.conjuration ?? 0) > 0) {
-      list.push({ id: 'hero_sub:conjuration', stat: 'maxMana', mode: 'flat', value: sub.conjuration! * 6, sourceName: `子技能·魔咒 Lv.${sub.conjuration}`, remainingRounds: null });
-    }
-    if ((sub.meditation ?? 0) > 0) {
-      list.push({ id: 'hero_sub:meditation', stat: 'maxMana', mode: 'flat', value: sub.meditation! * 12, sourceName: `子技能·冥想 Lv.${sub.meditation}`, remainingRounds: null });
+    const manaSubList: Array<{ key: SecondarySkillId; name: string }> = [
+      { key: 'spirituality', name: '灵性' },
+      { key: 'wizardry', name: '巫术' },
+      { key: 'occultism', name: '神秘' },
+      { key: 'conjuration', name: '魔咒' },
+      { key: 'meditation', name: '冥想' },
+    ];
+    for (const ms of manaSubList) {
+      const r = sub[ms.key] ?? 0;
+      if (r > 0) {
+        list.push({
+          id: `hero_sub:${ms.key}`,
+          stat: 'maxMana',
+          mode: 'flat',
+          value: MAGIC_MANA_BONUS_BY_RANK[r] ?? r * 10,
+          sourceName: `子技能·${ms.name} Lv.${r}`,
+          remainingRounds: null,
+        });
+      }
     }
 
-    // 激活进阶/基础职业属性加成
+    // 激活进阶/基础职业属性加成与专属被动（如幻冥魔导常驻残影、先知灵甲）
     const advClass = resolveAdvancedClass(
       unit.skills,
       registry.advancedClasses,
@@ -451,6 +468,18 @@ export function collectUnitModifiers(
           remainingRounds: null,
         });
       });
+      if (advClass.passive?.grantPermanentBlur && !unit.statusEffects?.blur) {
+        list.push({
+          id: `class:${advClass.id}:blur_graze`,
+          stat: 'grazeChance',
+          mode: 'flat',
+          value: 0.25,
+          sourceName: `职业·${advClass.name}`,
+          remainingRounds: null,
+        });
+      }
+      if (advClass.passive?.heroMaxMorale) heroMaxMoraleOverride = true;
+      if (advClass.passive?.heroMaxLuck) heroMaxLuckOverride = true;
     }
 
     // 5. 装备单件与组合神器套装加成
@@ -539,7 +568,106 @@ export function collectUnitModifiers(
     });
   }
 
+  // 10. 博丽圣军师（极高士气）/ 幻想乐师（极高幸运）恒定上限锁定标记
+  if (heroMaxMoraleOverride && !moraleImmune) {
+    list.push({
+      id: 'class:hero_max_morale',
+      stat: 'morale',
+      mode: 'flat',
+      value: 10,
+      sourceName: '职业·神佑信念(士气恒定满值)',
+      remainingRounds: null,
+    });
+  }
+  if (heroMaxLuckOverride) {
+    list.push({
+      id: 'class:hero_max_luck',
+      stat: 'luck',
+      mode: 'flat',
+      value: 10,
+      sourceName: '职业·神乐吉祥(幸运恒定满值)',
+      remainingRounds: null,
+    });
+  }
+
   return list;
+}
+
+/**
+ * 极速计算单位的实时有效魔法抗性（零堆分配，不触发全场单位扫描与阵营士气计算，供施法高频校验使用）
+ */
+export function getUnitEffectiveMagicResistance(
+  unit: BattleUnit,
+  state: BattleState,
+  registry: GameDataRegistry,
+): number {
+  if (unit.abilities.magicImmune) return 1;
+  let total = unit.baseStats.magicResistance;
+
+  for (const traitId of unit.innateTraitIds) {
+    const trait = HERO_TRAIT_REGISTRY[traitId];
+    if (trait?.getPassiveModifiers) {
+      for (const m of trait.getPassiveModifiers(unit, state)) {
+        if (m.stat === 'magicResistance') {
+          total += m.mode === 'percent' ? unit.baseStats.magicResistance * m.value : m.value;
+        }
+      }
+    }
+  }
+
+  if (unit.kind === 'hero') {
+    const mrRank = unit.subSkills?.magic_resistance ?? 0;
+    if (mrRank > 0) {
+      total += MAGIC_RESISTANCE_BY_RANK[mrRank] ?? mrRank * 0.2;
+    }
+    const advClass = resolveAdvancedClass(
+      unit.skills,
+      registry.advancedClasses,
+      unit.subSkills,
+      unit.selectedAdvancedClassId,
+    );
+    if (advClass) {
+      for (const b of advClass.bonuses) {
+        if (b.stat === 'magicResistance') {
+          total += b.mode === 'percent' ? unit.baseStats.magicResistance * b.value : b.value;
+        }
+      }
+    }
+    for (const artId of unit.equippedArtifactIds) {
+      const art = registry.artifacts[artId];
+      if (!art) continue;
+      for (const m of art.modifiers) {
+        if (m.stat === 'magicResistance') {
+          total += m.mode === 'percent' ? unit.baseStats.magicResistance * m.value : m.value;
+        }
+      }
+    }
+    for (const setDef of resolveActiveArtifactSets(unit.equippedArtifactIds, registry.artifacts, registry.artifactSets)) {
+      for (const m of setDef.modifiers) {
+        if (m.stat === 'magicResistance') {
+          total += m.mode === 'percent' ? unit.baseStats.magicResistance * m.value : m.value;
+        }
+      }
+    }
+  }
+
+  if (state.activeFieldAura && !unit.abilities.magicImmune) {
+    const aura = state.activeFieldAura;
+    const mods = unit.side === aura.casterSide ? aura.allyModifiers : aura.enemyModifiers;
+    for (const m of mods) {
+      if (m.stat === 'magicResistance') {
+        total += m.mode === 'percent' ? unit.baseStats.magicResistance * m.value : m.value;
+      }
+    }
+  }
+
+  for (const m of unit.modifiers) {
+    if (m.stat === 'magicResistance') {
+      total += m.mode === 'percent' ? unit.baseStats.magicResistance * m.value : m.value;
+    }
+  }
+
+  return Math.max(-0.5, Math.min(1.0, Number(total.toFixed(3))));
 }
 
 const STAT_KEYS: readonly StatKey[] = [
@@ -621,7 +749,7 @@ export function computeUnitStats(
     } else if (key === 'magicResistance') {
       finalVal = unit.abilities.magicImmune
         ? 1
-        : Math.max(-0.5, Math.min(0.95, Number(finalVal.toFixed(3))));
+        : Math.max(-0.5, Math.min(1.0, Number(finalVal.toFixed(3))));
     } else if (key === 'morale' || key === 'luck') {
       finalVal = Math.max(-10, Math.min(10, Math.round(finalVal)));
     } else if (key === 'maxMana' || key === 'spellPower') {

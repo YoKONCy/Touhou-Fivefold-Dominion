@@ -101,7 +101,8 @@ const emit = defineEmits<{
             </button>
             <button
               class="font-num flex h-6 w-6 items-center justify-center border border-[#99763a]/55 bg-[#291e14] text-[10px] text-[#f5df9e] hover:border-[#fff0b8] disabled:opacity-25 lg:h-4.5 lg:w-4.5"
-              :disabled="tree.rank >= 5"
+              :disabled="!tree.canInc"
+              :title="tree.incReason"
               @click.stop="emit('stepPrimary', tree.id, 1)"
             >
               +

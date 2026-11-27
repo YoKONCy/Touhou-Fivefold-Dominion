@@ -4,6 +4,7 @@
  * 承载 3 类辅助抽屉：腰带秘药匣 / 暗夜战录卷 / 战局规仪录
  */
 import { computed } from 'vue';
+import { AI_DIFFICULTY_META, type AiDifficulty } from '@ai/tacticalAi';
 import {
   PLAYABLE_FACTION_META,
   TOUHOU_CATALOG,
@@ -250,6 +251,24 @@ const canShowDrawer = computed(() => {
                 双人热座
               </button>
             </div>
+          </div>
+
+          <div v-if="store.mode === 'vs_ai'">
+            <div class="font-display mb-1.5 text-[11px] text-[#cabba2]">敌方 AI 战术强度</div>
+            <div class="grid grid-cols-3 gap-1.5">
+              <button
+                v-for="lvl in (['casual', 'standard', 'master'] as AiDifficulty[])"
+                :key="lvl"
+                class="lacquer-plaque-btn font-display py-1.5 text-[11px]"
+                :class="store.aiDifficulty === lvl ? 'lacquer-plaque-btn-active text-[#f5df9e]' : 'text-[#a89a86]'"
+                @click="store.setAiDifficulty(lvl)"
+              >
+                {{ AI_DIFFICULTY_META[lvl].name }}
+              </button>
+            </div>
+            <p class="mt-1.5 text-[10px] leading-relaxed text-[#9e8f7b]">
+              {{ AI_DIFFICULTY_META[store.aiDifficulty].description }}
+            </p>
           </div>
 
           <div>

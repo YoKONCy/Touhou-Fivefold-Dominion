@@ -8,9 +8,15 @@ import {
   isDarkBonusTarget,
   isUndeadUnit,
 } from '../creatureTypes';
-import { resolveActiveHeroClass } from '../h4Skills';
+import {
+  ARCHERY_ATTACK_FLAT_BY_RANK,
+  ARCHERY_DEFENSE_DIVISOR_BY_RANK,
+  MELEE_ATTACK_FLAT_BY_RANK,
+  MELEE_DEFENSE_DIVISOR_BY_RANK,
+  resolveActiveHeroClass,
+} from '../h4Skills';
 import { getFootprintHexes, hexKey, type HexCoord } from '../hex';
-import { computeUnitStats } from '../modifiers';
+import { computeUnitStats, getUnitEffectiveMagicResistance } from '../modifiers';
 import { HERO_TRAIT_REGISTRY, type AttackHookContext } from '../traits';
 import type { BattleState, BattleUnit, CombatEvent, SideId } from '../types';
 import { getUnitOccupiedHexes } from './spatial';
@@ -35,6 +41,17 @@ export function canUnitRetaliateThisRound(unit: BattleUnit): boolean {
   return Boolean(unit.abilities.unlimitedRetaliation) || !unit.hasRetaliatedThisRound;
 }
 
+/** 判定单位在当前攻击模式（近战 / 远程）下是否触发二段连击（兼容近战宗师与射击宗师各自独立双打） */
+export function hasDoubleStrikeForMode(
+  unit: Pick<BattleUnit, 'abilities'>,
+  isRanged: boolean,
+): boolean {
+  return Boolean(
+    unit.abilities.doubleStrike ||
+      (isRanged ? unit.abilities.rangedDoubleStrike : unit.abilities.meleeDoubleStrike),
+  );
+}
+
 /** 判定攻防双方的结算模式（同时反击 / 攻击方先攻 / 防守方先攻 / 单向无反击） */
 export function resolveExchangeMode(
   attacker: BattleUnit,
@@ -56,7 +73,7 @@ export function resolveExchangeMode(
   return 'simultaneous';
 }
 
-/** 计算剧毒喷射单次毒伤（按施毒方兵力独立结算，无视物理防御，受抗死结界与魔法抗性减免） */
+/** 计算剧毒喷射单次毒伤（按施毒方兵力独立结算，无视物理防御，受抗死结界与魔法抗性减免，异端者无视结界） */
 export function computePoisonAttackDamage(
   striker: BattleUnit,
   victim: BattleUnit,
@@ -64,13 +81,29 @@ export function computePoisonAttackDamage(
   catalog: CombatContentCatalog,
   strikerCountOverride?: number,
 ): number {
+  const victimMr = getUnitEffectiveMagicResistance(victim, state, catalog);
+  if (victim.side !== striker.side && victimMr >= 1) {
+    return 0;
+  }
+  const strikerCls =
+    striker.kind === 'hero'
+      ? resolveActiveHeroClass(
+          striker.skills,
+          striker.subSkills,
+          catalog.advancedClasses,
+          striker.selectedAdvancedClassId,
+        )
+      : null;
   const unitCount = Math.max(1, strikerCountOverride ?? striker.count);
   let dmg = unitCount * POISON_ATTACK_DAMAGE_PER_UNIT;
-  if (victim.abilities.deathWard || victim.statusEffects?.schoolWards?.death) {
+  if (
+    !strikerCls?.passive?.ignoreEnemyWards &&
+    (victim.abilities.deathWard || victim.statusEffects?.schoolWards?.death)
+  ) {
     dmg *= 0.5;
   }
-  const vStats = computeUnitStats(victim, state, catalog);
-  dmg *= Math.max(0, 1 - vStats.magicResistance);
+  dmg *= Math.max(0, 1 - victimMr);
+  if (dmg <= 0) return 0;
   return Math.max(1, Math.round(dmg));
 }
 
@@ -107,26 +140,73 @@ export function calculateDamageRange(
     HERO_TRAIT_REGISTRY[traitId]?.onBeforeAttack?.(hookCtx);
   }
 
-  const deathWardActive = Boolean(
-    defender.abilities.deathWard &&
-      (attacker.alignment === 'death' ||
-        attacker.alignment === 'chaos' ||
-        attacker.abilities.darkNature ||
-        isUndeadUnit(attacker)),
-  );
-  const lifeWardActive = Boolean(defender.abilities.lifeWard && attacker.alignment === 'life');
-  const schoolWardActive = Boolean(defender.statusEffects?.schoolWards?.[attacker.alignment]);
-  const wardDefenseMult = schoolWardActive || lifeWardActive ? 1.5 : deathWardActive ? 1.25 : 1;
+  const atkCls =
+    attacker.kind === 'hero'
+      ? resolveActiveHeroClass(
+          attacker.skills,
+          attacker.subSkills,
+          catalog.advancedClasses,
+          attacker.selectedAdvancedClassId,
+        )
+      : null;
+  const defCls =
+    defender.kind === 'hero'
+      ? resolveActiveHeroClass(
+          defender.skills,
+          defender.subSkills,
+          catalog.advancedClasses,
+          defender.selectedAdvancedClassId,
+        )
+      : null;
+
+  // 异端者（Heretic = 生命+混沌）无视敌方一切抗系结界与派系守护
+  const ignoresWards = Boolean(atkCls?.passive?.ignoreEnemyWards);
+  const deathWardActive =
+    !ignoresWards &&
+    Boolean(
+      defender.abilities.deathWard &&
+        (attacker.alignment === 'death' ||
+          attacker.alignment === 'chaos' ||
+          attacker.abilities.darkNature ||
+          isUndeadUnit(attacker)),
+    );
+  const lifeWardActive = !ignoresWards && Boolean(defender.abilities.lifeWard && attacker.alignment === 'life');
+  const chaosWardActive = !ignoresWards && Boolean(defender.abilities.chaosWard && attacker.alignment === 'chaos');
+  const schoolWardActive = !ignoresWards && Boolean(defender.statusEffects?.schoolWards?.[attacker.alignment]);
+  const wardDefenseMult = schoolWardActive || lifeWardActive || chaosWardActive ? 1.5 : deathWardActive ? 1.25 : 1;
   const bodyDefenseMult =
     (defender.abilities.insubstantial ? 2 : 1) * (isRanged && defender.abilities.skeletal ? 2 : 1);
+
+  // 原版 HoMM4 格斗·近战/射击：按对应等级除以非英雄兵种的天然防御（下限保底 10），绝不削减敌方英雄防御！
+  let creatureNatReduction = 0;
+  if (attacker.kind === 'hero' && defender.kind === 'creature') {
+    const defDivisor = !isRanged
+      ? (MELEE_DEFENSE_DIVISOR_BY_RANK[attacker.subSkills?.melee ?? 0] ?? 1)
+      : (ARCHERY_DEFENSE_DIVISOR_BY_RANK[attacker.subSkills?.archery ?? 0] ?? 1);
+    if (defDivisor > 1 && defender.baseStats.defense > 10) {
+      const reducedNatural = Math.max(10, defender.baseStats.defense / defDivisor);
+      creatureNatReduction = defender.baseStats.defense - reducedNatural;
+      hookCtx.notes.push(
+        `${!isRanged ? '近战' : '射击'}破甲(÷${defDivisor}保底10)`,
+      );
+    }
+  }
+  const baseDefAfterHeroPierce = Math.max(
+    Math.min(10, defStats.defense),
+    defStats.defense - creatureNatReduction,
+  );
   const effectiveDefense = Math.max(
     1,
-    defStats.defense * wardDefenseMult * bodyDefenseMult * (1 - hookCtx.defensePenetration),
+    baseDefAfterHeroPierce * wardDefenseMult * bodyDefenseMult * (1 - hookCtx.defensePenetration),
   );
-  if (schoolWardActive) {
+  if (ignoresWards && (defender.abilities.deathWard || defender.abilities.lifeWard || defender.abilities.chaosWard || defender.statusEffects?.schoolWards?.[attacker.alignment])) {
+    hookCtx.notes.push('破界贯通(无视结界)');
+  } else if (schoolWardActive) {
     hookCtx.notes.push('敌方派系守护(防+50%)');
   } else if (lifeWardActive) {
     hookCtx.notes.push('敌方抗生结界(防+50%)');
+  } else if (chaosWardActive) {
+    hookCtx.notes.push('敌方抗混结界(防+50%)');
   } else if (deathWardActive) {
     hookCtx.notes.push('敌方抗死结界(防+25%)');
   }
@@ -137,8 +217,24 @@ export function calculateDamageRange(
     hookCtx.notes.push('敌方骸骨体质(远防+100%)');
   }
 
+  let heroModeAttackFlat = 0;
+  if (attacker.kind === 'hero') {
+    if (!isRanged) {
+      const mRank = attacker.subSkills?.melee ?? 0;
+      heroModeAttackFlat += MELEE_ATTACK_FLAT_BY_RANK[mRank] ?? 0;
+      heroModeAttackFlat += atkCls?.passive?.heroMeleeAttackFlat ?? 0;
+    } else {
+      const aRank = attacker.subSkills?.archery ?? 0;
+      heroModeAttackFlat += ARCHERY_ATTACK_FLAT_BY_RANK[aRank] ?? 0;
+      heroModeAttackFlat += atkCls?.passive?.heroRangedAttackFlat ?? 0;
+    }
+    if (heroModeAttackFlat > 0) {
+      hookCtx.notes.push(`${!isRanged ? '近战攻击' : '远程攻击'}+${heroModeAttackFlat}`);
+    }
+  }
+
   const precisionActive = Boolean(isRanged && (attacker.statusEffects?.precisionRounds ?? 0) > 0);
-  const effectiveAttack = precisionActive ? atkStats.attack * 1.25 : atkStats.attack;
+  const effectiveAttack = (precisionActive ? atkStats.attack * 1.25 : atkStats.attack) + heroModeAttackFlat;
   if (precisionActive) {
     hookCtx.notes.push('天眼狙定(+25%远攻)');
   }
@@ -187,7 +283,10 @@ export function calculateDamageRange(
     hookCtx.notes.push('不死炎缠(+25%)');
   }
 
-  const bloodlustMult = !isRanged && (attacker.statusEffects?.bloodlustRounds ?? 0) > 0 ? 1.25 : 1;
+  const bloodlustMult =
+    !isRanged && ((attacker.statusEffects?.bloodlustRounds ?? 0) > 0 || atkCls?.passive?.grantPermanentBloodlust)
+      ? 1.25
+      : 1;
   if (bloodlustMult > 1) {
     hookCtx.notes.push('鬼神狂战(+25%近战)');
   }
@@ -197,41 +296,21 @@ export function calculateDamageRange(
     hookCtx.notes.push('影遁减伤(-15%)');
   }
   const defenderStealthSub = defender.kind === 'hero' ? (defender.subSkills?.stealth ?? 0) : 0;
-  const subStealthMult = isRanged && defenderStealthSub > 0 ? Math.max(0.65, 1 - defenderStealthSub * 0.06) : 1;
+  const subStealthMult = isRanged && defenderStealthSub > 0 ? Math.max(0.7, 1 - defenderStealthSub * 0.05) : 1;
   if (subStealthMult < 1) {
     hookCtx.notes.push(`潜行规避(-${Math.round((1 - subStealthMult) * 100)}%)`);
   }
-  const blurMult = isRanged && defender.statusEffects?.blur ? 0.65 : 1;
+  const blurMult = isRanged && (defender.statusEffects?.blur || defCls?.passive?.grantPermanentBlur) ? 0.65 : 1;
   if (blurMult < 1) {
     hookCtx.notes.push('蜃气残影(-35%)');
   }
 
   let heroCombatSkillMult = 1;
-  if (attacker.kind === 'hero') {
-    const atkCls = resolveActiveHeroClass(
-      attacker.skills,
-      attacker.subSkills,
-      catalog.advancedClasses,
-      attacker.selectedAdvancedClassId,
-    );
-    if (!isRanged) {
-      const mRank = attacker.subSkills?.melee ?? 0;
-      if (mRank > 0) {
-        heroCombatSkillMult += mRank * 0.12;
-        hookCtx.notes.push(`近战专精(+${mRank * 12}%)`);
-      }
-      if (atkCls?.passive?.heroMeleeDamagePct) {
-        heroCombatSkillMult += atkCls.passive.heroMeleeDamagePct;
-      }
-    } else {
-      const aRank = attacker.subSkills?.archery ?? 0;
-      if (aRank > 0) {
-        heroCombatSkillMult += aRank * 0.12;
-        hookCtx.notes.push(`射击专精(+${aRank * 12}%)`);
-      }
-      if (atkCls?.passive?.heroRangedDamagePct) {
-        heroCombatSkillMult += atkCls.passive.heroRangedDamagePct;
-      }
+  if (atkCls?.passive) {
+    if (!isRanged && atkCls.passive.heroMeleeDamagePct) {
+      heroCombatSkillMult += atkCls.passive.heroMeleeDamagePct;
+    } else if (isRanged && atkCls.passive.heroRangedDamagePct) {
+      heroCombatSkillMult += atkCls.passive.heroRangedDamagePct;
     }
   }
 

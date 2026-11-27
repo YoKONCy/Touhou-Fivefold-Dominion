@@ -17,6 +17,7 @@ import {
   cleansePositiveEffects,
   computeAndApplySpellDamage,
   grantTempAbility,
+  isTargetResistingHostileSpell,
   reviveAndHealUnit,
 } from './helpers';
 
@@ -121,14 +122,16 @@ export function executeSelfAndMassSpell(ctx: SpellCastContext): SpellBranchOutco
     state.actionLog.push(`✨ ${unit.name} 施放「八百万神祝」，全队攻击恒定打出最大伤害！`);
   } else if (eff === 'mass_curse') {
     for (const e of enemies) {
-      if (e.abilities.magicImmune || e.statusEffects?.sanctuary) continue;
+      if (e.abilities.magicImmune || e.statusEffects?.sanctuary || isTargetResistingHostileSpell(state, unit, e, catalog)) {
+        continue;
+      }
       e.statusEffects.curse = true;
       e.statusEffects.bless = false;
       touchStatusFlag(e, 'curse');
       ctx.affectedUnitIds.push(e.id);
     }
     ctx.noteText = '百鬼厄祟!';
-    state.actionLog.push(`☠ ${unit.name} 施放「百鬼厄祟」，全体非魔免敌军只能打出最小伤害！`);
+    state.actionLog.push(`☠ ${unit.name} 施放「百鬼厄祟」，全体非免疫敌军只能打出最小伤害！`);
   } else if (eff === 'ward_mass' && spell.wardSchool) {
     for (const a of allies) {
       if (a.abilities.magicImmune) continue;
@@ -150,7 +153,7 @@ export function executeSelfAndMassSpell(ctx: SpellCastContext): SpellBranchOutco
   } else if (eff === 'mass_cancellation') {
     let total = 0;
     for (const e of enemies) {
-      if (e.abilities.magicImmune) continue;
+      if (e.abilities.magicImmune || isTargetResistingHostileSpell(state, unit, e, catalog)) continue;
       total += cleansePositiveEffects(e).length;
       ctx.affectedUnitIds.push(e.id);
     }
@@ -158,18 +161,18 @@ export function executeSelfAndMassSpell(ctx: SpellCastContext): SpellBranchOutco
     state.actionLog.push(`☠ ${unit.name} 施放「幽冥剥法」，剥除了敌军全部有益增益（${total} 项）！`);
   } else if (eff === 'mass_dispel') {
     for (const u of allAlive) {
-      if (u.abilities.magicImmune) continue;
+      if (u.abilities.magicImmune || isTargetResistingHostileSpell(state, unit, u, catalog)) continue;
       cleansePositiveEffects(u);
       cleanseNegativeEffects(u, false); // H4 规则：驱散不解除中毒与瘟疫
       ctx.affectedUnitIds.push(u.id);
     }
     ctx.noteText = '万法归零!';
-    state.actionLog.push(`✦ ${unit.name} 施放「万法归零」，涤荡了全场所有敌我法术状态！`);
+    state.actionLog.push(`✦ ${unit.name} 施放「万法归零」，涤荡了全场敌我法术状态！`);
   } else if (eff === 'steal_all_enchantments') {
     const eligibleAllies = allies.filter((a) => !a.abilities.magicImmune);
     let stolenCount = 0;
     for (const e of enemies) {
-      if (e.abilities.magicImmune) continue;
+      if (e.abilities.magicImmune || isTargetResistingHostileSpell(state, unit, e, catalog)) continue;
       const stolen = cleansePositiveEffects(e);
       ctx.affectedUnitIds.push(e.id);
       for (const mod of stolen) {
@@ -284,18 +287,21 @@ export function executeSelfAndMassSpell(ctx: SpellCastContext): SpellBranchOutco
     state.actionLog.push(`☠ ${unit.name} 施放「冥樱吸魂」，掠夺 ${totalDrained} 点生机并转化回复自身 ${ctx.healMap[unit.id] ?? 0} HP！`);
   } else if (eff === 'unholy_song') {
     for (const e of enemies) {
-      if (e.abilities.magicImmune || e.alignment !== 'life') continue;
+      if (e.abilities.magicImmune || e.alignment !== 'life' || isTargetResistingHostileSpell(state, unit, e, catalog)) {
+        continue;
+      }
       pushSpellModifier(e, { id: `spell:unholy:d1:${state.commandSeq}:${e.id}`, stat: 'minDamage', mode: 'percent', value: -0.2, sourceName: '幽曲·反魂幽曲', remainingRounds: 5, spellPolarity: 'negative' });
       pushSpellModifier(e, { id: `spell:unholy:d2:${state.commandSeq}:${e.id}`, stat: 'maxDamage', mode: 'percent', value: -0.2, sourceName: '幽曲·反魂幽曲', remainingRounds: 5, spellPolarity: 'negative' });
       pushSpellModifier(e, { id: `spell:unholy:def:${state.commandSeq}:${e.id}`, stat: 'defense', mode: 'percent', value: -0.2, sourceName: '幽曲·反魂幽曲', remainingRounds: 5, spellPolarity: 'negative' });
       ctx.affectedUnitIds.push(e.id);
     }
     ctx.noteText = '反魂幽曲!';
-    state.actionLog.push(`☠ ${unit.name} 奏响「反魂幽曲」，压制敌方全体生命系单位伤害与防御 -20%！`);
+    state.actionLog.push(`☠ ${unit.name} 奏响「反魂幽曲」，压制敌方生命系单位伤害与防御 -20%！`);
   } else if (eff === 'plague') {
     const tickDmg = Math.round(calcPower(spell.damageBase ?? 14, 0.4));
     for (const u of allAlive) {
       if (u.abilities.magicImmune || isImmuneToLivingEffects(u) || u.statusEffects?.sanctuary) continue;
+      if (isTargetResistingHostileSpell(state, unit, u, catalog)) continue;
       u.statusEffects.plaguePower = Math.max(u.statusEffects.plaguePower ?? 0, tickDmg);
       touchStatusFlag(u, 'plaguePower');
       ctx.affectedUnitIds.push(u.id);
@@ -326,6 +332,7 @@ export function executeSelfAndMassSpell(ctx: SpellCastContext): SpellBranchOutco
     );
     for (const t of pool) {
       if (t.abilities.magicImmune || t.statusEffects?.sanctuary) continue;
+      if (isTargetResistingHostileSpell(state, unit, t, catalog)) continue;
       if (isTargetBlockedByMind(t) || isTargetBlockedByLiving(t)) continue;
       if (spell.healBase && isImmuneToLivingHeal(t)) continue;
       if (isMoraleMassSpell && isImmuneToMorale(t)) continue;

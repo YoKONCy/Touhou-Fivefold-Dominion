@@ -16,6 +16,7 @@ import {
   calculateDamageRange,
   canUnitRetaliateThisRound,
   computePoisonAttackDamage,
+  hasDoubleStrikeForMode,
   resolveExchangeMode,
   simulateKills,
 } from './damage';
@@ -186,7 +187,8 @@ export function previewAttack(
   const defStats = computeUnitStats(defender, state, catalog);
   const atkStats = computeUnitStats(attacker, state, catalog);
 
-  const strikeCountMult = attacker.abilities.doubleStrike ? 2 : 1;
+  const hasDoubleStrike = hasDoubleStrikeForMode(attacker, useRanged);
+  const strikeCountMult = hasDoubleStrike ? 2 : 1;
   const totalMinDmg = atkRange.minDamage * strikeCountMult;
   const totalMaxDmg = atkRange.maxDamage * strikeCountMult;
 
@@ -258,7 +260,15 @@ export function previewAttack(
   if (useRanged && attacker.abilities.longRange) notes.push('精准无衰减');
   if (useRanged && attacker.abilities.noObstaclePenalty) notes.push('无视普通障碍');
   if (isLongWeaponPoke) notes.push('长手隔格(免反击)');
-  if (attacker.abilities.doubleStrike) notes.push('双重攻击(×2)');
+  if (hasDoubleStrike) {
+    notes.push(
+      attacker.abilities.doubleStrike
+        ? '双重攻击(×2)'
+        : useRanged
+          ? '远程连射(×2)'
+          : '近战双打(×2)',
+    );
+  }
   if (!useRanged && attacker.abilities.multipleAttack) notes.push('周身全扫');
   if (!useRanged && attacker.abilities.threeHeadedAttack) notes.push('三翼裂袭');
   if (!useRanged && attacker.abilities.breathAttack) notes.push('龙息贯穿');

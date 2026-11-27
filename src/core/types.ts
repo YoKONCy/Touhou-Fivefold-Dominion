@@ -101,10 +101,13 @@ export interface UnitAbilities {
   siegeBreaker?: boolean;         // 攻城破墙（《暴风前夕》独立攻城巨像）
   magicImmune?: boolean;          // 全魔法免疫（黑龙专属：绝对免疫一切敌方与己方正面/负面法术、符卡魔力与结界领域）
   darkNature?: boolean;           // 暗系（对非暗系、非四大特殊类型的活体单位额外造成 +15% 伤害，承受魔法伤害额外 +10%，且受生命破邪克制）
-  doubleStrike?: boolean;         // 双重攻击（主动进攻时可连打两段）
+  doubleStrike?: boolean;         // 双重攻击（通用/天生连击或火猫连击赋予，近战与远程皆连打两段）
+  meleeDoubleStrike?: boolean;    // 近战双重攻击（格斗·近战宗师 Lv.5 专属，仅主动近战时连打两段）
+  rangedDoubleStrike?: boolean;   // 远程双重攻击（格斗·射击宗师 Lv.5 专属，仅主动远程时连射两段）
   charge?: boolean;               // 冲锋增伤（近战突进每格伤害 +5%）
   deathWard?: boolean;            // 抗死结界（对死亡/不死/混沌/暗系敌军非法术防御 +25%，死亡与混沌魔法减伤 50%）
   lifeWard?: boolean;             // 抗生结界（承受生命系法术伤害 -50%，迎战生命阵营敌军时有效防御 +50%）
+  chaosWard?: boolean;            // 抗混结界（承受混沌系法术伤害 -50%，迎战混沌阵营敌军时有效防御 +50%）
   skeletal?: boolean;             // 骸骨体质（承受远程打击时有效防御 +100%）
   insubstantial?: boolean;        // 虚无体质（承受近战与远程物理打击时有效防御 +100%）
   manaLeech?: boolean;            // 魔力吸取（每回合行动前自动从敌方施法者窃取灵力并输送给己方施法者）
@@ -264,17 +267,25 @@ export type SecondarySkillId =
 
 export type SkillRank = 0 | 1 | 2 | 3 | 4 | 5;
 
-/** 进阶职业专属机制被动（全 37 种组合职业差异化实战能力） */
+/** 进阶职业专属机制被动（全 37 种组合职业精确对齐 H4 原版实战能力） */
 export interface HeroClassPassiveEffects {
   manaCostDelta?: number;
   manaRegenPerRound?: number;
   allSpellBonusPct?: number;
   schoolSpellBonusPct?: Partial<Record<Exclude<Alignment, 'might'>, number>>;
+  fireSpellBonusPct?: number;
+  illusionBonusPct?: number;
+  specificSpellBonusPct?: Record<string, number>;
   healingBonusPct?: number;
   summonBonusPct?: number;
   necromancyBonusPct?: number;
+  heroMeleeAttackFlat?: number;
+  heroRangedAttackFlat?: number;
   heroMeleeDamagePct?: number;
   heroRangedDamagePct?: number;
+  heroDefensePct?: number;
+  heroMaxMorale?: boolean;
+  heroMaxLuck?: boolean;
   allyMoraleDelta?: number;
   allyLuckDelta?: number;
   enemyMoraleDelta?: number;
@@ -283,12 +294,25 @@ export interface HeroClassPassiveEffects {
   allyOffensePct?: number;
   allyDefensePct?: number;
   allyHpPct?: number;
+  spellRangeDelta?: number;
+  grantRanged?: boolean;
   grantDeathWard?: boolean;
+  grantChaosWard?: boolean;
   grantFireShield?: boolean;
   grantFireResistant?: boolean;
+  grantFireSpellImmune?: boolean;
   grantLongRange?: boolean;
   grantVampiric?: boolean;
+  vampiricRatio?: number;
   grantFirstStrike?: boolean;
+  grantPermanentBloodlust?: boolean;
+  grantPermanentBlur?: boolean;
+  grantStunOnHit?: boolean;
+  grantAgingOnHit?: boolean;
+  grantPoisonAttack?: boolean;
+  grantFearAttack?: boolean;
+  inflictMinMoraleOnHit?: boolean;
+  ignoreEnemyWards?: boolean;
 }
 
 export interface AdvancedClassDef {

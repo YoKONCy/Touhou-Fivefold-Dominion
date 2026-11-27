@@ -13,6 +13,7 @@ import {
   getUnitMinDistance,
   getUnitOccupiedHexes,
   getValidMeleeApproachAnchors,
+  validateCorpseSpellTarget,
 } from '@core/combatEngine';
 import { validateSpellUnitTarget } from '@core/h4SpellExecutor';
 import {
@@ -178,7 +179,11 @@ export function computeHoverSpellContext(params: {
   }
 
   if (spell.targetType === 'corpse_unit') {
-    const corpse = findCorpseTargetAtHex(st, hex, TOUHOU_CATALOG);
+    const corpse = findCorpseTargetAtHex(st, hex, TOUHOU_CATALOG, {
+      spell,
+      caster: act,
+      includeInvalidFallback: true,
+    });
     const distance = corpse ? getUnitMinDistance(act, corpse) : minHexSetDistance(casterHexes, [hex]);
     if (st.battleSpellFlags?.necromancyWardActive) {
       return {
@@ -207,9 +212,33 @@ export function computeHoverSpellContext(params: {
         targetHex: hex,
         targetUnit: null,
         canCast: false,
-        reason: '请选择已阵亡或有减员的兵种残骸',
-        shortLabel: '请选择残骸',
+        reason: '请选择可招魂的阵亡或减员兵种残骸（机械、亡灵、元素与幻象不可招魂）',
+        shortLabel: '请选择有效残骸',
         trajectory: null,
+      };
+    }
+    const corpseCheck = validateCorpseSpellTarget(spell, act, corpse, st, TOUHOU_CATALOG);
+    if (!corpseCheck.ok) {
+      return {
+        spell,
+        caster: act,
+        manaCost,
+        effRange,
+        distance,
+        targetHex: hex,
+        targetUnit: corpse,
+        canCast: false,
+        reason: corpseCheck.reason,
+        shortLabel: corpseCheck.shortLabel,
+        trajectory: buildSpellTrajectoryPreview(
+          st,
+          act,
+          { ...spell, ignoreLos: true },
+          hex,
+          corpse,
+          effRange,
+          corpseCheck.reason,
+        ),
       };
     }
     const outOfRange = effRange > 0 && distance > effRange;

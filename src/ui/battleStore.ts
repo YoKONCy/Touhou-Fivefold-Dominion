@@ -10,7 +10,11 @@
 
 import { defineStore } from 'pinia';
 import { computed, ref, shallowRef } from 'vue';
-import { chooseTacticalAiCommand } from '@ai/tacticalAi';
+import {
+  AI_DIFFICULTY_META,
+  chooseTacticalAiCommand,
+  type AiDifficulty,
+} from '@ai/tacticalAi';
 import { soundEngine, type AudioSettings } from '@audio/index';
 import {
   canModifyHeroClassOrBuild,
@@ -83,6 +87,7 @@ export type {
 
 export const useBattleStore = defineStore('battle', () => {
   const mode = ref<'vs_ai' | 'hotseat'>('vs_ai');
+  const aiDifficulty = ref<AiDifficulty>('master');
   const balancePreset = ref<'classic_h4' | 'equilibris_tuned'>('equilibris_tuned');
   const lineupVariant = ref<LineupVariant>('A');
   const leftFaction = ref<PlayableFactionId>('death');
@@ -1019,7 +1024,9 @@ export const useBattleStore = defineStore('battle', () => {
     ) {
       await new Promise((r) => setTimeout(r, 340));
       if (isPreBattlePrep.value) break;
-      const cmd = chooseTacticalAiCommand(battleState.value, TOUHOU_CATALOG);
+      const cmd = chooseTacticalAiCommand(battleState.value, TOUHOU_CATALOG, {
+        difficulty: aiDifficulty.value,
+      });
       if (!cmd) break;
       await executeCommand(cmd);
     }
@@ -1306,7 +1313,11 @@ export const useBattleStore = defineStore('battle', () => {
           targetHex: hex,
         });
       } else if (spell.targetType === 'corpse_unit') {
-        const corpse = findCorpseTargetAtHex(st, hex, TOUHOU_CATALOG);
+        const corpse = findCorpseTargetAtHex(st, hex, TOUHOU_CATALOG, {
+          spell,
+          caster: act,
+          includeInvalidFallback: true,
+        });
         if (corpse) {
           void executeCommand({
             type: 'CAST_SPELL',
@@ -1316,7 +1327,7 @@ export const useBattleStore = defineStore('battle', () => {
           });
         } else {
           soundEngine.play('ui_blocked');
-          showToast('请点击已阵亡或有减员的兵种残骸（右键取消）');
+          showToast('请点击可招魂的阵亡或减员兵种残骸（机械/亡灵/元素/幻象不可招魂，右键取消）');
         }
       } else if (spell.targetType === 'unit_to_hex') {
         if (!pendingSpellFirstUnitId.value) {
@@ -1474,7 +1485,11 @@ export const useBattleStore = defineStore('battle', () => {
       } else if (spell.targetType === 'hex_empty') {
         showToast(`请在战场空地选择「${spell.name}」的召唤落点`);
       } else if (spell.targetType === 'corpse_unit') {
-        showToast(`请点击战场上的阵亡或减员兵种残骸施放「${spell.name}」`);
+        const hintSuffix =
+          spell.specialEffect === 'animate_dead' || spell.specialEffect === 'death_call'
+            ? '（敌骸招魂仅限活体，机械/元素/幻象不可招魂）'
+            : '（仅限活体残骸，机械/亡灵/元素/幻象不可招魂）';
+        showToast(`请点击战场上的阵亡或减员兵种残骸施放「${spell.name}」${hintSuffix}`);
       }
     }
     refreshStageOverlay();
@@ -1578,8 +1593,16 @@ export const useBattleStore = defineStore('battle', () => {
     restartBattle(undefined, undefined, undefined, undefined, faction);
   }
 
+  function setAiDifficulty(level: AiDifficulty): void {
+    if (aiDifficulty.value === level) return;
+    aiDifficulty.value = level;
+    soundEngine.play('ui_click');
+    showToast(`AI 战术难度已切换为【${AI_DIFFICULTY_META[level].name}】（即时生效）`);
+  }
+
   return {
     mode,
+    aiDifficulty,
     balancePreset,
     lineupVariant,
     leftFaction,
@@ -1658,6 +1681,7 @@ export const useBattleStore = defineStore('battle', () => {
     switchLineupVariant,
     switchLeftFaction,
     switchRightFaction,
+    setAiDifficulty,
     showSpellCardBanner,
   };
 });

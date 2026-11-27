@@ -14,7 +14,9 @@ import {
 import { isImmuneToMorale, isUndeadUnit } from '@core/creatureTypes';
 import {
   ALL_PRIMARY_SKILL_IDS,
+  canIncrementPrimarySkill,
   canIncrementSubSkill,
+  getRequiredPrimaryRankForSubRank,
   getSkillTreeTotal,
   SECONDARY_SKILL_META,
   SKILL_TREE_META,
@@ -82,6 +84,8 @@ export interface HeroSkillTreeItem {
   color: string;
   rank: SkillRank;
   total: number;
+  canInc: boolean;
+  incReason?: string;
   subItems: HeroSkillSubItem[];
   tooltip: HudTooltipPayload;
 }
@@ -208,7 +212,9 @@ export function buildHeroSkillTrees(unit: BattleUnit, includeUnlearned: boolean)
       const sm = SECONDARY_SKILL_META[subId];
       const sRank = (subMap[subId] ?? 0) as SkillRank;
       const incCheck = canIncrementSubSkill(unit.skills, subMap, subId);
-      const locked = rank < sm.slotIndex;
+      const locked = rank === 0;
+      const reqForNext =
+        sRank < 5 ? getRequiredPrimaryRankForSubRank(subId, (sRank + 1) as SkillRank) : 5;
       const subBadges: HudTooltipMiniBadge[] = [
         ...(treeMeta.magicSchool
           ? [
@@ -221,7 +227,7 @@ export function buildHeroSkillTrees(unit: BattleUnit, includeUnlearned: boolean)
             ]
           : []),
         {
-          label: `${treeMeta.name} · 第 ${sm.slotIndex} 专精`,
+          label: `${treeMeta.name} · 专精`,
           icon: treeMeta.icon,
           color: treeMeta.color,
           bg: 'rgba(22, 18, 26, 0.92)',
@@ -240,7 +246,10 @@ export function buildHeroSkillTrees(unit: BattleUnit, includeUnlearned: boolean)
         incReason: incCheck.reason,
         tooltip: {
           title: `${sm.name} · ${getSkillRankLabel(sRank)}`,
-          subtitle: `需主技能${treeMeta.name}达到 Lv.${sm.slotIndex} 解锁`,
+          subtitle:
+            sRank >= 5
+              ? `隶属主技能 ${treeMeta.name} · 已达最高阶位`
+              : `下阶 Lv.${sRank + 1} 需主技能${treeMeta.name} Lv.${reqForNext}`,
           tag: locked ? '未解锁' : `Lv.${sRank}/5`,
           tagTone: locked ? 'muted' : 'default',
           accent: treeMeta.color,
@@ -251,6 +260,8 @@ export function buildHeroSkillTrees(unit: BattleUnit, includeUnlearned: boolean)
       };
     });
 
+    const primaryIncCheck = canIncrementPrimarySkill(unit.skills, subMap, primaryId);
+
     return {
       id: primaryId,
       name: treeMeta.name,
@@ -260,6 +271,8 @@ export function buildHeroSkillTrees(unit: BattleUnit, includeUnlearned: boolean)
       color: treeMeta.color,
       rank,
       total,
+      canInc: primaryIncCheck.ok,
+      incReason: primaryIncCheck.reason,
       subItems,
       tooltip: {
         title: `${treeMeta.name} · ${getSkillRankLabel(rank)}`,
@@ -268,7 +281,10 @@ export function buildHeroSkillTrees(unit: BattleUnit, includeUnlearned: boolean)
         accent: treeMeta.color,
         badges: treeBadges,
         summary: treeMeta.desc,
-        lines: [`下辖专精：${subItems.map((s) => `${s.name} Lv.${s.rank}`).join(' · ')}`],
+        lines: [
+          `下辖专精：${subItems.map((s) => `${s.name} Lv.${s.rank}`).join(' · ')}`,
+          ...(primaryIncCheck.reason ? [`前置提示：${primaryIncCheck.reason}`] : []),
+        ],
       } satisfies HudTooltipPayload,
     };
   });

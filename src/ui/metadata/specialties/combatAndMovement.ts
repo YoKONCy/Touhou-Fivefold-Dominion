@@ -343,6 +343,45 @@ export function appendTacticalRangedAndStrikeBadges(ab: UnitAbilities, list: Hud
         lines: ['主动进攻且首段交锋后双方均存活时，立即追加第二段不触发反击的连击。'],
       },
     });
+  } else {
+    if (ab.meleeDoubleStrike) {
+      list.push({
+        id: 'meleeDoubleStrike',
+        icon: 'doubleStrike',
+        polarity: 'positive',
+        shortLabel: '近双',
+        accent: '#f5d99a',
+        bg: 'rgba(54, 34, 16, 0.94)',
+        border: '#cc9745',
+        tooltip: {
+          title: '近战双重攻击',
+          tag: '近战宗师',
+          accent: '#edb968',
+          badges: [SPEC_BADGE_OFFENSE],
+          summary: '近战专精宗师习得的近身二连斩。',
+          lines: ['主动近战交锋且首击后双方均存活时，立即追加第二段近战连击，远程射击不触发。'],
+        },
+      });
+    }
+    if (ab.rangedDoubleStrike) {
+      list.push({
+        id: 'rangedDoubleStrike',
+        icon: 'ranged',
+        polarity: 'positive',
+        shortLabel: '连射',
+        accent: '#a8e8ff',
+        bg: 'rgba(18, 40, 60, 0.94)',
+        border: '#5ca9e6',
+        tooltip: {
+          title: '远程双重射击',
+          tag: '射击宗师',
+          accent: '#82ebff',
+          badges: [SPEC_BADGE_OFFENSE],
+          summary: '射击专精宗师习得的二连弹幕齐射。',
+          lines: ['主动远程射击且首击后双方均存活且弹药充足时，立即追加第二段远程射击，近战不触发。'],
+        },
+      });
+    }
   }
 
   if (ab.longWeapon) {
@@ -502,6 +541,26 @@ export function appendTacticalRangedAndStrikeBadges(ab: UnitAbilities, list: Hud
         badges: [SPEC_BADGE_DEFENSE],
         summary: '抵御幽冥与异变侵蚀的神圣护佑。',
         lines: ['面对死亡系、不死、暗系与混沌系敌军时防御 +25%，承受死亡魔法与混沌魔法伤害减半。'],
+      },
+    });
+  }
+
+  if (ab.chaosWard) {
+    list.push({
+      id: 'chaosWard',
+      icon: 'spell_ward',
+      polarity: 'positive',
+      shortLabel: '抗混',
+      accent: '#c2e2ff',
+      bg: 'rgba(20, 38, 62, 0.94)',
+      border: '#5c9be6',
+      tooltip: {
+        title: '抗混结界',
+        tag: '防御特技',
+        accent: '#94ccff',
+        badges: [SPEC_BADGE_DEFENSE],
+        summary: '隔绝混沌狂暴波纹的秩序灵盾。',
+        lines: ['面对混沌系敌军时有效防御 +50%，承受混沌系伤害法术时最终魔伤减半。'],
       },
     });
   }

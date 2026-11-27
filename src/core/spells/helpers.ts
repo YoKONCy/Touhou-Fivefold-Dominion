@@ -7,11 +7,15 @@ import type { CombatContentCatalog } from '../combatEngine';
 import {
   DARK_MAGIC_VULNERABILITY_MULT,
   isDarkMagicVulnerable,
+  isElementalUnit,
+  isIllusionUnit,
   isImmuneToLivingEffects,
   isImmuneToLivingHeal,
   isImmuneToMindSpells,
   isImmuneToMorale,
+  isMechanicalUnit,
   isMindSpellDef,
+  isSpecialNonLivingUnit,
   isUndeadUnit,
 } from '../creatureTypes';
 import {
@@ -27,7 +31,7 @@ import {
   type FootprintSize,
   type HexCoord,
 } from '../hex';
-import { computeUnitStats } from '../modifiers';
+import { computeUnitStats, getUnitEffectiveMagicResistance } from '../modifiers';
 import { nextRandom } from '../rng';
 import type {
   AdvancedClassDef,
@@ -53,6 +57,7 @@ export function isUnitOnHighlandPlatform(state: BattleState, unit: BattleUnit): 
 /**
  * 计算单位施放指定法术的实时有效施法距离（唯一事实来源）：
  * - 基础射程 <= 0（自身/全场即时术式或大地图术式）保持 0
+ * - 洞察预言贤者（Seer = 侦查+秩序）施法距离额外 +2 格
  * - 站在高地/站台（highland / tower）上的单位，所有有射程术式施法距离 +50%
  */
 export function getEffectiveSpellRange(
@@ -61,10 +66,33 @@ export function getEffectiveSpellRange(
   spell: SpellDef,
 ): number {
   if (spell.range <= 0) return spell.range;
+  const casterCls =
+    caster.kind === 'hero'
+      ? resolveActiveHeroClass(
+          caster.skills,
+          caster.subSkills,
+          H4_ADVANCED_CLASSES,
+          caster.selectedAdvancedClassId,
+        )
+      : null;
+  const baseRange = spell.range + (casterCls?.passive?.spellRangeDelta ?? 0);
   if (isUnitOnHighlandPlatform(state, caster)) {
-    return Math.round(spell.range * 1.5);
+    return Math.round(baseRange * 1.5);
   }
-  return spell.range;
+  return baseRange;
+}
+
+/**
+ * 判定目标是否凭借 100% 魔法抗性完全抵挡敌方施放的法术（区分于魔龙全魔免：仍允许友方治愈与增益！）
+ */
+export function isTargetResistingHostileSpell(
+  state: BattleState,
+  caster: BattleUnit,
+  target: BattleUnit,
+  catalog: CombatContentCatalog,
+): boolean {
+  if (target.side === caster.side) return false;
+  return getUnitEffectiveMagicResistance(target, state, catalog) >= 1;
 }
 
 /**
@@ -89,15 +117,58 @@ export function allocateHpPoolToStack(
 }
 
 /**
+ * 校验目标生物类型是否允许作为死亡招魂系残骸：
+ * - 招魂唤起新亡灵（招魂·尸壳/怨灵/血族，及反魂起尸/黄泉呼唤转化敌骸）：严禁机械、亡灵、元素、幻象（仅限活体尸体）
+ * - 反魂起尸/黄泉呼唤原地复生友军（allowUndeadAllyRevive = true）：仍严禁机械、元素、幻象，但允许复生己方不死/亡灵与活体
+ */
+export function getNecromancyCorpseRejection(
+  target: Pick<BattleUnit, 'name' | 'abilities' | 'isIllusion'>,
+  allowUndeadAllyRevive = false,
+): { reason: string; shortLabel: string } | null {
+  if (isIllusionUnit(target)) {
+    return {
+      reason: `【${target.name}】为幻象分身，消散无骸，无法从中招魂`,
+      shortLabel: '幻象不可招魂',
+    };
+  }
+  if (isMechanicalUnit(target)) {
+    return {
+      reason: `【${target.name}】为机械构造体，无血肉残骸，无法从中招魂`,
+      shortLabel: '机械不可招魂',
+    };
+  }
+  if (isElementalUnit(target)) {
+    return {
+      reason: `【${target.name}】为元素纯灵，消散归元，无法从中招魂`,
+      shortLabel: '元素不可招魂',
+    };
+  }
+  if (!allowUndeadAllyRevive && isUndeadUnit(target)) {
+    return {
+      reason: `【${target.name}】为亡灵单位，无法从其残骸中再次招魂`,
+      shortLabel: '亡灵不可招魂',
+    };
+  }
+  return null;
+}
+
+/**
  * 计算目标单位当前可供招魂/死灵转化提取的剩余残骸生命池：
+ * - 默认严格屏蔽机械、亡灵、元素、幻象四类非活体（仅当 allowUndead=true 用于己方亡灵原地复生时放行亡灵）
  * - 仅统计已阵亡兵力的生命总和，并扣减已被历次招魂消耗的 consumedCorpseHp
  */
 export function getAvailableCorpseHp(
   state: BattleState,
   target: BattleUnit,
   catalog: CombatContentCatalog,
+  opts?: { allowUndead?: boolean },
 ): number {
   if (target.kind !== 'creature' || target.statusEffects?.disintegrated) return 0;
+  if (opts?.allowUndead) {
+    if (isMechanicalUnit(target) || isElementalUnit(target) || isIllusionUnit(target)) return 0;
+  } else if (isSpecialNonLivingUnit(target)) {
+    return 0;
+  }
   const lostModels =
     target.status === 'dead' ? target.maxCount : Math.max(0, target.maxCount - target.count);
   if (lostModels <= 0) return 0;
@@ -105,6 +176,79 @@ export function getAvailableCorpseHp(
   const totalDeadHp = lostModels * unitMaxHp;
   const consumed = target.statusEffects?.consumedCorpseHp ?? 0;
   return Math.max(0, totalDeadHp - consumed);
+}
+
+/**
+ * 统一校验死亡招魂系法术（corpse_unit）对目标残骸的合法性（引擎结算、UI 高亮、悬停诊断共用唯一真相源）
+ */
+export function validateCorpseSpellTarget(
+  spell: SpellDef,
+  caster: BattleUnit,
+  target: BattleUnit,
+  state: BattleState,
+  catalog: CombatContentCatalog,
+): SpellTargetValidationResult {
+  if (state.battleSpellFlags?.necromancyWardActive) {
+    return {
+      ok: false,
+      reason: '战场受「净土封冥」封印，无法施放招魂术式！',
+      shortLabel: '净土封冥封印',
+    };
+  }
+  if (target.kind !== 'creature') {
+    return {
+      ok: false,
+      reason: '请选择一支已阵亡或有兵力折损的兵种残骸（不可指定英雄）',
+      shortLabel: '不可指定英雄',
+    };
+  }
+  if (target.statusEffects?.disintegrated) {
+    return {
+      ok: false,
+      reason: '该目标已被「星穹湮灭」化为虚无，无法招魂复活！',
+      shortLabel: '已湮灭无骸',
+    };
+  }
+
+  const eff = spell.specialEffect ?? 'standard';
+  const isAllyInPlaceRevive =
+    (eff === 'animate_dead' || eff === 'death_call') && target.side === caster.side;
+
+  if (isAllyInPlaceRevive && target.abilities.magicImmune) {
+    return {
+      ok: false,
+      reason: `【${target.name}】全魔法免疫，无法接受反魂复生`,
+      shortLabel: '魔法免疫',
+    };
+  }
+
+  const typeRejection = getNecromancyCorpseRejection(target, isAllyInPlaceRevive);
+  if (typeRejection) {
+    return { ok: false, ...typeRejection };
+  }
+
+  const lostModels =
+    target.status === 'dead' ? target.maxCount : Math.max(0, target.maxCount - target.count);
+  if (lostModels <= 0) {
+    return {
+      ok: false,
+      reason: '目标尚未出现阵亡兵力，无法唤起亡骸',
+      shortLabel: '尚无阵亡残骸',
+    };
+  }
+
+  const availableCorpseHp = getAvailableCorpseHp(state, target, catalog, {
+    allowUndead: isAllyInPlaceRevive,
+  });
+  if (availableCorpseHp <= 0) {
+    return {
+      ok: false,
+      reason: '该残骸的可用生命池已被耗尽，无法再次招魂',
+      shortLabel: '残骸生机耗尽',
+    };
+  }
+
+  return { ok: true };
 }
 
 export type IllusionCastEvaluation =
@@ -206,6 +350,11 @@ export function evaluateIllusionSpell(
           activeHeroClass,
           spell.alignment,
           'buff_debuff',
+          {
+            spellId: spell.id,
+            isFireSpell: Boolean(spell.isFireSpell),
+            isIllusion: true,
+          },
         )
       : 1;
   const budgetHp = computeDualTrackSpellPower({
@@ -349,6 +498,9 @@ export function validateSpellUnitTarget(
   }
   if (target.abilities.magicImmune && !(eff === 'dispel' && target.statusEffects?.antiMagic)) {
     return { ok: false, reason: '全魔法免疫目标无法被任何正面或负面法术指定', shortLabel: '全魔免免疫' };
+  }
+  if (isTargetResistingHostileSpell(state, caster, target, catalog)) {
+    return { ok: false, reason: '目标具备 100% 魔法抗性，完全抵御敌方一切法术', shortLabel: '100%魔抗免疫' };
   }
   if (target.statusEffects?.sanctuary && target.id !== caster.id && eff !== 'dispel') {
     return { ok: false, reason: '目标隐于「常世净域」，免疫一切法术', shortLabel: '常世净域中' };
@@ -632,7 +784,7 @@ export function spawnSummonedStack(
   return unit;
 }
 
-/** 计算并结算单次法术伤害（完整包含派系守护、魔抗、火抗、擦弹、破邪与全魔免拦截） */
+/** 计算并结算单次法术伤害（完整包含派系守护、破界穿盾、100%魔抗、炽焰免疫、火抗、擦弹、破邪与全魔免拦截） */
 export function computeAndApplySpellDamage(
   state: BattleState,
   caster: BattleUnit,
@@ -651,7 +803,35 @@ export function computeAndApplySpellDamage(
     state.actionLog.push(`❄ ${target.name} 具备「寒冰抗性」，完全免疫了寒冰法术「${spell.name}」！`);
     return { damage: 0, kills: 0, grazed: false };
   }
+  const targetCls =
+    target.kind === 'hero'
+      ? resolveActiveHeroClass(
+          target.skills,
+          target.subSkills,
+          catalog.advancedClasses,
+          target.selectedAdvancedClassId,
+        )
+      : null;
+  if (spell.isFireSpell && targetCls?.passive?.grantFireSpellImmune) {
+    state.actionLog.push(`🔥 ${target.name} 具备「炽焰免疫」，完全无视火焰法术「${spell.name}」！`);
+    return { damage: 0, kills: 0, grazed: false };
+  }
   const tStats = computeUnitStats(target, state, catalog);
+  if (tStats.magicResistance >= 1) {
+    state.actionLog.push(`🛡 ${target.name} 凭 100% 魔法抗性，完全抵消了「${spell.name}」的伤害！`);
+    return { damage: 0, kills: 0, grazed: false };
+  }
+
+  const casterCls =
+    caster.kind === 'hero'
+      ? resolveActiveHeroClass(
+          caster.skills,
+          caster.subSkills,
+          catalog.advancedClasses,
+          caster.selectedAdvancedClassId,
+        )
+      : null;
+  const ignoresWards = Boolean(casterCls?.passive?.ignoreEnemyWards);
   let dmg = rawDamage;
 
   if (
@@ -663,13 +843,16 @@ export function computeAndApplySpellDamage(
   if (isDarkMagicVulnerable(target)) {
     dmg *= DARK_MAGIC_VULNERABILITY_MULT;
   }
-  if (target.abilities.deathWard && (spell.alignment === 'death' || spell.alignment === 'chaos')) {
+  if (!ignoresWards && target.abilities.deathWard && (spell.alignment === 'death' || spell.alignment === 'chaos')) {
     dmg *= 0.5;
   }
-  if (target.abilities.lifeWard && spell.alignment === 'life') {
+  if (!ignoresWards && target.abilities.lifeWard && spell.alignment === 'life') {
     dmg *= 0.5;
   }
-  if (target.statusEffects?.schoolWards?.[spell.alignment]) {
+  if (!ignoresWards && target.abilities.chaosWard && spell.alignment === 'chaos') {
+    dmg *= 0.5;
+  }
+  if (!ignoresWards && target.statusEffects?.schoolWards?.[spell.alignment]) {
     dmg *= 0.5;
   }
   if (target.abilities.fireResistant && spell.isFireSpell) {

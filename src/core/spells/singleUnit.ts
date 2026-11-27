@@ -9,6 +9,7 @@ import {
   isImmuneToLivingEffects,
   isUndeadUnit,
 } from '../creatureTypes';
+import { resolveActiveHeroClass } from '../h4Skills';
 import { hexEquals, hexKey, hexRay } from '../hex';
 import { computeUnitStats } from '../modifiers';
 import { nextRandom } from '../rng';
@@ -20,6 +21,7 @@ import {
   computeAndApplySpellDamage,
   getCasterSchoolRank,
   grantTempAbility,
+  isTargetResistingHostileSpell,
   reviveAndHealUnit,
 } from './helpers';
 
@@ -53,7 +55,13 @@ export function executeSingleUnitSpell(ctx: SpellCastContext): SpellBranchOutcom
 
   // 混沌系「贤者折光 Magic Mirror」：敌方单体伤害法术以 50% 威力反弹给施法者
   const triggerMagicMirror = (rawDmg: number) => {
-    if (tUnit.side !== unit.side && tUnit.statusEffects?.magicMirror && !unit.abilities.magicImmune && rawDmg > 0) {
+    if (
+      tUnit.side !== unit.side &&
+      tUnit.statusEffects?.magicMirror &&
+      !unit.abilities.magicImmune &&
+      computeUnitStats(unit, state, catalog).magicResistance < 1 &&
+      rawDmg > 0
+    ) {
       const refl = computeAndApplySpellDamage(state, tUnit, unit, spell, rawDmg * 0.5, catalog, events, deps, 0);
       ctx.damageMap[unit.id] = refl;
       ctx.affectedUnitIds.push(unit.id);
@@ -316,12 +324,20 @@ export function executeSingleUnitSpell(ctx: SpellCastContext): SpellBranchOutcom
     }
     const raw = calcPower(spell.damageBase ?? 76, 1.0);
     if (tUnit.kind === 'creature' && !tUnit.abilities.magicImmune) {
+      const casterHeroCls =
+        unit.kind === 'hero'
+          ? resolveActiveHeroClass(unit.skills, unit.subSkills, catalog.advancedClasses, unit.selectedAdvancedClassId)
+          : null;
+      const ignoresWards = Boolean(casterHeroCls?.passive?.ignoreEnemyWards);
       let effectivePower = raw;
       if (isDarkMagicVulnerable(tUnit)) effectivePower *= DARK_MAGIC_VULNERABILITY_MULT;
-      if (tUnit.abilities.deathWard) effectivePower *= 0.5;
-      if (tUnit.statusEffects?.schoolWards?.death) effectivePower *= 0.5;
+      if (!ignoresWards && tUnit.abilities.deathWard) effectivePower *= 0.5;
+      if (!ignoresWards && tUnit.statusEffects?.schoolWards?.death) effectivePower *= 0.5;
       effectivePower *= Math.max(0, 1 - tStats.magicResistance);
-      const directKills = Math.max(1, Math.min(tUnit.count, Math.floor(effectivePower / Math.max(12, tStats.maxHp))));
+      const directKills =
+        effectivePower <= 0
+          ? 0
+          : Math.max(1, Math.min(tUnit.count, Math.floor(effectivePower / Math.max(12, tStats.maxHp))));
       const actual = deps.applyBonusKills(state, tUnit, directKills, events);
       ctx.damageMap[tUnit.id] = { damage: actual * tStats.maxHp, kills: actual, grazed: false };
       deps.handlePostKillRewards(state, unit, tUnit, actual);
@@ -349,7 +365,14 @@ export function executeSingleUnitSpell(ctx: SpellCastContext): SpellBranchOutcom
     let currRaw = baseRaw * 0.5;
     for (let bounce = 0; bounce < 4; bounce++) {
       const nextCand = Object.values(state.units)
-        .filter((u) => u.status === 'alive' && !hitSet.has(u.id) && !u.abilities.magicImmune && !u.statusEffects?.sanctuary)
+        .filter(
+          (u) =>
+            u.status === 'alive' &&
+            !hitSet.has(u.id) &&
+            !u.abilities.magicImmune &&
+            !u.statusEffects?.sanctuary &&
+            !isTargetResistingHostileSpell(state, unit, u, catalog),
+        )
         .sort((a, b) => {
           const da = deps.getUnitMinDistance(curr, a);
           const db = deps.getUnitMinDistance(curr, b);

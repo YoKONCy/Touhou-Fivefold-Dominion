@@ -21,7 +21,10 @@ export {
   getCasterSchoolRank,
   getEffectiveSpellManaCost,
   getEffectiveSpellRange,
+  getNecromancyCorpseRejection,
+  isTargetResistingHostileSpell,
   isUnitOnHighlandPlatform,
+  validateCorpseSpellTarget,
 } from './h4SpellExecutor';
 
 export { createBattleState } from './combat/battleSetup';
@@ -29,10 +32,12 @@ export { dispatchCombatCommand } from './combat/commands';
 export {
   canUnitRetaliateThisRound,
   computePoisonAttackDamage,
+  hasDoubleStrikeForMode,
   POISON_ATTACK_DAMAGE_PER_UNIT,
   previewAttack,
 } from './combat/damage';
 export {
+  applyHeroBaseClassTemplate,
   canModifyHeroClassOrBuild,
   selectHeroAdvancedClass,
   setHeroPrimarySkillRank,

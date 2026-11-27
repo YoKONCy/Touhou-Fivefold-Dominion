@@ -6,7 +6,12 @@ import { isImmuneToLivingHeal, isUndeadUnit } from '../creatureTypes';
 import { getHexRange, hexDistance, hexKey } from '../hex';
 import { computeUnitStats } from '../modifiers';
 import type { SpellBranchOutcome, SpellCastContext } from './context';
-import { canPlaceFootprintAt, computeAndApplySpellDamage, reviveAndHealUnit } from './helpers';
+import {
+  canPlaceFootprintAt,
+  computeAndApplySpellDamage,
+  isTargetResistingHostileSpell,
+  reviveAndHealUnit,
+} from './helpers';
 
 /** 两步点选：隙间瞬移（unit_to_hex） */
 export function executeTeleportSpell(ctx: SpellCastContext): SpellBranchOutcome {
@@ -143,9 +148,13 @@ export function executeHexAoeSpell(ctx: SpellCastContext): SpellBranchOutcome {
     const hitAny = deps.getUnitOccupiedHexes(candidate).some((h) => areaKeys.has(hexKey(h)));
     if (!hitAny) continue;
     ctx.affectedUnitIds.push(candidate.id);
-    if (candidate.abilities.magicImmune || candidate.statusEffects?.sanctuary) {
+    if (
+      candidate.abilities.magicImmune ||
+      candidate.statusEffects?.sanctuary ||
+      isTargetResistingHostileSpell(state, unit, candidate, catalog)
+    ) {
       ctx.damageMap[candidate.id] = { damage: 0, kills: 0, grazed: false };
-      state.actionLog.push(`${candidate.name} 无视了「${spell.name}」！`);
+      state.actionLog.push(`${candidate.name} 免疫并抵挡了「${spell.name}」！`);
       continue;
     }
     if (eff === 'cloud_of_confusion') {

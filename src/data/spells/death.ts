@@ -36,13 +36,13 @@ export const DEATH_H4_SPELLS: Record<string, SpellDef> = {
     id: 'death_raise_skeletons', name: '招魂·尸壳', spellCardPrefix: '骨符', enName: 'Raise Skeletons',
     alignment: 'death', level: 1, manaCost: 2, targetType: 'corpse_unit', range: 18, ignoreLos: true,
     summonTemplateId: 'corpse_husk', vfxKey: 'soul_rise', specialEffect: 'raise_undead',
-    description: '死亡 1 级招魂术：消耗战场残骸的剩余生命池，按法强预算唤起幽冥公馆正式兵种「尸壳」（预算不足整兵时生成残血单位）！',
+    description: '死亡 1 级招魂术：消耗活体战场残骸的剩余生命池（机械、亡灵、元素与幻象尸体不可招魂），按法强预算唤起幽冥公馆正式兵种「尸壳」（预算不足整兵时生成残血单位）！',
   },
   death_animate_dead: {
     id: 'death_animate_dead', name: '反魂起尸', spellCardPrefix: '返魂', enName: 'Animate Dead',
     alignment: 'death', level: 2, manaCost: 3, targetType: 'corpse_unit', range: 18, ignoreLos: true,
     reviveBase: 55, vfxKey: 'soul_rise', specialEffect: 'animate_dead',
-    description: '死亡 2 级：按法强预算复生战损或阵亡的友军（不足整兵时复生残血单位）；作用于敌军残骸时则按剩余残骸生命转化为己方「尸壳」。',
+    description: '死亡 2 级：按法强预算复生战损或阵亡友军（对机械、元素、幻象无效）；作用于敌方活体残骸时按剩余生命转化为己方「尸壳」（不可从机械、亡灵、元素、幻象尸体中招魂）。',
   },
   death_fatigue: {
     id: 'death_fatigue', name: '冥雾倦怠', spellCardPrefix: '倦符', enName: 'Fatigue',
@@ -126,13 +126,13 @@ export const DEATH_H4_SPELLS: Record<string, SpellDef> = {
     id: 'death_raise_ghost', name: '招魂·怨灵', spellCardPrefix: '亡灵', enName: 'Raise Ghost',
     alignment: 'death', level: 3, manaCost: 5, targetType: 'corpse_unit', range: 18, ignoreLos: true,
     summonTemplateId: 'wraith_spirit', vfxKey: 'soul_rise', specialEffect: 'raise_undead',
-    description: '死亡 3 级招魂术：消耗战场残骸的剩余生命池，按法强预算唤起幽冥公馆正式兵种「怨灵」（飞行、虚无体质、衰老触碰，允许残兵）！',
+    description: '死亡 3 级招魂术：消耗活体战场残骸的剩余生命池（机械、亡灵、元素与幻象尸体不可招魂），按法强预算唤起幽冥公馆正式兵种「怨灵」（飞行、虚无体质、衰老触碰，允许残兵）！',
   },
   death_death_call: {
     id: 'death_death_call', name: '黄泉呼唤', spellCardPrefix: '冥唤', enName: 'Death Call',
     alignment: 'death', level: 4, manaCost: 8, targetType: 'corpse_unit', range: 21, ignoreLos: true,
     reviveBase: 95, vfxKey: 'soul_rise', specialEffect: 'death_call',
-    description: '死亡 4 级：倾听黄泉深处召唤，按高额法强预算强力复生战损/阵亡友军（支持残兵），作用于敌军残骸则转化为「怨灵」！',
+    description: '死亡 4 级：倾听黄泉深处召唤，按高额法强预算强力复生战损/阵亡友军（对机械、元素、幻象无效），作用于敌方活体残骸则转化为「怨灵」（不可从机械、亡灵、元素、幻象尸体中招魂）！',
   },
   death_mass_sorrow: {
     id: 'death_mass_sorrow', name: '万灵悲恸', spellCardPrefix: '冥哀', enName: 'Mass Sorrow',
@@ -169,7 +169,7 @@ export const DEATH_H4_SPELLS: Record<string, SpellDef> = {
     id: 'death_raise_vampires', name: '招魂·血族', spellCardPrefix: '红夜', enName: 'Raise Vampires',
     alignment: 'death', level: 5, manaCost: 12, targetType: 'corpse_unit', range: 21, ignoreLos: true,
     summonTemplateId: 'crimson_vampire', vfxKey: 'soul_rise', specialEffect: 'raise_undead',
-    description: '死亡 5 级招魂神术：消耗战场残骸的剩余生命池，按法强预算唤醒幽冥公馆正式兵种「血族眷属」（飞行、不受反击、吸血复苏，允许残兵）！',
+    description: '死亡 5 级招魂神术：消耗活体战场残骸的剩余生命池（机械、亡灵、元素与幻象尸体不可招魂），按法强预算唤醒幽冥公馆正式兵种「血族眷属」（飞行、不受反击、吸血复苏，允许残兵）！',
   },
   death_sacrifice: {
     id: 'death_sacrifice', name: '彼岸献祭', spellCardPrefix: '祭符', enName: 'Sacrifice',
