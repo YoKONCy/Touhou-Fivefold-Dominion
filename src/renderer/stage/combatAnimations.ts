@@ -3,10 +3,11 @@
  */
 
 import { soundEngine } from '@audio/index';
+import { hexKey, hexToPixel } from '@core/hex';
 import type { CombatEvent } from '@core/types';
 import { resolveUnitRangedProjectile } from '../rangedProjectileFx';
 import { sleep } from './geometry';
-import { VIRTUAL_WIDTH, type StageAnimationContext, type UnitVisualNode } from './types';
+import { STAGE_PROJECTION, VIRTUAL_WIDTH, type StageAnimationContext, type UnitVisualNode } from './types';
 import { setNodeAnim } from './unitNodeRenderer';
 
 /** 播放 COMBAT_EXCHANGE 战斗交锋演出（支持 H4 同时反击、先攻顺序结算、双重追击与全兵种专属打击特效） */
@@ -198,6 +199,45 @@ export async function animateCombatExchange(
       });
     } else if (fromNode.blueprintId === 'creature_corpse_husk') {
       // 尸壳专属幽青冥铁骨刃斩击
+    } else if (fromNode.blueprintId === 'hero_yuugi' || fromNode.blueprintId === 'creature_might_lava_behemoth') {
+      // 星熊勇仪 & 熔岩巨兽专属地底震裂碎甲爆击！
+      soundEngine.playAtStageX('attack_melee_heavy', targetNode.baseX, VIRTUAL_WIDTH, { volume: 1.12 });
+      ctx.fxBridge.spawnEffect('big_explosion', targetNode.baseX, targetNode.baseY - 12, {
+        paletteKey: 'hell_inferno',
+        light: 1.62,
+        speedScale: 1.4,
+        maxDuration: 0.9,
+      });
+      ctx.triggerImpactJuice(4.2, 0.05);
+    } else if (fromNode.blueprintId === 'creature_might_crimson_thunderbird') {
+      // 赤雷巨鹏专属赤电翼爪俯冲
+      soundEngine.playAtStageX('attack_melee_heavy', targetNode.baseX, VIRTUAL_WIDTH, { volume: 1.04 });
+      ctx.fxBridge.spawnEffect('claw_swipe', targetNode.baseX, targetNode.baseY - 12, {
+        paletteKey: 'phoenix_flame',
+        flip: fromNode.baseX > targetNode.baseX,
+        light: 1.55,
+        speedScale: 1.45,
+        maxDuration: 0.85,
+      });
+    } else if (
+      fromNode.blueprintId === 'creature_might_berserker' ||
+      fromNode.blueprintId === 'creature_might_oni_vanguard' ||
+      fromNode.blueprintId === 'creature_might_roaming_hound'
+    ) {
+      // 狂战士 / 鬼族先锋 / 巡回猎犬专属赤焰重斩/利爪撕裂
+      soundEngine.playAtStageX('hit_impact', targetNode.baseX, VIRTUAL_WIDTH, { volume: 1.0 });
+      ctx.fxBridge.spawnEffect(
+        fromNode.blueprintId === 'creature_might_roaming_hound' ? 'claw_swipe' : 'double_slash',
+        targetNode.baseX,
+        targetNode.baseY - 12,
+        {
+          paletteKey: 'hell_inferno',
+          flip: fromNode.baseX > targetNode.baseX,
+          light: 1.48,
+          speedScale: 1.45,
+          maxDuration: 0.82,
+        },
+      );
       soundEngine.playAtStageX('hit_impact', targetNode.baseX, VIRTUAL_WIDTH, { volume: 0.95 });
       ctx.fxBridge.spawnEffect('sword_slash', targetNode.baseX, targetNode.baseY - 12, {
         paletteKey: 'death_nether',
@@ -280,11 +320,31 @@ export async function animateCombatExchange(
 
     // 魔眼石化 / 定身 / 震慑附加特效反馈
     if (strike.petrifyKills && strike.petrifyKills > 0) {
-      soundEngine.playAtStageX('spell_debuff', targetNode.baseX, VIRTUAL_WIDTH, { volume: 0.8 });
+      soundEngine.playAtStageX('spell_debuff', targetNode.baseX, VIRTUAL_WIDTH, { volume: 0.85 });
+      ctx.fxBridge.spawnEffect('eyeball', targetNode.baseX, targetNode.baseY - 16, {
+        paletteKey: 'madness_eye',
+        light: 1.5,
+        speedScale: 1.4,
+        maxDuration: 0.95,
+      });
       ctx.spawnFloatingText(
         targetNode.baseX,
         targetNode.baseY - 42 * targetNode.spriteScale,
-        `魔眼石化 -${strike.petrifyKills}!`,
+        `魔眼石化 -${strike.petrifyKills}☠!`,
+        '#d999ff',
+      );
+    } else if (strike.petrifyDamage && strike.petrifyDamage > 0) {
+      soundEngine.playAtStageX('spell_debuff', targetNode.baseX, VIRTUAL_WIDTH, { volume: 0.85 });
+      ctx.fxBridge.spawnEffect('eyeball', targetNode.baseX, targetNode.baseY - 16, {
+        paletteKey: 'madness_eye',
+        light: 1.5,
+        speedScale: 1.4,
+        maxDuration: 0.95,
+      });
+      ctx.spawnFloatingText(
+        targetNode.baseX,
+        targetNode.baseY - 42 * targetNode.spriteScale,
+        `魔眼石化 -${strike.petrifyDamage}♥!`,
         '#d999ff',
       );
     }
@@ -376,7 +436,21 @@ export async function animateCombatExchange(
         }
         subNode.flashTimer = 0.2;
         setNodeAnim(subNode, 'hit', 9, false);
-        if (sub.kind === 'fire_shield') {
+        if (sub.kind === 'lightning') {
+          soundEngine.playAtStageX('spell_lightning', subNode.baseX, VIRTUAL_WIDTH, { volume: 0.95 });
+          ctx.fxBridge.spawnEffect('lightning_strike', subNode.baseX, subNode.baseY - 16, {
+            paletteKey: 'thunder_violet',
+            light: 1.65,
+            speedScale: 1.5,
+            maxDuration: 0.9,
+          });
+          ctx.spawnFloatingText(
+            subNode.baseX,
+            subNode.baseY - 40 * subNode.spriteScale,
+            `⚡ 赤雷 -${sub.damage}${!subNode.isHero && sub.kills > 0 ? ` (-${sub.kills}☠)` : ''}`,
+            '#7be8ff',
+          );
+        } else if (sub.kind === 'fire_shield') {
           soundEngine.playAtStageX('spell_aoe', subNode.baseX, VIRTUAL_WIDTH, { volume: 0.65 });
           ctx.fxBridge.spawnEffect('fire_ring', subNode.baseX, subNode.baseY - 10, {
             paletteKey: 'hell_inferno',
@@ -654,4 +728,76 @@ export async function animateCombatExchange(
     await sleep(130);
   }
   await playDoubleStrikeFollowUp();
+}
+
+/** 播放 AREA_RANGED_ATTACK 掷山大力鬼飞石轰击演出（支持瞄准空地，2 环全员敌我不分巨岩震爆！） */
+export async function animateAreaRangedAttack(
+  ctx: StageAnimationContext,
+  ev: Extract<CombatEvent, { type: 'AREA_RANGED_ATTACK' }>,
+): Promise<void> {
+  const atkNode = ctx.unitNodes.get(ev.attackerId);
+  if (!atkNode) return;
+
+  const state = ctx.getCurrentState();
+  const elev = state?.tiles[hexKey(ev.targetHex)]?.elevation ?? 1;
+  const targetPt = hexToPixel(ev.targetHex, STAGE_PROJECTION, elev);
+  atkNode.facing = targetPt.x >= atkNode.baseX ? 'right' : 'left';
+
+  setNodeAnim(atkNode, 'attack', 9.5, false);
+  await sleep(130);
+
+  soundEngine.playAtStageX('attack_melee_heavy', atkNode.baseX, VIRTUAL_WIDTH, { volume: 1.05 });
+  ctx.spawnProjectile(atkNode.baseX, atkNode.baseY - 22, targetPt.x, targetPt.y - 8, 0xd96b2b, {
+    kind: 'explosive_shell',
+    accentColor: 0xffe082,
+    arcHeight: 34,
+    duration: 0.3,
+  });
+  await sleep(290);
+
+  // 巨岩落地：强力震屏 + 2 环震爆烟尘特效
+  ctx.triggerImpactJuice(6.8, 0.08);
+  soundEngine.playAtStageX('spell_aoe', targetPt.x, VIRTUAL_WIDTH, { volume: 1.12 });
+  ctx.fxBridge.spawnEffect('big_explosion', targetPt.x, targetPt.y - 8, {
+    paletteKey: 'hell_inferno',
+    light: 1.84,
+    speedScale: 1.2,
+    maxDuration: 1.1,
+  });
+
+  if (ev.hits.length === 0) {
+    ctx.spawnFloatingText(targetPt.x, targetPt.y - 26, '巨岩砸地!', '#f2b866');
+  } else {
+    for (const h of ev.hits) {
+      const victimNode = ctx.unitNodes.get(h.targetId);
+      if (!victimNode) continue;
+      if (h.strike.blocked) {
+        ctx.spawnFloatingText(victimNode.baseX, victimNode.baseY - 30, '格挡!', '#ffe680');
+        continue;
+      }
+      victimNode.flashTimer = 0.22;
+      setNodeAnim(victimNode, 'hit', 9, false);
+      ctx.fxBridge.spawnEffect('hit_spark', victimNode.baseX, victimNode.baseY - 12, {
+        paletteKey: h.isFriendly ? 'calamity_rose' : 'phoenix_flame',
+        light: 1.45,
+        speedScale: 1.4,
+        maxDuration: 0.75,
+      });
+      const killTxt = !victimNode.isHero && h.strike.kills > 0 ? ` (-${h.strike.kills}☠)` : '';
+      const prefix = h.isFriendly ? '误伤 ' : '';
+      ctx.spawnFloatingText(
+        victimNode.baseX,
+        victimNode.baseY - 34 * victimNode.spriteScale,
+        `${prefix}-${h.strike.damage}${killTxt}`,
+        h.isFriendly ? '#ff7096' : '#ffcf70',
+      );
+    }
+  }
+
+  await sleep(260);
+  setNodeAnim(atkNode, 'idle', 6.5, true);
+  for (const h of ev.hits) {
+    const victimNode = ctx.unitNodes.get(h.targetId);
+    if (victimNode) setNodeAnim(victimNode, 'idle', 6.5, true);
+  }
 }

@@ -3,8 +3,10 @@
  */
 
 import {
+  AREA_RANGED_RADIUS,
   canPlaceFootprintAt,
   checkSpellLineOfSight,
+  findStackableSummonUnit,
   getEffectiveSpellRange,
   getUnitMinDistance,
   getUnitOccupiedHexes,
@@ -13,7 +15,7 @@ import {
 } from '@core/combatEngine';
 import { validateSpellUnitTarget } from '@core/h4SpellExecutor';
 import { hexKey, minHexSetDistance, reconstructHexPath, type HexCoord } from '@core/hex';
-import type { BattleState, BattleUnit, ProjectileTrajectoryPreview } from '@core/types';
+import type { AreaRangedPreview, BattleState, BattleUnit, ProjectileTrajectoryPreview } from '@core/types';
 import { TOUHOU_CATALOG } from '@data/battlePresets';
 import type { StageOverlayHints } from '@renderer/battleStage';
 import type { HoverAttackContext, HoverSpellContext } from './types';
@@ -28,6 +30,8 @@ export function buildBattleOverlayHints(params: {
   isHumanTurn: boolean;
   isAnimating: boolean;
   declaringSpellCard: boolean;
+  areaRangedAimMode?: boolean;
+  hoverAreaRangedPreview?: AreaRangedPreview | null;
   selectedSpellId: string | null;
   pendingSpellFirstUnitId: string | null;
   hoverSpellContext: HoverSpellContext | null;
@@ -45,6 +49,8 @@ export function buildBattleOverlayHints(params: {
     isHumanTurn,
     isAnimating,
     declaringSpellCard,
+    areaRangedAimMode,
+    hoverAreaRangedPreview,
     selectedSpellId,
     pendingSpellFirstUnitId,
     hoverSpellContext,
@@ -91,6 +97,25 @@ export function buildBattleOverlayHints(params: {
     }
   }
 
+  // 掷山大力鬼「飞石轰击」瞄空投岩模式：复用 2 环 AOE 落点高亮与精准弹道诊断（支持超射程任意空地）
+  if (areaRangedAimMode && act.abilities.areaRanged) {
+    return {
+      ...baseEmpty,
+      targetingMode: 'spell_aoe',
+      spellRange: 99,
+      spellIgnoreLos: false,
+      aoeRadius: AREA_RANGED_RADIUS,
+      trajectoryPreview: hoverAreaRangedPreview?.trajectory ?? null,
+      areaRangedPreview: hoverAreaRangedPreview
+        ? {
+            centerHex: hoverAreaRangedPreview.targetHex,
+            radius: AREA_RANGED_RADIUS,
+            valid: hoverAreaRangedPreview.valid,
+          }
+        : null,
+    };
+  }
+
   if (selectedSpellId) {
     const spell = TOUHOU_CATALOG.spells[selectedSpellId];
     if (spell) {
@@ -110,10 +135,19 @@ export function buildBattleOverlayHints(params: {
         const tmpl = spell.summonTemplateId ? TOUHOU_CATALOG.creatures[spell.summonTemplateId] : undefined;
         const casterHexes = getUnitOccupiedHexes(act);
         const emptyKeys = new Set<string>();
+        const validIds = new Set<string>();
+        const existingSummon = tmpl ? findStackableSummonUnit(st, act.side, tmpl.id, 'summoned') : null;
+        if (existingSummon && (effRange <= 0 || getUnitMinDistance(act, existingSummon) <= effRange)) {
+          validIds.add(existingSummon.id);
+          for (const h of getUnitOccupiedHexes(existingSummon)) {
+            emptyKeys.add(hexKey(h));
+          }
+        }
         for (const tile of Object.values(st.tiles)) {
           if (
             (effRange <= 0 || minHexSetDistance(casterHexes, [tile]) <= effRange) &&
-            canPlaceFootprintAt(st, tile, tmpl?.footprint ?? '1x1', undefined, Boolean(tmpl?.abilities.flying))
+            (existingSummon ||
+              canPlaceFootprintAt(st, tile, tmpl?.footprint ?? '1x1', undefined, Boolean(tmpl?.abilities.flying)))
           ) {
             emptyKeys.add(hexKey(tile));
           }
@@ -124,6 +158,7 @@ export function buildBattleOverlayHints(params: {
           spellRange: effRange,
           spellIgnoreLos: true,
           validEmptyHexKeys: emptyKeys,
+          validSpellUnitIds: validIds,
           trajectoryPreview: spellTraj,
         };
       }
@@ -205,6 +240,22 @@ export function buildBattleOverlayHints(params: {
         trajectoryPreview: spellTraj,
       };
     }
+  }
+
+  // 常规模式下掷山大力鬼自动悬停敌军或敌人附近空地（含超射程）时，同步绘制 2 环轰击范围与飞行弹道
+  if (hoverAreaRangedPreview && act.abilities.areaRanged) {
+    return {
+      ...baseEmpty,
+      reachableHexKeys: activeReachableHexKeys,
+      attackableUnitIds: activeAttackableUnitIds,
+      aoeRadius: AREA_RANGED_RADIUS,
+      trajectoryPreview: hoverAreaRangedPreview.trajectory ?? null,
+      areaRangedPreview: {
+        centerHex: hoverAreaRangedPreview.targetHex,
+        radius: AREA_RANGED_RADIUS,
+        valid: hoverAreaRangedPreview.valid,
+      },
+    };
   }
 
   const hoverCtx = hoverAttackContext;

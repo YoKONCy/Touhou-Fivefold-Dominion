@@ -51,10 +51,10 @@ import {
 } from '@ui/semanticFormat';
 
 describe('PixelFX 视觉特效、手绘法术图标、远程弹道与安全守卫', () => {
-  it('全部 150 个法术应具备一对一专属 24×24 手绘像素图标且像素哈希 100% 零重复撞脸', () => {
+  it('全部 151 个法术应具备一对一专属 24×24 手绘像素图标且像素哈希 100% 零重复撞脸', () => {
     const allRegisteredIds = Object.keys(TOUHOU_CATALOG.spells);
-    expect(allRegisteredIds).toHaveLength(150);
-    expect(ALL_SPELL_ICON_IDS).toHaveLength(150);
+    expect(allRegisteredIds).toHaveLength(151);
+    expect(ALL_SPELL_ICON_IDS).toHaveLength(151);
 
     const hashToSpellId = new Map<string, string>();
     const collisions: Array<[string, string]> = [];
@@ -75,13 +75,13 @@ describe('PixelFX 视觉特效、手绘法术图标、远程弹道与安全守�
     }
 
     expect(collisions, `检测到重复撞脸法术图标: ${JSON.stringify(collisions)}`).toEqual([]);
-    expect(hashToSpellId.size).toBe(150);
+    expect(hashToSpellId.size).toBe(151);
   });
 
-  it('全部 150 个法术应具备一对一专属 pixelfx 多阶段特效编排且全部模块与调色板引用合法', () => {
+  it('全部 151 个法术应具备一对一专属 pixelfx 多阶段特效编排且全部模块与调色板引用合法', () => {
     const allRegisteredIds = Object.keys(TOUHOU_CATALOG.spells);
-    expect(allRegisteredIds).toHaveLength(150);
-    expect(ALL_SPELL_VFX_IDS).toHaveLength(150);
+    expect(allRegisteredIds).toHaveLength(151);
+    expect(ALL_SPELL_VFX_IDS).toHaveLength(151);
 
     const moduleKeys = new Set(Object.keys(PIXELFX_MODULES));
     const paletteKeys = new Set(Object.keys(TOUHOU_PALETTES));
@@ -353,10 +353,10 @@ describe('PixelFX 视觉特效、手绘法术图标、远程弹道与安全守�
 });
 
 describe('HUD 元数据文案规范、阵营命名与语义着色分词器', () => {
-  it('全 150 法术与专属符卡 Hover 应严格遵循「简介 + 客观效果 + 可选斜体彩蛋」三段式且零冗余括号', () => {
+  it('全 151 法术与专属符卡 Hover 应严格遵循「简介 + 客观效果 + 可选斜体彩蛋」三段式且零冗余括号', () => {
     const bracketRe = /[()（）]/;
     const allSpells = Object.values(TOUHOU_CATALOG.spells);
-    expect(allSpells).toHaveLength(150);
+    expect(allSpells).toHaveLength(151);
 
     let flavorCount = 0;
     for (const sp of allSpells) {

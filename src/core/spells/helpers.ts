@@ -65,7 +65,7 @@ export function getEffectiveSpellRange(
   caster: BattleUnit,
   spell: SpellDef,
 ): number {
-  if (spell.range <= 0) return spell.range;
+  if (spell.range <= 0 || spell.fixedRange) return spell.range;
   const casterCls =
     caster.kind === 'hero'
       ? resolveActiveHeroClass(
@@ -690,6 +690,8 @@ export function cleansePositiveEffects(target: BattleUnit): StatModifier[] {
   se.martyrProtectedByUnitId = undefined;
   se.regenPerRound = 0;
   se.tempShieldHp = 0;
+  se.bloodSacrificeShieldHp = 0;
+  se.bloodSacrificeShieldRounds = 0;
   se.guardianAngelLives = 0;
   se.schoolWards = undefined;
   se.antiMagic = false;
@@ -703,6 +705,72 @@ export function cleansePositiveEffects(target: BattleUnit): StatModifier[] {
     se.grantedAbilities = se.grantedAbilities.filter((a) => a === 'noRanged');
   }
   return stolen;
+}
+
+/**
+ * 查找己方场上是否已存在同种存活的可叠加召唤 / 招魂 / 幻象堆：
+ * - 'summoned'：匹配己方存活、同 defId、非幻象且 summonKind === 'summoned' 的召唤堆
+ * - 'raised'：匹配己方存活、同 defId、非幻象且 isSummoned && summonKind === 'raised' 的招魂堆
+ * - 'illusion'：匹配己方存活、同 defId 且 isIllusion === true 的幻象堆
+ */
+export function findStackableSummonUnit(
+  state: BattleState,
+  side: SideId,
+  defId: string,
+  summonKind: 'summoned' | 'raised' | 'illusion',
+): BattleUnit | null {
+  for (const u of Object.values(state.units)) {
+    if (u.status !== 'alive' || u.kind !== 'creature') continue;
+    if (u.side !== side || u.defId !== defId) continue;
+    if (summonKind === 'illusion') {
+      if (u.isIllusion) return u;
+    } else if (summonKind === 'raised') {
+      if (u.isSummoned && !u.isIllusion && u.summonKind === 'raised') return u;
+    } else {
+      if (u.isSummoned && !u.isIllusion && (u.summonKind ?? 'summoned') === 'summoned') return u;
+    }
+  }
+  return null;
+}
+
+/**
+ * 将新召唤 / 招魂 / 幻象产出的生命池精准叠加到已有存活单位堆上（绝不白嫖满血、绝不丢血）：
+ * - 按该单位当前有效单兵 maxHp 计算总生命池并回推 count、maxCount 与顶部 currentHp
+ */
+export function mergeHpPoolIntoExistingStack(
+  state: BattleState,
+  target: BattleUnit,
+  addedHpPool: number,
+  catalog: CombatContentCatalog,
+): {
+  addedCount: number;
+  addedHp: number;
+  prevCount: number;
+  nextCount: number;
+  nextCurrentHp: number;
+  unitMaxHp: number;
+} {
+  const unitMaxHp = Math.max(1, computeUnitStats(target, state, catalog).maxHp);
+  const safeAddedHp = Math.max(1, Math.floor(addedHpPool));
+  const prevCount = target.count;
+  const clampedCurHp = Math.min(unitMaxHp, Math.max(1, target.currentHp));
+  const oldTotalHp = (Math.max(1, prevCount) - 1) * unitMaxHp + clampedCurHp;
+  const nextTotalHp = oldTotalHp + safeAddedHp;
+  const nextCount = Math.max(1, Math.ceil(nextTotalHp / unitMaxHp));
+  const nextCurrentHp = nextTotalHp - (nextCount - 1) * unitMaxHp;
+
+  target.count = nextCount;
+  target.maxCount = Math.max(target.maxCount, nextCount);
+  target.currentHp = nextCurrentHp;
+
+  return {
+    addedCount: Math.max(0, nextCount - prevCount),
+    addedHp: safeAddedHp,
+    prevCount,
+    nextCount,
+    nextCurrentHp,
+    unitMaxHp,
+  };
 }
 
 /** 在战场上真实生成一个召唤/招魂/幻象兵种单位并加入行动队列 */
@@ -853,16 +921,25 @@ export function computeAndApplySpellDamage(
     dmg *= 0.5;
   }
   if (!ignoresWards && target.statusEffects?.schoolWards?.[spell.alignment]) {
-    dmg *= 0.5;
+    dmg *= 0.65;
   }
   if (target.abilities.fireResistant && spell.isFireSpell) {
     dmg *= 0.5;
+  } else if (target.abilities.fireResist25 && spell.isFireSpell) {
+    dmg *= 0.75;
   }
   if (target.abilities.chaosResistant && spell.alignment === 'chaos') {
     dmg *= 0.75;
   }
   if (target.abilities.lightningResistant && spell.isLightningSpell) {
     dmg *= 0.75;
+  }
+  if (
+    target.abilities.berserkDuel &&
+    target.statusEffects?.duelTargetUnitId &&
+    caster.id !== target.statusEffects.duelTargetUnitId
+  ) {
+    dmg *= 0.9;
   }
   dmg *= Math.max(0, 1 - tStats.magicResistance);
 

@@ -39,7 +39,7 @@ export const TOUHOU_CATALOG: CombatContentCatalog = {
 };
 
 export type LineupVariant = 'A' | 'B';
-export type PlayableFactionId = 'life' | 'order' | 'chaos' | 'death';
+export type PlayableFactionId = 'life' | 'order' | 'chaos' | 'death' | 'might';
 
 export const PLAYABLE_FACTION_META: Record<
   PlayableFactionId,
@@ -99,6 +99,17 @@ export const PLAYABLE_FACTION_META: Record<
     variantASummary: '蕾米莉亚率骸骨巨龙 / 血族眷属吸血 / 怨灵衰老与小恶魔吸蓝强袭',
     variantBSummary: '蕾米莉亚率深渊隙间恶魔全图瞬移召冰魔 / 毒瘴妖剧毒 / 地狱鸦三翼裂袭',
   },
+  might: {
+    id: 'might',
+    short: '力量',
+    name: '武艺旧都',
+    heroName: '星熊勇仪',
+    themeColor: '#e87a3e',
+    variantAName: '鬼阵轰雷',
+    variantBName: '血祭熔岩',
+    variantASummary: '星熊勇仪率掷山大力鬼全环投岩 / 赤雷巨鹏稳定天罚 / 狂战士死斗与巡回猎犬折返强袭',
+    variantBSummary: '星熊勇仪率熔岩巨兽碎甲抗火 / 红祭司战争血祭护盾 / 鬼族先锋先攻正面碾压',
+  },
 };
 
 export const LINEUP_VARIANT_META: Record<
@@ -108,12 +119,12 @@ export const LINEUP_VARIANT_META: Record<
   A: {
     short: '阵A',
     title: 'A 阵 · 主战路线 A',
-    summary: '生命（御柱天马）· 秩序（净秽者）· 混沌（魔导巨像）· 死亡（骸骨巨龙/血族眷属）',
+    summary: '生命（御柱天马）· 秩序（净秽者）· 混沌（魔导巨像）· 死亡（骸骨巨龙/血族眷属）· 力量（赤雷巨鹏/掷山大力鬼）',
   },
   B: {
     short: '阵B',
     title: 'B 阵 · 主战路线 B',
-    summary: '生命（神使）· 秩序（非想天则）· 混沌（红莲魔龙）· 死亡（深渊隙间恶魔/毒瘴妖）',
+    summary: '生命（神使）· 秩序（非想天则）· 混沌（红莲魔龙）· 死亡（深渊隙间恶魔/毒瘴妖）· 力量（熔岩巨兽/红祭司）',
   },
 };
 
@@ -262,6 +273,50 @@ export function buildFactionArmySlots(
         { kind: 'creature', defId: 'combat_mk2', count: 4, col: 18, row: 5 },
         { kind: 'creature', defId: 'hisoutensoku', count: 2, col: 17, row: 10 },
       ];
+  }
+
+  // 武艺旧都 · 力量系（星熊勇仪率 8 兵种 A/B 双路线满编）
+  if (faction === 'might') {
+    if (side === 'left') {
+      return variant === 'A'
+        ? [
+            { kind: 'hero', defId: 'hero_yuugi', col: -2, row: 7 },
+            { kind: 'creature', defId: 'might_berserker', count: 16, col: 1, row: 14 },
+            { kind: 'creature', defId: 'might_javelineer', count: 16, col: -1, row: 3 },
+            { kind: 'creature', defId: 'might_oni_vanguard', count: 8, col: 2, row: 2 },
+            { kind: 'creature', defId: 'might_roaming_hound', count: 8, col: -2, row: 11 },
+            { kind: 'creature', defId: 'might_mountain_thrower', count: 4, col: 2, row: 6 },
+            { kind: 'creature', defId: 'might_crimson_thunderbird', count: 2, col: 0, row: 10 },
+          ]
+        : [
+            { kind: 'hero', defId: 'hero_yuugi', col: -2, row: 7 },
+            { kind: 'creature', defId: 'might_berserker', count: 16, col: 1, row: 14 },
+            { kind: 'creature', defId: 'might_javelineer', count: 16, col: -1, row: 3 },
+            { kind: 'creature', defId: 'might_roaming_hound', count: 8, col: 2, row: 2 },
+            { kind: 'creature', defId: 'might_oni_vanguard', count: 8, col: 2, row: 6 },
+            { kind: 'creature', defId: 'might_red_priest', count: 4, col: -2, row: 11 },
+            { kind: 'creature', defId: 'might_lava_behemoth', count: 2, col: 0, row: 10 },
+          ];
+    }
+    return variant === 'A'
+      ? [
+          { kind: 'hero', defId: 'hero_yuugi', col: 22, row: 13 },
+          { kind: 'creature', defId: 'might_berserker', count: 16, col: 18, row: 19 },
+          { kind: 'creature', defId: 'might_javelineer', count: 16, col: 21, row: 8 },
+          { kind: 'creature', defId: 'might_oni_vanguard', count: 8, col: 19, row: 5 },
+          { kind: 'creature', defId: 'might_roaming_hound', count: 8, col: 21, row: 16 },
+          { kind: 'creature', defId: 'might_mountain_thrower', count: 4, col: 18, row: 13 },
+          { kind: 'creature', defId: 'might_crimson_thunderbird', count: 2, col: 17, row: 10 },
+        ]
+      : [
+          { kind: 'hero', defId: 'hero_yuugi', col: 22, row: 13 },
+          { kind: 'creature', defId: 'might_berserker', count: 16, col: 18, row: 19 },
+          { kind: 'creature', defId: 'might_javelineer', count: 16, col: 21, row: 8 },
+          { kind: 'creature', defId: 'might_roaming_hound', count: 8, col: 19, row: 5 },
+          { kind: 'creature', defId: 'might_oni_vanguard', count: 8, col: 18, row: 14 },
+          { kind: 'creature', defId: 'might_red_priest', count: 4, col: 21, row: 16 },
+          { kind: 'creature', defId: 'might_lava_behemoth', count: 2, col: 17, row: 10 },
+        ];
   }
 
   // 幽冥公馆 · 死亡系（蕾米莉亚率 8 兵种 A/B 双路线满编）

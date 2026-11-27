@@ -121,7 +121,7 @@ export interface UnitAbilities {
   block?: boolean;                // 绝对格挡（35% 概率完全免疫一次物理或远程打击）
   stunOnHit?: boolean;            // 符箓定身（命中概率定身敌军 1 回合）
   terrorOnHit?: boolean;          // 噩梦震慑（命中概率震慑敌军 1 回合并降防）
-  stoneGaze?: boolean;            // 魔眼石化（命中概率额外石化击杀低阶敌兵）
+  stoneGaze?: boolean;            // 魔眼石化（35% 概率按 12 点/单位石化阈值抹杀敌兵，对英雄造成受魔抗减免的石化伤害）
   fireShield?: boolean;           // 烈焰护盾（受近战攻击时反弹 22% 烈焰反伤）
   fireResistant?: boolean;        // 炽焰抗性（免疫烈焰反伤与龙息余烬，混沌火系法术减半）
   chaosResistant?: boolean;       // 混沌抗性（承受混沌系法术与混沌符卡伤害 -25%）
@@ -133,9 +133,15 @@ export interface UnitAbilities {
   mechanical?: boolean;           // 机械 / 器灵构造体（原版生物类型：免疫士气、心智、活体生理效果与活体治疗）
   undead?: boolean;               // 不死 / 亡灵（原版生物类型：免疫士气、心智与活体治疗，给非死亡友军 -2 士气，吃圣言/招魂复生）
   elemental?: boolean;            // 元素 / 纯灵（原版生物类型：免疫毒/瘟疫/吸血/死亡之手与活体治疗，保留士气感召）
-  stealth?: boolean;              // 影遁潜行（受远程打击减伤 15%，身法灵动）
+  stealth?: boolean;              // 影遁潜行（常驻 +16% 擦弹与远程减伤 15%；周围 6 格内无敌军时效果翻倍）
   spellcaster?: boolean;          // 施法兵种（可在战斗中打开魔导折本施放专属术式）
   resurrection?: boolean;         // 战场复活（可施放苏生神术令友军阵亡兵力重返战阵）
+  berserkDuel?: boolean;          // 死斗狂暴（近战交手或受近战攻击后锁定首个对手至死或隐身，期间自动追砍且受宿敌外伤害 -10%）
+  strikeAndReturn?: boolean;      // 巡回突袭（移动后发动近战攻击且存活时，交锋结束自动折返起点格）
+  areaRanged?: boolean;           // 飞石轰击（远程投掷完全 2 环 AOE 巨岩，敌我不分 100% 物理伤害，超射程亦可瞄准敌人附近空地）
+  lightningStrike?: boolean;      // 赤雷天罚（近战命中 100% 稳定劈落雷电魔法追击，每只固定 18 点无视物防）
+  armorPierce?: boolean;          // 碎甲重击（近战攻击忽略目标 50% 防御力）
+  fireResist25?: boolean;         // 熔岩抗火（承受火系法术与烈焰反伤/火缠/龙息伤害 -25%）
 }
 
 /** 单位受控异常与法术附魔状态（完整覆盖 HoMM4 五系 142 法术全机制！） */
@@ -167,6 +173,11 @@ export interface UnitStatusEffects {
   regenPerRound?: number;
   /** 圣盾临时额外生命（Heavenly Shield） */
   tempShieldHp?: number;
+  /** 命符「战争血祭」限时临时护盾生命与剩余回合 */
+  bloodSacrificeShieldHp?: number;
+  bloodSacrificeShieldRounds?: number;
+  /** 狂战士「死斗狂暴」当前锁定的宿敌单位 ID */
+  duelTargetUnitId?: string;
   /** 守护天使额外复生次数（Guardian Angel） */
   guardianAngelLives?: number;
   /** 圣域庇护（Sanctuary）：免疫一切攻击与法术，行动后解除 */
@@ -454,6 +465,7 @@ export type SpellSpecialEffect =
   | 'armageddon'
   | 'chain_lightning'
   | 'disintegrate'
+  | 'war_blood_sacrifice'
   | 'terrain_walk'
   | 'giant_strength'
   | 'dragon_strength'
@@ -477,6 +489,8 @@ export interface SpellDef {
   manaCost: number;
   targetType: SpellTargetType;
   range: number;
+  /** 是否为固定施法距离（不受高地 +50% 或预言贤者 +2 等射程增幅影响，例如催眠固定 2 格） */
+  fixedRange?: boolean;
   aoeRadius?: number;
   lineLength?: number;
   /** 一句话精炼简介（不含等级/派系前缀与多余括号） */
@@ -775,12 +789,17 @@ export interface BattleState {
   hasCombatStarted?: boolean;
   /** 全局 Buff/Debuff 施加顺序单调计数器（供 20 格 FIFO 顶替排序使用） */
   nextStatusOrder?: number;
+  /** 本回合双方各阵营单位累计承受的物理伤害总和（供「战争血祭」下回合核算） */
+  physicalDamageTakenThisRound?: Record<SideId, number>;
+  /** 上一回合双方各阵营单位累计承受的物理伤害总和（供「战争血祭」转化为护盾） */
+  physicalDamageTakenLastRound?: Record<SideId, number>;
 }
 
 /** 玩家/AI 派发至引擎的确定性指令 */
 export type CombatCommand =
   | { type: 'MOVE'; unitId: string; to: HexCoord }
   | { type: 'ATTACK'; unitId: string; targetId: string; moveTo?: HexCoord; forceMelee?: boolean }
+  | { type: 'ATTACK_HEX'; unitId: string; targetHex: HexCoord }
   | {
       type: 'CAST_SPELL';
       unitId: string;
@@ -795,12 +814,12 @@ export type CombatCommand =
   | { type: 'WAIT'; unitId: string }
   | { type: 'DEFEND'; unitId: string };
 
-/** 额外次级打击记录（周身全扫 Multiple Attack / 龙息贯穿 Breath Attack / 烈焰护盾反伤） */
+/** 额外次级打击记录（周身全扫 Multiple Attack / 龙息贯穿 Breath Attack / 烈焰护盾反伤 / 赤雷天罚落雷） */
 export interface SecondaryHitReport {
   targetId: string;
   damage: number;
   kills: number;
-  kind: 'cleave' | 'breath' | 'fire_shield';
+  kind: 'cleave' | 'breath' | 'fire_shield' | 'lightning';
   blocked?: boolean;
 }
 
@@ -827,13 +846,18 @@ export interface StrikeReport {
   traitNotes: string[];
   /** 是否被目标「绝对格挡」完全抵消 */
   blocked?: boolean;
-  /** 魔眼石化额外即死兵力数 */
+  /** 魔眼石化额外即死兵力数（对兵种） */
   petrifyKills?: number;
+  /** 魔眼石化直接伤害（对英雄，受魔抗比例减免） */
+  petrifyDamage?: number;
   /** 命中附加的异常状态名称（如定身/震慑/冰封/衰老/剧毒） */
   appliedStatus?: 'stunned' | 'terrified' | 'frozen' | 'aged' | 'poisoned';
   /** 剧毒喷射命中时瞬发结算的首段毒伤与折损兵力（无视物理防御） */
   poisonInstantDamage?: number;
   poisonInstantKills?: number;
+  /** 赤雷天罚命中时稳定劈落的雷电魔法伤害与折损兵力（无视物理防御，不计入物理伤害） */
+  lightningDamage?: number;
+  lightningKills?: number;
   /** 触发双重攻击时的第二段追击报告 */
   followUpStrike?: {
     damage: number;
@@ -845,6 +869,7 @@ export interface StrikeReport {
     defenderUnlucky?: boolean;
     grazed: boolean;
     petrifyKills?: number;
+    petrifyDamage?: number;
   };
   /** 伴随本次打击触发的周身横扫、龙息贯穿或烈焰护盾反伤 */
   secondaryHits?: SecondaryHitReport[];
@@ -892,6 +917,15 @@ export type CombatEvent =
       attackerStrike: StrikeReport | null;
       defenderStrike: StrikeReport | null;
     }
+  | {
+      type: 'AREA_RANGED_ATTACK';
+      attackerId: string;
+      targetHex: HexCoord;
+      affectedHexes: HexCoord[];
+      hits: Array<{ targetId: string; isFriendly: boolean; strike: StrikeReport }>;
+    }
+  | { type: 'DUEL_LOCKED'; unitId: string; targetId: string }
+  | { type: 'DUEL_CLEARED'; unitId: string; reason: 'target_defeated' | 'target_hidden' }
   | {
       type: 'SPELL_CAST';
       casterId: string;
@@ -1004,6 +1038,29 @@ export interface AttackPreview {
   /** 是否触发高台掩护减伤（目标地势高于低处射手，远程伤害 -25%） */
   highGroundBonus: boolean;
   targetGrazeChance: number;
+  notes: string[];
+}
+
+/** 飞石轰击（areaRanged）区域远程落点预估（支持超射程与空地，2 环敌我不分 100% 物理伤害） */
+export interface AreaRangedPreview {
+  valid: boolean;
+  reason?: string;
+  targetHex: HexCoord;
+  affectedHexes: HexCoord[];
+  trajectory?: ProjectileTrajectoryPreview | null;
+  rangedPenaltyTier: RangedPenaltyTier;
+  rangedMultiplier: number;
+  losStatus: 'clear' | 'partial' | 'blocked';
+  targets: Array<{
+    unitId: string;
+    unitName: string;
+    isFriendly: boolean;
+    minDamage: number;
+    maxDamage: number;
+    minKills: number;
+    maxKills: number;
+    notes: string[];
+  }>;
   notes: string[];
 }
 

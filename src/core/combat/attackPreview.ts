@@ -5,17 +5,21 @@
 import { isImmuneToLivingEffects } from '../creatureTypes';
 import {
   getFootprintHexes,
+  getHexRange,
   hexEquals,
+  hexKey,
   minHexSetDistance,
   reconstructHexPath,
   type HexCoord,
 } from '../hex';
 import { computeUnitStats } from '../modifiers';
-import type { AttackPreview, BattleState, BattleUnit } from '../types';
+import type { AreaRangedPreview, AttackPreview, BattleState, BattleUnit } from '../types';
 import {
   calculateDamageRange,
   canUnitRetaliateThisRound,
+  computeLightningStrikeDamage,
   computePoisonAttackDamage,
+  computeStoneGazeThreshold,
   hasDoubleStrikeForMode,
   resolveExchangeMode,
   simulateKills,
@@ -26,11 +30,16 @@ import {
   getUnitReachableMap,
 } from './spatial';
 import {
+  buildAreaRangedTrajectoryPreview,
   buildRangedTrajectoryPreview,
+  checkAreaRangedCapability,
   checkRangedCapability,
   evaluateRangedRetaliation,
 } from './terrainAndTrajectory';
 import type { CombatContentCatalog } from './types';
+
+/** 飞石轰击（areaRanged）完全范围溅射半径：落点中心 + 周围 2 环（共 19 格） */
+export const AREA_RANGED_RADIUS = 2;
 
 /** 攻击预估器：悬停敌方单位时实时计算精确伤害、弹道阻挡诊断与反击风险 */
 export function previewAttack(
@@ -210,7 +219,7 @@ export function previewAttack(
   let retaliationTarget: BattleUnit = attacker;
   let retaliationInterceptedBy: BattleUnit | null = null;
   let retRange = { minDamage: 0, maxDamage: 0, highGroundBonus: false, notes: [] as string[] };
-  if (!attacker.abilities.noRetaliation && !fearSuppressRetaliation && defenderRetaliationReady) {
+  if (!attacker.abilities.noRetaliation && !fearSuppressRetaliation && defenderRetaliationReady && !(useRanged && attacker.abilities.areaRanged)) {
     if (!useRanged) {
       if (!isLongWeaponPoke) {
         willRetaliate = true;
@@ -277,10 +286,29 @@ export function previewAttack(
     const previewPoison = computePoisonAttackDamage(attacker, defender, state, catalog);
     notes.push(`剧毒喷射(瞬发+${previewPoison}/每回${previewPoison})`);
   }
+  if (!useRanged && attacker.abilities.lightningStrike && !defender.abilities.magicImmune) {
+    const previewLightning = computeLightningStrikeDamage(attacker, defender, state, catalog);
+    if (previewLightning > 0) {
+      notes.push(`赤雷天罚(+${previewLightning}雷法伤)`);
+    }
+  }
+  if (useRanged && attacker.abilities.areaRanged) {
+    notes.push(`飞石轰击(${AREA_RANGED_RADIUS}环全员100%物伤·敌我不分)`);
+  }
+  if (!useRanged && attacker.abilities.strikeAndReturn) {
+    notes.push('巡回突袭(攻后折返)');
+  }
+  if (!useRanged && attacker.abilities.berserkDuel && !attacker.statusEffects?.duelTargetUnitId) {
+    notes.push('死斗狂暴(交手锁定宿敌)');
+  }
+  if (attacker.abilities.stoneGaze && !isImmuneToLivingEffects(defender) && !defender.abilities.magicImmune) {
+    const sgThreshold = computeStoneGazeThreshold(attacker.count);
+    notes.push(`魔眼石化(35%·阈值${sgThreshold})`);
+  }
   if (!useRanged && attacker.abilities.agingOnHit && !isImmuneToLivingEffects(defender) && !defender.abilities.magicImmune) notes.push('衰老触碰');
   if (!useRanged && attacker.abilities.freezingAttack && !defender.abilities.coldResistant && !defender.abilities.magicImmune) notes.push('寒霜冻结');
   if (!useRanged && defender.abilities.fireShield && !attacker.abilities.fireResistant && !attacker.abilities.magicImmune) {
-    notes.push('敌方烈焰反伤!');
+    notes.push(attacker.abilities.fireResist25 ? '敌方烈焰反伤(抗火-25%)' : '敌方烈焰反伤!');
   }
   if (defender.abilities.block) notes.push('敌方格挡(35%)');
   if (attacker.abilities.noRetaliation) notes.push('不受反击');
@@ -315,6 +343,102 @@ export function previewAttack(
     losStatus: useRanged ? rangedCheck.los.status : 'clear',
     highGroundBonus: atkRange.highGroundBonus,
     targetGrazeChance: useRanged ? defStats.grazeChance : 0,
+    notes,
+  };
+}
+
+/** 飞石轰击（areaRanged）落点预估：支持瞄准任意格子（含超射程与敌人附近空地），2 环全员 100% 物理远程伤害 */
+export function previewAreaRangedAttack(
+  state: BattleState,
+  attackerId: string,
+  targetHex: HexCoord,
+  catalog: CombatContentCatalog,
+): AreaRangedPreview {
+  const affectedHexes = getHexRange(targetHex, AREA_RANGED_RADIUS).filter((h) => Boolean(state.tiles[hexKey(h)]));
+  const invalid = (reason: string, trajectory?: AreaRangedPreview['trajectory']): AreaRangedPreview => ({
+    valid: false,
+    reason,
+    targetHex,
+    affectedHexes,
+    trajectory: trajectory ?? null,
+    rangedPenaltyTier: 'full',
+    rangedMultiplier: 1,
+    losStatus: 'blocked',
+    targets: [],
+    notes: [reason],
+  });
+
+  const attacker = state.units[attackerId];
+  if (!attacker || attacker.status !== 'alive') {
+    return invalid('攻击单位无效');
+  }
+  if (!attacker.abilities.areaRanged) {
+    return invalid('该单位不具备「飞石轰击」能力');
+  }
+  if (attacker.statusEffects?.songOfPeaceRounds && attacker.statusEffects.songOfPeaceRounds > 0) {
+    return invalid('受「镇魂神乐」安抚，当前无法发起攻击');
+  }
+
+  const areaCheck = checkAreaRangedCapability(state, attacker, targetHex, catalog);
+  const trajectory = buildAreaRangedTrajectoryPreview(state, attacker, targetHex, areaCheck);
+  if (!areaCheck.canRanged) {
+    return invalid(trajectory.reason ?? '无法向目标格投掷巨岩', trajectory);
+  }
+
+  const affectedKeySet = new Set(affectedHexes.map(hexKey));
+  const hitUnits: BattleUnit[] = [];
+  for (const candidate of Object.values(state.units)) {
+    if (candidate.status !== 'alive') continue;
+    if (candidate.statusEffects?.sanctuary) continue;
+    const occ = getUnitOccupiedHexes(candidate);
+    if (occ.some((h) => affectedKeySet.has(hexKey(h)))) {
+      hitUnits.push(candidate);
+    }
+  }
+
+  const targets = hitUnits.map((victim) => {
+    const dmg = calculateDamageRange(
+      state,
+      attacker,
+      victim,
+      attacker.pos,
+      true,
+      1,
+      areaCheck.rangePenalty,
+      catalog,
+      0,
+    );
+    const vStats = computeUnitStats(victim, state, catalog);
+    return {
+      unitId: victim.id,
+      unitName: victim.name,
+      isFriendly: victim.side === attacker.side,
+      minDamage: dmg.minDamage,
+      maxDamage: dmg.maxDamage,
+      minKills: simulateKills(victim, dmg.minDamage, vStats.maxHp),
+      maxKills: simulateKills(victim, dmg.maxDamage, vStats.maxHp),
+      notes: dmg.notes,
+    };
+  });
+
+  const notes: string[] = [`飞石轰击(${AREA_RANGED_RADIUS}环全员100%物伤·敌我不分)`];
+  if (areaCheck.penaltyTier === 'half') notes.push('远程衰减 1/2');
+  if (areaCheck.penaltyTier === 'quarter') notes.push('远程衰减 1/4');
+  if (areaCheck.penaltyTier === 'eighth') notes.push('远程衰减 1/8');
+  const friendlyCount = targets.filter((t) => t.isFriendly).length;
+  if (friendlyCount > 0) {
+    notes.push(`⚠ 将误伤 ${friendlyCount} 支友军！`);
+  }
+
+  return {
+    valid: true,
+    targetHex,
+    affectedHexes,
+    trajectory,
+    rangedPenaltyTier: areaCheck.penaltyTier,
+    rangedMultiplier: areaCheck.rangePenalty,
+    losStatus: areaCheck.los.status,
+    targets,
     notes,
   };
 }

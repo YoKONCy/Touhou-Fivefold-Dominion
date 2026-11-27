@@ -4,6 +4,7 @@
 
 import { ALIGNMENT_META } from '@core/alignment';
 import { isUnitOnHighlandPlatform } from '@core/h4SpellExecutor';
+import { isStealthDeepened } from '@core/modifiers';
 import type { BattleState, BattleUnit } from '@core/types';
 import { TOUHOU_CATALOG } from '@data/battlePresets';
 import { SPELL_POLARITY_META } from '@ui/semanticFormat';
@@ -153,6 +154,36 @@ function appendStatusEffectBadges(unit: BattleUnit, state: BattleState, list: Hu
   if (se?.tempShieldHp && se.tempShieldHp > 0) {
     pushStatus('st_hshield', 'spell_ward', '二重界', '结界「二重结界」', `护盾 ${se.tempShieldHp}`, ['优先吸收一切物理与法术伤害直至耗尽。'], true, 'life_heavenly_shield', '盾');
   }
+  if (se?.bloodSacrificeShieldHp && se.bloodSacrificeShieldHp > 0) {
+    const rLeft = se.bloodSacrificeShieldRounds ?? 1;
+    pushStatus(
+      'st_blood_shield',
+      'fireShield',
+      '血祭盾',
+      '命符「战争血祭」',
+      `护盾 ${se.bloodSacrificeShieldHp} · 余 ${rLeft} 回合`,
+      ['优先吸收所受伤害，持续期满或耗尽后自动消散，重施刷新数值并重置 3 回合。'],
+      true,
+      'chaos_war_blood_sacrifice',
+      `${rLeft}`,
+    );
+  }
+  if (se?.duelTargetUnitId) {
+    const rival = state.units[se.duelTargetUnitId];
+    if (rival && rival.status === 'alive') {
+      pushStatus(
+        'st_duel_lock',
+        'atk',
+        '死斗',
+        '死斗狂暴锁定中',
+        `宿敌 ${rival.name}`,
+        ['轮到行动时自动追击宿敌直至对方倒下或隐身，期间承受宿敌以外单位的伤害降低 10%。'],
+        true,
+        undefined,
+        '斗',
+      );
+    }
+  }
   if (se?.guardianAngelLives && se.guardianAngelLives > 0) {
     pushStatus('st_gangel', 'resurrection', '护命', '神使「御神护命」', `余 ${se.guardianAngelLives} 次`, ['濒临全灭瞬间神使降临，抵消毁灭并重聚 35% 兵力。'], true, 'life_guardian_angel', `×${se.guardianAngelLives}`);
   }
@@ -242,7 +273,7 @@ function appendStatusEffectBadges(unit: BattleUnit, state: BattleState, list: Hu
     const names = Object.keys(se.schoolWards)
       .map((k) => ALIGNMENT_META[k as keyof typeof ALIGNMENT_META]?.systemLabel ?? k)
       .join(' / ');
-    pushStatus('st_swards', 'spell_ward', '御界', '结界「御系大结界」', '防 +50% · 魔伤减半', [`已激活防护：${names}`], true, wardIcon);
+    pushStatus('st_swards', 'spell_ward', '御界', '结界「御系大结界」', '防 +35% · 魔伤 -35%', [`已激活防护：${names}`], true, wardIcon);
   }
 }
 
@@ -266,6 +297,29 @@ function appendBattlefieldAndAuraStatuses(unit: BattleUnit, state: BattleState, 
         lines: [
           '• 承受来自低处的远程射击伤害 -25%。',
           '• 施放全部有射程术式时，有效施法距离 +50%。',
+        ],
+      },
+    });
+  }
+
+  if (unit.status === 'alive' && isStealthDeepened(unit, state)) {
+    list.push({
+      id: 'status_stealth_deepened',
+      icon: 'stealth',
+      polarity: 'positive',
+      shortLabel: '深潜',
+      accent: '#d6c7ff',
+      bg: 'rgba(28, 18, 52, 0.94)',
+      border: '#987ef0',
+      tooltip: {
+        title: '影遁深潜生效中',
+        subtitle: '周围 6 格内无敌军逼近',
+        tag: '效果×2',
+        accent: '#c7b5ff',
+        badges: [SPEC_BADGE_DEFENSE],
+        lines: [
+          '• 影遁潜行额外获得一倍效果：擦弹率 +32%。',
+          '• 遭受远程弹幕射击时，伤害减免提升至 -30%。',
         ],
       },
     });

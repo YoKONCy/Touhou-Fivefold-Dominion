@@ -253,13 +253,53 @@ describe('英雄固有特质、双修进阶职业、组合神器套装、药水�
 
       blade.statusEffects.schoolWards = { chaos: true };
       const swPrev = previewAttack(state, doll.id, blade.id, TOUHOU_CATALOG);
-      expect(swPrev.notes).toContain('敌方派系守护(防+50%)');
+      expect(swPrev.notes).toContain('敌方派系守护(防+35%)');
       expect(swPrev.expectedMaxDamage).toBeLessThan(dwPrev.expectedMaxDamage);
+
+      // 同时验证生命系派系结界法术（御混结界）将对应派系法术伤害精确减免 35%（0.65×）
+      blade.abilities.deathWard = false;
+      blade.baseStats.grazeChance = 0;
+      blade.baseStats.magicResistance = 0;
+      const savedMarisaPos = { ...marisa.pos };
+      marisa.pos = offsetToAxial(6, 10);
+      marisa.mana = 50;
+      marisa.powerPoints = 0;
+      blade.statusEffects.schoolWards = undefined;
+      blade.currentHp = blade.baseStats.maxHp;
+      state.activeUnitId = marisa.id;
+      const rawChaosRes = dispatchCombatCommand(
+        state,
+        { type: 'CAST_SPELL', unitId: marisa.id, spellId: 'chaos_magic_arrow', targetUnitId: blade.id },
+        TOUHOU_CATALOG,
+      );
+      expect(rawChaosRes.ok, rawChaosRes.error).toBe(true);
+      const rawChaosEv = rawChaosRes.events.find((e) => e.type === 'SPELL_CAST');
+      const rawChaosDmg = rawChaosEv?.type === 'SPELL_CAST' ? (rawChaosEv.damageMap?.[blade.id]?.damage ?? 0) : 0;
+
+      blade.statusEffects.schoolWards = { chaos: true };
+      blade.currentHp = blade.baseStats.maxHp;
+      marisa.powerPoints = 0;
+      marisa.hasActedThisRound = false;
+      state.activeUnitId = marisa.id;
+      const wardedChaosRes = dispatchCombatCommand(
+        state,
+        { type: 'CAST_SPELL', unitId: marisa.id, spellId: 'chaos_magic_arrow', targetUnitId: blade.id },
+        TOUHOU_CATALOG,
+      );
+      expect(wardedChaosRes.ok, wardedChaosRes.error).toBe(true);
+      const wardedChaosEv = wardedChaosRes.events.find((e) => e.type === 'SPELL_CAST');
+      const wardedChaosDmg = wardedChaosEv?.type === 'SPELL_CAST' ? (wardedChaosEv.damageMap?.[blade.id]?.damage ?? 0) : 0;
+      expect(wardedChaosDmg).toBe(Math.round(rawChaosDmg * 0.65));
+      marisa.pos = savedMarisaPos;
+      blade.abilities.deathWard = true;
+      blade.statusEffects.schoolWards = undefined;
     }
 
-    // 校验全法术射程梯度：单体指向性 15~18 或长手 21，召请类 12
+    // 校验全法术射程梯度：催眠近距固定 2 格，召请类 12，其余单体指向性 15~18 或长手 21
     for (const sp of Object.values(TOUHOU_CATALOG.spells)) {
-      if (sp.targetType === 'hex_empty') {
+      if (sp.id === 'order_hypnotize') {
+        expect(sp.range, '催眠法术射程应严格为 2 格').toBe(2);
+      } else if (sp.targetType === 'hex_empty') {
         expect(sp.range, `召唤法术 ${sp.id} 射程应为 12`).toBe(12);
       } else if (sp.range > 0) {
         expect(
@@ -314,11 +354,11 @@ describe('英雄固有特质、双修进阶职业、组合神器套装、药水�
   });
 });
 
-describe('HoMM4 全 142 法术体系与博丽灵梦正统生命派系', () => {
-  it('应完整注册官方全部 142 个法术（32生命+27秩序+25死亡+27混沌+31自然，137战斗+5大地图），灵梦默认正统生命派系', () => {
-    expect(ALL_H4_SPELL_IDS).toHaveLength(142);
-    expect(new Set(ALL_H4_SPELL_IDS).size).toBe(142);
-    expect(ALL_H4_COMBAT_SPELL_IDS).toHaveLength(137);
+describe('HoMM4 全 143 法术体系与博丽灵梦正统生命派系', () => {
+  it('应完整注册全部 143 个五系法术（32生命+27秩序+25死亡+28混沌+31自然，138战斗+5大地图），灵梦默认正统生命派系', () => {
+    expect(ALL_H4_SPELL_IDS).toHaveLength(143);
+    expect(new Set(ALL_H4_SPELL_IDS).size).toBe(143);
+    expect(ALL_H4_COMBAT_SPELL_IDS).toHaveLength(138);
 
     const bySchool: Record<string, number> = { life: 0, order: 0, death: 0, chaos: 0, nature: 0 };
     const adventureSpells: string[] = [];
@@ -334,7 +374,7 @@ describe('HoMM4 全 142 法术体系与博丽灵梦正统生命派系', () => {
       }
     }
 
-    expect(bySchool).toEqual({ life: 32, order: 27, death: 25, chaos: 27, nature: 31 });
+    expect(bySchool).toEqual({ life: 32, order: 27, death: 25, chaos: 28, nature: 31 });
     expect(adventureSpells).toHaveLength(5);
 
     const { state } = createReimuVsMarisaBattle({ mode: 'hotseat', seed: 512 });
@@ -403,6 +443,21 @@ describe('HoMM4 全 142 法术体系与博丽灵梦正统生命派系', () => {
     // 4. 守护天使（Guardian Angel）：濒死免全灭重聚兵力
     expect(castAsReimu({ spellId: 'life_guardian_angel', targetUnitId: kedama.id }).ok).toBe(true);
     expect(kedama.statusEffects.guardianAngelLives).toBeGreaterThanOrEqual(1);
+
+    // 4b. 八百万神降（Divine Intervention）：还原原版 H4 规则——全军残血首兵/英雄回满 + 清祓全部负面与毒疫，绝不复活已阵亡兵力！
+    const reimuMaxHp = computeUnitStats(reimu, state, TOUHOU_CATALOG).maxHp;
+    const bladeMaxHp = computeUnitStats(blade, state, TOUHOU_CATALOG).maxHp;
+    reimu.currentHp = 20;
+    blade.count = 7; // 阵亡 5 名，maxCount 为 12
+    blade.currentHp = 5;
+    blade.statusEffects.poisonPower = 30;
+    blade.statusEffects.curse = true;
+    expect(castAsReimu({ spellId: 'life_divine_intervention' }).ok).toBe(true);
+    expect(reimu.currentHp).toBe(reimuMaxHp);
+    expect(blade.currentHp).toBe(bladeMaxHp);
+    expect(blade.count).toBe(7); // 严禁白嫖复活阵亡兵力！
+    expect(blade.statusEffects.poisonPower ?? 0).toBe(0);
+    expect(blade.statusEffects.curse).toBe(false);
     const prevLives = kedama.statusEffects.guardianAngelLives!;
     kedama.count = 1;
     kedama.currentHp = 1;
@@ -427,10 +482,13 @@ describe('HoMM4 全 142 法术体系与博丽灵梦正统生命派系', () => {
     expect(castAsReimu({ spellId: 'order_blind', targetUnitId: efreet.id }).ok).toBe(true);
     expect(efreet.statusEffects.blindRounds).toBeGreaterThan(0);
 
-    // 8. 催眠术（Hypnotize）令敌方林妖暂时倒戈我方
+    // 8. 催眠术（Hypnotize）仅限 2 格近距施放，令敌方林妖倒戈我方 3 回合
+    imp.pos = { q: reimu.pos.q + 2, r: reimu.pos.r };
+    const roundBeforeHyp = state.round;
     expect(castAsReimu({ spellId: 'order_hypnotize', targetUnitId: imp.id }).ok).toBe(true);
     expect(imp.side).toBe('left');
     expect(imp.statusEffects.hypnotizedOriginalSide).toBe('right');
+    expect(imp.statusEffects.hypnotizedRounds).toBe(state.round === roundBeforeHyp ? 3 : 2);
 
     // 9. 制造幻象（Create Illusion）在战场生成真实半透明幻象堆叠
     const beforeUnits = Object.keys(state.units).length;

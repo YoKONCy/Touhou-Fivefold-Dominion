@@ -15,9 +15,11 @@ import {
   chooseTacticalAiCommand,
   type AiDifficulty,
 } from '@ai/tacticalAi';
-import { soundEngine, type AudioSettings } from '@audio/index';
+import { soundEngine, type AudioSettings, type BgmPlaybackState } from '@audio/index';
 import {
+  AREA_RANGED_RADIUS,
   canModifyHeroClassOrBuild,
+  checkAreaRangedCapability,
   checkRangedCapability,
   dispatchCombatCommand,
   findCorpseTargetAtHex,
@@ -27,13 +29,14 @@ import {
   getUnitOccupiedHexes,
   getUnitReachableMap,
   isEngagedInMelee,
+  previewAreaRangedAttack,
   previewAttack,
   selectHeroAdvancedClass,
   setHeroPrimarySkillRank,
   setHeroSecondarySkillRank,
   syncHeroDerivedState,
 } from '@core/combatEngine';
-import { getFootprintHexes, hexEquals, hexKey, type HexCoord, type HexTile } from '@core/hex';
+import { getFootprintHexes, getHexRange, hexEquals, hexKey, type HexCoord, type HexTile } from '@core/hex';
 import {
   computeUnitStats,
   resolveActiveArtifactSets,
@@ -41,6 +44,7 @@ import {
   resolveEligibleAdvancedClasses,
 } from '@core/modifiers';
 import type {
+  AreaRangedPreview,
   BattleState,
   BattleUnit,
   CombatCommand,
@@ -94,6 +98,10 @@ export const useBattleStore = defineStore('battle', () => {
   const rightFaction = ref<PlayableFactionId>('life');
   const gridMode = ref<GridVisibilityMode>('hidden');
   const audioSettings = ref<AudioSettings>(soundEngine.getSettings());
+  const bgmState = ref<BgmPlaybackState>(soundEngine.getBgmPlaybackState());
+  soundEngine.subscribeBgmChange((snapshot) => {
+    bgmState.value = snapshot;
+  });
 
   const battleState = shallowRef<BattleState>(
     createReimuVsMarisaBattle({
@@ -120,6 +128,8 @@ export const useBattleStore = defineStore('battle', () => {
   /** 二步法术（如瞬息传送 unit_to_hex、殉道替伤/血祭复生 ally_to_ally）已选定的第一位单位 ID */
   const pendingSpellFirstUnitId = ref<string | null>(null);
   const declaringSpellCard = ref(false);
+  /** 掷山大力鬼专属：飞石轰击瞄空投岩模式（允许点击全图任意空地或单位格投掷 2 环 AOE 巨岩） */
+  const areaRangedAimMode = ref(false);
   /** 远程单位（且未被近战禁手）主动切换的强制近战模式 */
   const forceMeleeMode = ref(false);
   const activeDrawer = ref<SecondaryDrawerType>('none');
@@ -187,6 +197,55 @@ export const useBattleStore = defineStore('battle', () => {
     return forceMeleeMode.value || Boolean(rangedBlockedReason.value) ? 'melee' : 'ranged';
   });
 
+  /** 当前行动单位是否可开启「飞石轰击」瞄空投岩模式 */
+  const canAreaRangedAim = computed(() => {
+    void stateVersion.value;
+    const u = activeUnit.value;
+    return Boolean(
+      u &&
+        u.status === 'alive' &&
+        isHumanTurn.value &&
+        battleState.value.phase === 'active' &&
+        u.abilities.areaRanged &&
+        u.abilities.ranged &&
+        !rangedBlockedReason.value,
+    );
+  });
+
+  /** 判断掷山大力鬼在常规远程模式下悬停/点击某格时是否自动启用 2 环飞石轰击（含超射程瞄敌人附近空地） */
+  function isAutoAreaRangedHex(
+    st: BattleState,
+    act: BattleUnit,
+    hex: HexCoord,
+    reachableKeys: ReadonlySet<string>,
+  ): boolean {
+    if (!canAreaRangedAim.value || effectiveAttackMode.value !== 'ranged') return false;
+    if (selectedSpellId.value || declaringSpellCard.value) return false;
+    if (!st.tiles[hexKey(hex)]) return false;
+    if (getUnitOccupiedHexes(act).some((h) => hexEquals(h, hex))) return false;
+
+    const standing = findUnitAtHex(st, hex, false);
+    if (standing) {
+      if (standing.side === act.side || standing.statusEffects?.sanctuary) return false;
+      const areaCap = checkAreaRangedCapability(st, act, hex, TOUHOU_CATALOG);
+      if (areaCap.canRanged) return true;
+      // 视线被遮挡且近战也可走过去劈砍时，让位于常规近战走位；否则展示红色远程受阻诊断
+      return !previewAttack(st, act.id, standing.id, TOUHOU_CATALOG, undefined, true).valid;
+    }
+
+    // 常规模式下可达空地保留给正常移动；超出本回合移动范围（含超射程）且 2 环内能波及敌军的空地自动支持直接投岩落点！
+    if (reachableKeys.has(hexKey(hex))) return false;
+    const blastKeys = new Set(getHexRange(hex, AREA_RANGED_RADIUS).map(hexKey));
+    for (const candidate of Object.values(st.units)) {
+      if (candidate.status !== 'alive' || candidate.side === act.side) continue;
+      if (candidate.statusEffects?.sanctuary) continue;
+      if (getUnitOccupiedHexes(candidate).some((h) => blastKeys.has(hexKey(h)))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /** 按回合缓存当前行动单位的可达六边形图与可攻击敌军列表 */
   const activeReachableMap = computed(() => {
     void stateVersion.value;
@@ -201,6 +260,27 @@ export const useBattleStore = defineStore('battle', () => {
   const activeReachableHexKeys = computed<ReadonlySet<string>>(() => {
     const map = activeReachableMap.value;
     return map ? new Set(map.costs.keys()) : new Set<string>();
+  });
+
+  /** 掷山大力鬼处于瞄空投岩模式，或常规远程悬停敌军/敌人附近空地（含超射程）时的 2 环全伤落点预估 */
+  const hoverAreaRangedPreview = computed<AreaRangedPreview | null>(() => {
+    void stateVersion.value;
+    if (
+      isAnimating.value ||
+      battleState.value.phase !== 'active' ||
+      detailModal.value ||
+      activeDrawer.value === 'spells' ||
+      !isHumanTurn.value
+    ) {
+      return null;
+    }
+    const act = activeUnit.value;
+    const hex = hoveredHex.value;
+    if (!act || !hex || !act.abilities.areaRanged) return null;
+    if (!areaRangedAimMode.value && !isAutoAreaRangedHex(battleState.value, act, hex, activeReachableHexKeys.value)) {
+      return null;
+    }
+    return previewAreaRangedAttack(battleState.value, act.id, hex, TOUHOU_CATALOG);
   });
 
   const activeAttackableUnitIds = computed<ReadonlySet<string>>(() => {
@@ -339,7 +419,14 @@ export const useBattleStore = defineStore('battle', () => {
     ) {
       return null;
     }
-    if (selectedSpellId.value || declaringSpellCard.value) return null;
+    if (
+      selectedSpellId.value ||
+      declaringSpellCard.value ||
+      areaRangedAimMode.value ||
+      hoverAreaRangedPreview.value
+    ) {
+      return null;
+    }
 
     const hex = hoveredHex.value;
     if (!hex) return null;
@@ -476,6 +563,8 @@ export const useBattleStore = defineStore('battle', () => {
       detailModalOpen: Boolean(detailModal.value),
       spellsDrawerOpen: activeDrawer.value === 'spells',
       declaringSpellCard: declaringSpellCard.value,
+      areaRangedAimMode: areaRangedAimMode.value,
+      hoverAreaRangedPreview: hoverAreaRangedPreview.value,
       selectedSpellId: selectedSpellId.value,
       hoverSpellContext: hoverSpellContext.value,
       hoverAttackContext: hoverAttackContext.value,
@@ -497,11 +586,56 @@ export const useBattleStore = defineStore('battle', () => {
     }
 
     const previewHex = touchPreviewHex.value;
-    const isTargeting = Boolean(selectedSpellId.value || declaringSpellCard.value);
+    const isTargeting = Boolean(selectedSpellId.value || declaringSpellCard.value || areaRangedAimMode.value);
     if (!previewHex && !isTargeting) return null;
 
     const st = battleState.value;
     const act = activeUnit.value;
+
+    // 0. 掷山大力鬼瞄空投岩态（含常规远程悬停敌军或敌人附近超距空地）
+    if ((areaRangedAimMode.value || hoverAreaRangedPreview.value) && act && isHumanTurn.value) {
+      const areaPrev = hoverAreaRangedPreview.value;
+      if (previewHex && areaPrev) {
+        const tierLabel =
+          areaPrev.rangedPenaltyTier === 'full'
+            ? '投岩'
+            : areaPrev.rangedPenaltyTier === 'half'
+              ? '投岩 1/2'
+              : areaPrev.rangedPenaltyTier === 'quarter'
+                ? '投岩 1/4'
+                : '投岩 1/8';
+        return {
+          mode: areaPrev.valid ? 'attack' : 'blocked',
+          title: '飞石轰击 · 2 环全伤',
+          detail: areaPrev.valid
+            ? areaPrev.targets.length > 0
+              ? `波及 ${areaPrev.targets.length} 支单位（敌我不分 100% 伤害）· 再次轻触或确认投岩`
+              : '落点 2 环内无单位 · 再次轻触可砸向空地'
+            : areaPrev.reason ?? '无法向该格投掷巨岩',
+          badgeText: areaPrev.valid ? tierLabel : '受阻',
+          badgeTone: areaPrev.valid ? 'warn' : 'danger',
+          canConfirm: areaPrev.valid,
+          confirmLabel: '确认投岩',
+          inspectUnitId: null,
+          approachCount: 0,
+          approachIndex: 0,
+          isTargeting: areaRangedAimMode.value,
+        };
+      }
+      return {
+        mode: 'spell',
+        title: '飞石轰击 · 瞄空投岩',
+        detail: '轻触全图任意单位或空地（含超射程）即可预览 2 环 100% 物理轰炸落点',
+        badgeText: '投岩',
+        badgeTone: 'warn',
+        canConfirm: false,
+        confirmLabel: '确认投岩',
+        inspectUnitId: null,
+        approachCount: 0,
+        approachIndex: 0,
+        isTargeting: true,
+      };
+    }
 
     // 1. 符卡直线宣言态
     if (declaringSpellCard.value && act && isHumanTurn.value) {
@@ -727,13 +861,69 @@ export const useBattleStore = defineStore('battle', () => {
 
   function updateAudioSettings(patch: Partial<AudioSettings>): void {
     audioSettings.value = soundEngine.updateSettings(patch);
+    bgmState.value = soundEngine.getBgmPlaybackState();
   }
 
   function toggleAudioMute(): void {
     soundEngine.toggleMute();
     audioSettings.value = soundEngine.getSettings();
+    bgmState.value = soundEngine.getBgmPlaybackState();
     if (!audioSettings.value.muted) {
       soundEngine.play('ui_click');
+    }
+  }
+
+  function toggleBgmPlayback(): void {
+    if (audioSettings.value.bgmEnabled && !audioSettings.value.muted) {
+      audioSettings.value = soundEngine.updateSettings({ bgmEnabled: false });
+    } else {
+      soundEngine.unlock();
+      audioSettings.value = soundEngine.updateSettings({ bgmEnabled: true, muted: false });
+      soundEngine.startBgm();
+    }
+    bgmState.value = soundEngine.getBgmPlaybackState();
+    soundEngine.play('ui_click');
+  }
+
+  function selectBgmTrack(indexOrId: number | string, showFeedback = false): void {
+    const needEnable = !audioSettings.value.bgmEnabled || audioSettings.value.muted;
+    const track = soundEngine.selectBgmTrack(indexOrId, !needEnable);
+    soundEngine.unlock();
+    if (needEnable) {
+      audioSettings.value = soundEngine.updateSettings({ bgmEnabled: true, muted: false });
+    }
+    bgmState.value = soundEngine.getBgmPlaybackState();
+    soundEngine.play('ui_click');
+    if (showFeedback && track) {
+      showToast(`♪ 曲目 ${bgmState.value.currentIndex + 1}/${bgmState.value.tracks.length} · ${track.title}`);
+    }
+  }
+
+  function nextBgmTrack(showFeedback = false): void {
+    const needEnable = !audioSettings.value.bgmEnabled || audioSettings.value.muted;
+    const track = soundEngine.nextBgmTrack(!needEnable);
+    soundEngine.unlock();
+    if (needEnable) {
+      audioSettings.value = soundEngine.updateSettings({ bgmEnabled: true, muted: false });
+    }
+    bgmState.value = soundEngine.getBgmPlaybackState();
+    soundEngine.play('ui_click');
+    if (showFeedback) {
+      showToast(`♪ 切换曲目 ${bgmState.value.currentIndex + 1}/${bgmState.value.tracks.length} · ${track.title}`);
+    }
+  }
+
+  function prevBgmTrack(showFeedback = false): void {
+    const needEnable = !audioSettings.value.bgmEnabled || audioSettings.value.muted;
+    const track = soundEngine.prevBgmTrack(!needEnable);
+    soundEngine.unlock();
+    if (needEnable) {
+      audioSettings.value = soundEngine.updateSettings({ bgmEnabled: true, muted: false });
+    }
+    bgmState.value = soundEngine.getBgmPlaybackState();
+    soundEngine.play('ui_click');
+    if (showFeedback) {
+      showToast(`♪ 切换曲目 ${bgmState.value.currentIndex + 1}/${bgmState.value.tracks.length} · ${track.title}`);
     }
   }
 
@@ -907,6 +1097,8 @@ export const useBattleStore = defineStore('battle', () => {
       isHumanTurn: isHumanTurn.value,
       isAnimating: isAnimating.value,
       declaringSpellCard: declaringSpellCard.value,
+      areaRangedAimMode: areaRangedAimMode.value,
+      hoverAreaRangedPreview: hoverAreaRangedPreview.value,
       selectedSpellId: selectedSpellId.value,
       pendingSpellFirstUnitId: pendingSpellFirstUnitId.value,
       hoverSpellContext: hoverSpellContext.value,
@@ -943,8 +1135,27 @@ export const useBattleStore = defineStore('battle', () => {
     selectedSpellId.value = null;
     pendingSpellFirstUnitId.value = null;
     declaringSpellCard.value = false;
+    areaRangedAimMode.value = false;
     touchPreviewHex.value = null;
     manualApproachHex.value = null;
+    refreshStageOverlay();
+  }
+
+  /** 切换掷山大力鬼的「飞石轰击 · 瞄空投岩」模式 */
+  function toggleAreaRangedAimMode(): void {
+    if (!canAreaRangedAim.value || isAnimating.value) return;
+    areaRangedAimMode.value = !areaRangedAimMode.value;
+    if (areaRangedAimMode.value) {
+      forceMeleeMode.value = false;
+      selectedSpellId.value = null;
+      pendingSpellFirstUnitId.value = null;
+      declaringSpellCard.value = false;
+      manualApproachHex.value = null;
+      showToast('已开启【飞石轰击】瞄空模式：点击全图任意空地或单位格（含超射程）投掷 2 环全伤巨岩（右键取消）');
+    } else {
+      showToast('已退出飞石瞄空模式');
+    }
+    soundEngine.play('ui_click');
     refreshStageOverlay();
   }
 
@@ -957,6 +1168,7 @@ export const useBattleStore = defineStore('battle', () => {
       return;
     }
     forceMeleeMode.value = !forceMeleeMode.value;
+    if (forceMeleeMode.value) areaRangedAimMode.value = false;
     selectedSpellId.value = null;
     pendingSpellFirstUnitId.value = null;
     declaringSpellCard.value = false;
@@ -1090,11 +1302,11 @@ export const useBattleStore = defineStore('battle', () => {
   function handleLongPressHex(hex: HexCoord | null, clientPos: { x: number; y: number }): void {
     touchPreviewHex.value = null;
     manualApproachHex.value = null;
-    if (selectedSpellId.value || declaringSpellCard.value) {
+    if (selectedSpellId.value || declaringSpellCard.value || areaRangedAimMode.value) {
       clearTargeting();
       hoveredHex.value = null;
       soundEngine.play('ui_panel_close');
-      showToast('已取消术式选点');
+      showToast('已取消目标选点');
       return;
     }
     if (hex) {
@@ -1107,7 +1319,7 @@ export const useBattleStore = defineStore('battle', () => {
 
   /** 取消当前触控预览态（或在施法/符卡瞄准态下直接退出瞄准） */
   function cancelTouchPreview(): void {
-    if (selectedSpellId.value || declaringSpellCard.value) {
+    if (selectedSpellId.value || declaringSpellCard.value || areaRangedAimMode.value) {
       clearTargeting();
       hoveredHex.value = null;
       pointerPos.value = null;
@@ -1296,6 +1508,18 @@ export const useBattleStore = defineStore('battle', () => {
         return;
       }
       void executeCommand({ type: 'DECLARE_SPELL_CARD', unitId: act.id, targetHex: hex });
+      return;
+    }
+
+    if (
+      act.abilities.areaRanged &&
+      (areaRangedAimMode.value || isAutoAreaRangedHex(st, act, hex, activeReachableHexKeys.value))
+    ) {
+      if (getUnitOccupiedHexes(act).some((h) => hexEquals(h, hex))) {
+        clearTargeting();
+        return;
+      }
+      void executeCommand({ type: 'ATTACK_HEX', unitId: act.id, targetHex: hex });
       return;
     }
 
@@ -1609,6 +1833,7 @@ export const useBattleStore = defineStore('battle', () => {
     rightFaction,
     gridMode,
     audioSettings,
+    bgmState,
     battleState,
     stateVersion,
     isAnimating,
@@ -1620,6 +1845,9 @@ export const useBattleStore = defineStore('battle', () => {
     selectedSpellId,
     selectedSpell,
     declaringSpellCard,
+    areaRangedAimMode,
+    canAreaRangedAim,
+    hoverAreaRangedPreview,
     forceMeleeMode,
     canToggleAttackMode,
     rangedBlockedReason,
@@ -1666,6 +1894,10 @@ export const useBattleStore = defineStore('battle', () => {
     returnToPreBattlePrep,
     updateAudioSettings,
     toggleAudioMute,
+    toggleBgmPlayback,
+    selectBgmTrack,
+    nextBgmTrack,
+    prevBgmTrack,
     previewAudioBell,
     toggleDrawer,
     closeDrawer,
@@ -1675,6 +1907,7 @@ export const useBattleStore = defineStore('battle', () => {
     waitTurn,
     defendTurn,
     toggleAttackMode,
+    toggleAreaRangedAimMode,
     clearTargeting,
     cycleGridMode,
     restartBattle,

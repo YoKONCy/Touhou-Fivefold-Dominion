@@ -1,0 +1,283 @@
+/**
+ * 武艺旧都 · 力量系完整 8 城镇兵种静态定义（T1 双建 + T2/T3/T4 二选一互斥）
+ */
+
+import type { CreatureDefinition } from '@core/types';
+
+export const MIGHT_CREATURES: Record<string, CreatureDefinition> = {
+  /** 力量 T1-A：狂战士 · 高攻低防 + 近战双击 + 死斗狂暴（宿敌外减伤 10%） */
+  might_berserker: {
+    id: 'might_berserker',
+    name: '狂战士',
+    tier: 1,
+    alignment: 'might',
+    branchTag: 't1_a',
+    footprint: '1x1',
+    description:
+      '武艺旧都 1 阶力量系死斗斗士：攻势极为狂烈且自带双重攻击；初始由玩家掌控，一旦与敌军近战交手或遭受近战攻击即进入死斗狂暴，锁定首个对手不死不休并自动追砍，死斗期间承受宿敌以外单位的伤害降低 10%。',
+    baseStats: {
+      attack: 12,
+      defense: 11,
+      minDamage: 4,
+      maxDamage: 6,
+      maxHp: 16,
+      speed: 7,
+      initiative: 11,
+      range: 1,
+      ammo: 0,
+      morale: 2,
+      luck: 1,
+      magicResistance: 0.05,
+      grazeChance: 0.05,
+    },
+    abilities: {
+      doubleStrike: true,
+      berserkDuel: true,
+    },
+    voxelBlueprintId: 'creature_might_berserker',
+    themeColor: '#e85a3e',
+    accentColor: '#ffd166',
+  },
+
+  /** 力量 T1-B：标枪手 · 短程重标枪投掷 + 近战无衰减 */
+  might_javelineer: {
+    id: 'might_javelineer',
+    name: '标枪手',
+    tier: 1,
+    alignment: 'might',
+    branchTag: 't1_b',
+    footprint: '1x1',
+    description:
+      '武艺旧都 1 阶力量系重装投矛手：挥掷沉重鬼铁标枪压制中近距离目标，虽受短程限制而超距衰减较快，但即便被敌军贴脸近身也能凭近战无衰减全力突刺。',
+    baseStats: {
+      attack: 13,
+      defense: 11,
+      minDamage: 4,
+      maxDamage: 6,
+      maxHp: 17,
+      speed: 7,
+      initiative: 10,
+      range: 6,
+      ammo: 10,
+      morale: 1,
+      luck: 1,
+      magicResistance: 0.05,
+      grazeChance: 0.05,
+    },
+    abilities: {
+      ranged: true,
+      shortRange: true,
+      noMeleePenalty: true,
+    },
+    voxelBlueprintId: 'creature_might_javelineer',
+    themeColor: '#d9783e',
+    accentColor: '#f5dca4',
+  },
+
+  /** 力量 T2-A：鬼族先锋 · 游牧民定位：高速先攻突击鬼兵 */
+  might_oni_vanguard: {
+    id: 'might_oni_vanguard',
+    name: '鬼族先锋',
+    tier: 2,
+    alignment: 'might',
+    branchTag: 'a',
+    footprint: '1x1',
+    description:
+      '武艺旧都 2 阶力量系锐锋鬼兵：步履迅猛、刀锋先至，天生具备先攻压制，专破不受反击类轻骑与游击袭扰单位。',
+    baseStats: {
+      attack: 16,
+      defense: 14,
+      minDamage: 9,
+      maxDamage: 12,
+      maxHp: 38,
+      speed: 9,
+      initiative: 13,
+      range: 1,
+      ammo: 0,
+      morale: 2,
+      luck: 1,
+      magicResistance: 0.05,
+      grazeChance: 0.05,
+    },
+    abilities: {
+      firstStrike: true,
+    },
+    voxelBlueprintId: 'creature_might_oni_vanguard',
+    themeColor: '#d9483b',
+    accentColor: '#ffc857',
+  },
+
+  /** 力量 T2-B：巡回猎犬 · 鸟妖定位移除飞行，纯地面超长腿 + 不受反击 + 攻后折返起点 */
+  might_roaming_hound: {
+    id: 'might_roaming_hound',
+    name: '巡回猎犬',
+    tier: 2,
+    alignment: 'might',
+    branchTag: 'b',
+    footprint: '1x1',
+    description:
+      '武艺旧都 2 阶力量系旧都奔袭妖犬：拥有极长陆地奔行距离，突进扑咬敌军时不受常规反击，若存活则于交锋结束后瞬间折返至起跳原位。',
+    baseStats: {
+      attack: 16,
+      defense: 11,
+      minDamage: 7,
+      maxDamage: 10,
+      maxHp: 32,
+      speed: 10,
+      initiative: 14,
+      range: 1,
+      ammo: 0,
+      morale: 1,
+      luck: 2,
+      magicResistance: 0.05,
+      grazeChance: 0.05,
+    },
+    abilities: {
+      noRetaliation: true,
+      strikeAndReturn: true,
+    },
+    voxelBlueprintId: 'creature_might_roaming_hound',
+    themeColor: '#c46a35',
+    accentColor: '#ffe08a',
+  },
+
+  /** 力量 T3-A：掷山大力鬼 · 2×2 远程完全 2 环 AOE 投岩（敌我不分 100% 伤害，超射程亦可瞄敌人附近空地）+ 近战无衰减 + 攻城破障 */
+  might_mountain_thrower: {
+    id: 'might_mountain_thrower',
+    name: '掷山大力鬼',
+    tier: 3,
+    alignment: 'might',
+    branchTag: 'a',
+    footprint: '2x2',
+    description:
+      '武艺旧都 3 阶力量系巨岩投掷巨鬼：2×2 魁梧身躯可扛起整块山岩轰向任意单位或敌人附近空地，超射程按常规距离衰减仍可投掷，对落点与周围 2 环全部敌我单位均造成 100% 物理远程伤害，且近战无衰减并具备攻城破障。',
+    baseStats: {
+      attack: 19,
+      defense: 19,
+      minDamage: 17,
+      maxDamage: 23,
+      maxHp: 85,
+      speed: 6,
+      initiative: 9,
+      range: 10,
+      ammo: 8,
+      morale: 2,
+      luck: 1,
+      magicResistance: 0.05,
+      grazeChance: 0.05,
+    },
+    abilities: {
+      ranged: true,
+      noMeleePenalty: true,
+      siegeBreaker: true,
+      areaRanged: true,
+    },
+    voxelBlueprintId: 'creature_might_mountain_thrower',
+    themeColor: '#b35c37',
+    accentColor: '#f2b866',
+  },
+
+  /** 力量 T3-B：红祭司 · 1×2 重装战巫（30% 魔抗）+ 鬼神狂战 / 瞬闪先手 / 混沌四阶 命符「战争血祭」 */
+  might_red_priest: {
+    id: 'might_red_priest',
+    name: '红祭司',
+    tier: 3,
+    alignment: 'might',
+    branchTag: 'b',
+    footprint: '1x2',
+    description:
+      '武艺旧都 3 阶力量系赤鬼战巫：1×2 高大结实且具备 30% 魔法抗性的近战辅助施法者，精通鬼神狂战、瞬闪先手与混沌四阶命符「战争血祭」，可将上一回合敌方全体所受物理伤害的 35% 转化为自身持续 3 回合的血祭护盾，并额外赋予自身 2 回合 +5 移动力。',
+    baseStats: {
+      attack: 21,
+      defense: 21,
+      minDamage: 16,
+      maxDamage: 22,
+      maxHp: 95,
+      speed: 6,
+      initiative: 10,
+      range: 1,
+      ammo: 0,
+      morale: 2,
+      luck: 1,
+      magicResistance: 0.30,
+      grazeChance: 0.05,
+      spellPower: 7,
+      maxMana: 18,
+    },
+    abilities: {
+      spellcaster: true,
+    },
+    knownSpellIds: ['chaos_bloodlust', 'chaos_first_strike', 'chaos_war_blood_sacrifice'],
+    voxelBlueprintId: 'creature_might_red_priest',
+    themeColor: '#c92e3e',
+    accentColor: '#ffcb6b',
+  },
+
+  /** 力量 T4-A：赤雷巨鹏 · 2×2 极速飞行猛禽 + 100% 稳定赤雷天罚（每只固定 28 点雷电法伤） */
+  might_crimson_thunderbird: {
+    id: 'might_crimson_thunderbird',
+    name: '赤雷巨鹏',
+    tier: 4,
+    alignment: 'might',
+    branchTag: 'a',
+    footprint: '2x2',
+    description:
+      '武艺旧都 4 阶力量系赤雷神禽：2×2 翼展凌空疾掠，每次近战攻击命中必稳定触发赤雷天罚，按每只固定 28 点追加无视物理防御的雷电魔法伤害。',
+    baseStats: {
+      attack: 23,
+      defense: 23,
+      minDamage: 29,
+      maxDamage: 42,
+      maxHp: 195,
+      speed: 10,
+      initiative: 15,
+      range: 1,
+      ammo: 0,
+      morale: 2,
+      luck: 2,
+      magicResistance: 0.05,
+      grazeChance: 0.05,
+    },
+    abilities: {
+      flying: true,
+      lightningStrike: true,
+    },
+    voxelBlueprintId: 'creature_might_crimson_thunderbird',
+    themeColor: '#e85d2a',
+    accentColor: '#7be8ff',
+  },
+
+  /** 力量 T4-B：熔岩巨兽 · 2×2 地底巨兽，碎甲重击（无视 50% 防御）+ 25% 抗火 */
+  might_lava_behemoth: {
+    id: 'might_lava_behemoth',
+    name: '熔岩巨兽',
+    tier: 4,
+    alignment: 'might',
+    branchTag: 'b',
+    footprint: '2x2',
+    description:
+      '武艺旧都 4 阶力量系灼热地底巨兽：2×2 熔岩玄甲猛兽，近战扑击触发碎甲重击无视目标 50% 防御力，且天生具备 25% 火焰法术与烈焰反伤抗性。',
+    baseStats: {
+      attack: 29,
+      defense: 26,
+      minDamage: 38,
+      maxDamage: 58,
+      maxHp: 260,
+      speed: 7,
+      initiative: 11,
+      range: 1,
+      ammo: 0,
+      morale: 2,
+      luck: 1,
+      magicResistance: 0.05,
+      grazeChance: 0.05,
+    },
+    abilities: {
+      armorPierce: true,
+      fireResist25: true,
+    },
+    voxelBlueprintId: 'creature_might_lava_behemoth',
+    themeColor: '#b8321a',
+    accentColor: '#ff9d2e',
+  },
+};

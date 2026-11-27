@@ -28,7 +28,7 @@ import {
   resolveUnitRangedProjectile,
   type RangedProjectileKind,
 } from './rangedProjectileFx';
-import { animateCombatExchange } from './stage/combatAnimations';
+import { animateAreaRangedAttack, animateCombatExchange } from './stage/combatAnimations';
 import { sleep } from './stage/geometry';
 import { animateUnitMove } from './stage/moveAnimations';
 import {
@@ -905,6 +905,25 @@ export class BattleStage {
         await animateUnitMove(animCtx, ev.unitId, ev.path);
       } else if (ev.type === 'COMBAT_EXCHANGE') {
         await animateCombatExchange(animCtx, ev);
+      } else if (ev.type === 'AREA_RANGED_ATTACK') {
+        await animateAreaRangedAttack(animCtx, ev);
+      } else if (ev.type === 'DUEL_LOCKED') {
+        const node = this.unitNodes.get(ev.unitId);
+        if (node) {
+          this.fxBridge.spawnEffect('fire_ring', node.baseX, node.baseY - 10, {
+            paletteKey: 'hell_inferno',
+            light: 1.5,
+            speedScale: 1.5,
+            maxDuration: 0.85,
+          });
+          this.spawnFloatingText(node.baseX, node.baseY - 38 * node.spriteScale, '🔥 死斗锁定!', '#ff7052');
+          await sleep(160);
+        }
+      } else if (ev.type === 'DUEL_CLEARED') {
+        const node = this.unitNodes.get(ev.unitId);
+        if (node) {
+          this.spawnFloatingText(node.baseX, node.baseY - 36 * node.spriteScale, '死斗解除', '#ffe082');
+        }
       } else if (ev.type === 'SPELL_CAST') {
         await animateSpellCast(animCtx, ev, finalState);
       } else if (ev.type === 'SPELL_CARD_DECLARED') {

@@ -182,6 +182,7 @@ export function evaluatePositiveBuffScore(unit: BattleUnit): number {
   if (se.guardianAngelLives && se.guardianAngelLives > 0) score += 60;
   if (se.regenPerRound && se.regenPerRound > 0) score += 26;
   if (se.tempShieldHp && se.tempShieldHp > 0) score += Math.min(50, se.tempShieldHp * 0.45);
+  if (se.bloodSacrificeShieldHp && se.bloodSacrificeShieldHp > 0) score += Math.min(72, se.bloodSacrificeShieldHp * 0.42);
   if (se.slayer) score += 22;
   if (se.defenderBonus) score += 16;
   if (se.grantedAbilities?.includes('doubleStrike')) score += 58;
@@ -216,7 +217,7 @@ export function evaluateNegativeDebuffScore(unit: BattleUnit): number {
   if (se.plaguePower && se.plaguePower > 0) score += 35 + Math.min(45, se.plaguePower * 0.8);
   if (se.agedRounds && se.agedRounds > 0) score += 55;
   if (se.powerDrain) score += 32;
-  if (se.spellShacklePower && se.spellShacklePower > 0) score += 32;
+  if (se.spellShacklePower && se.spellShacklePower > 0) score += 68;
   if (se.grantedAbilities?.includes('noRanged') && unit.baseAbilities?.ranged) score += 58;
   return score;
 }

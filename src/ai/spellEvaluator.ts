@@ -10,6 +10,7 @@ import {
   canPlaceFootprintAt,
   checkSpellLineOfSight,
   evaluateIllusionSpell,
+  findStackableSummonUnit,
   getAvailableCorpseHp,
   getEffectiveSpellManaCost,
   getEffectiveSpellRange,
@@ -79,12 +80,16 @@ function estimateNetSpellDamage(
   const isCold = Boolean(spell.isColdSpell) || spell.vfxKey.includes('ice') || spell.vfxKey.includes('frost');
 
   if (isFire && target.abilities.fireResistant) dmg *= 0.5;
+  else if (isFire && target.abilities.fireResist25) dmg *= 0.75;
   if (isCold && target.abilities.coldResistant) dmg *= 0.5;
   if (spell.alignment === 'death' && target.abilities.deathWard) dmg *= 0.5;
   if (spell.alignment === 'life' && target.abilities.lifeWard) dmg *= 0.5;
   if (spell.alignment === 'chaos' && target.abilities.chaosWard) dmg *= 0.5;
-  if (target.statusEffects?.schoolWards?.[spell.alignment]) dmg *= 0.5;
+  if (target.statusEffects?.schoolWards?.[spell.alignment]) dmg *= 0.65;
   if (isDarkMagicVulnerable(target)) dmg *= DARK_MAGIC_VULNERABILITY_MULT;
+  if (target.abilities.berserkDuel && target.statusEffects?.duelTargetUnitId) {
+    dmg *= 0.9;
+  }
 
   dmg *= Math.max(0, 1 - targetProfile.stats.magicResistance);
   // 估算擦弹折减期望（擦弹按约 40% 减伤）
@@ -252,7 +257,10 @@ export function evaluateSpellCardAction(
         candidateAimHexes.set(hexKey(h), h);
       }
     }
-    const baseDmg = (card.damageBase ?? 78) + intel.activeProfile.stats.spellPower * 2.4;
+    const isMightPhysicalCard = card.alignment === 'might';
+    const baseDmg = isMightPhysicalCard
+      ? (card.damageBase ?? 108) + intel.activeProfile.stats.attack * 2.8
+      : (card.damageBase ?? 78) + intel.activeProfile.stats.spellPower * 2.4;
     let bestTargetHex: HexCoord | null = null;
     let bestScore = 0;
 
@@ -262,12 +270,14 @@ export function evaluateSpellCardAction(
       let lineScore = 0;
       let hitCount = 0;
       for (const e of intel.enemies) {
-        if (e.abilities.magicImmune || e.statusEffects?.sanctuary) continue;
+        if ((!isMightPhysicalCard && e.abilities.magicImmune) || e.statusEffects?.sanctuary) continue;
         if (!getUnitOccupiedHexes(e).some((h) => raySet.has(hexKey(h)))) continue;
         const ep = intel.getProfile(e.id);
         if (!ep) continue;
         hitCount += 1;
-        const netDmg = Math.round(baseDmg * Math.max(0, 1 - ep.stats.magicResistance));
+        const netDmg = isMightPhysicalCard
+          ? Math.round(baseDmg)
+          : Math.round(baseDmg * Math.max(0, 1 - ep.stats.magicResistance));
         lineScore += scoreDamageOnEnemy(state, ep, netDmg, intel);
       }
       if (hitCount >= 2) lineScore += hitCount * 35;
@@ -330,10 +340,26 @@ export function evaluateBestSpellAction(
     return ok;
   };
 
+  const shacklePower = unit.statusEffects?.spellShacklePower ?? 0;
   let best: ScoredAiCommand | null = null;
   const consider = (cmd: CombatCommand, rawScore: number, manaCost: number, tag: string) => {
     if (rawScore <= 0) return;
-    const netScore = rawScore - manaCost * manaCostPenaltyFactor;
+    let shacklePenalty = 0;
+    if (shacklePower > 0 && manaCost > 0) {
+      const estShackleDmg = Math.round(manaCost * shacklePower);
+      const lethalShackle = estShackleDmg >= intel.activeProfile.totalHp * 0.85;
+      // 身上背负「咒缚反噬」时，高耗蓝施法会引发剧烈乃至致命反噬，除非驱散自身咒缚且不致死，否则绝不自残送命！
+      const isSelfCleanse =
+        cmd.type === 'CAST_SPELL' &&
+        (cmd.spellId === 'life_exorcism' || cmd.spellId === 'life_mass_exorcism' || cmd.spellId === 'order_dispel') &&
+        (!cmd.targetUnitId || cmd.targetUnitId === unit.id);
+      if (lethalShackle) {
+        shacklePenalty = estShackleDmg * intel.activeProfile.valuePerHp * 1.6 + (unit.kind === 'hero' ? 360 : 140);
+      } else {
+        shacklePenalty = estShackleDmg * intel.activeProfile.valuePerHp * (isSelfCleanse ? 0.45 : 1.35);
+      }
+    }
+    const netScore = rawScore - manaCost * manaCostPenaltyFactor - shacklePenalty;
     if (netScore <= 18) return;
     const jittered = netScore * deterministicScoreJitter(seedSalt, tag, profile.noiseRatio);
     if (!best || jittered > best.score) {
@@ -530,6 +556,31 @@ function evaluateSelfOrMassSpell(
     return (shield * 1.15 + (inDangerBonus(danger, missingRatio))) * personality.buffBias;
   }
 
+  if (eff === 'war_blood_sacrifice') {
+    if (unit.abilities.magicImmune) return 0;
+    const enemySide = unit.side === 'left' ? 'right' : 'left';
+    const prevEnemyPhys = state.physicalDamageTakenLastRound?.[enemySide] ?? 0;
+    if (prevEnemyPhys <= 0) return 0;
+    const shieldCap =
+      unit.kind === 'hero'
+        ? Math.max(1, Math.round(intel.activeProfile.stats.maxHp * 2))
+        : Math.max(1, unit.count) * 50;
+    const nextShield = Math.max(1, Math.min(Math.round(prevEnemyPhys * 0.35), shieldCap));
+    const curShield = unit.statusEffects?.bloodSacrificeShieldHp ?? 0;
+    const curRounds = unit.statusEffects?.bloodSacrificeShieldRounds ?? 0;
+    // 已有接近新值且持续时间充裕的血盾时避免浪费回合重放
+    if (curShield >= nextShield * 0.85 && curRounds >= 2) return 0;
+    if (nextShield < 20) return 0;
+    const danger = intel.getFootprintDanger(unit.pos, unit.footprint);
+    const missingRatio = 1 - unit.currentHp / Math.max(1, intel.activeProfile.stats.maxHp);
+    const netGain = Math.max(nextShield * 0.55, nextShield - curShield * 0.6);
+    const mobilityBonus = isEngagedInMelee(state, unit) ? 6 : 24;
+    return (
+      (netGain * intel.activeProfile.valuePerHp * 1.2 + inDangerBonus(danger, missingRatio) * 0.65 + mobilityBonus) *
+      personality.buffBias
+    );
+  }
+
   if (eff === 'mana_flare') {
     if (state.battleSpellFlags?.manaFlareActive || state.round > 2) return 0;
     const allyMana = allies.reduce((s, a) => s + (a.mana ?? 0), 0);
@@ -555,11 +606,12 @@ function evaluateSelfOrMassSpell(
       if (a.abilities.magicImmune || isImmuneToLivingHeal(a)) continue;
       const ap = intel.getProfile(a.id);
       if (!ap) continue;
-      const maxTotal = a.maxCount * ap.stats.maxHp;
-      const missing = Math.max(0, maxTotal - ap.totalHp);
-      restoreValue += missing * ap.valuePerHp * 0.85 + ap.negativeDebuffScore * 0.7;
+      // 仅治疗当前受伤首兵/英雄至满血（不复活已阵亡兵力）并清祓全部负面与毒疫
+      const missing = Math.max(0, ap.stats.maxHp - a.currentHp);
+      const heroBoost = a.kind === 'hero' ? 1.35 : 0.95;
+      restoreValue += missing * ap.valuePerHp * heroBoost + ap.negativeDebuffScore * 0.95;
     }
-    return restoreValue >= 150 ? restoreValue * 1.15 * personality.healCleanseBias : 0;
+    return restoreValue >= 130 ? restoreValue * 1.1 * personality.healCleanseBias : 0;
   }
 
   if (eff === 'prayer') {
@@ -667,7 +719,7 @@ function evaluateSelfOrMassSpell(
     if (matchingThreat < 40) return 0;
     const unwarded = allies.filter((a) => !a.abilities.magicImmune && !a.statusEffects?.schoolWards?.[spell.wardSchool!]).length;
     if (unwarded < 2) return 0;
-    return matchingThreat * (0.45 + Math.min(0.65, unwarded * 0.1)) * personality.buffBias;
+    return matchingThreat * (0.34 + Math.min(0.48, unwarded * 0.08)) * personality.buffBias;
   }
 
   if (eff === 'mass_exorcism') {
@@ -1030,6 +1082,14 @@ function evaluateSummonSpell(
   );
   const allocated = allocateHpPoolToStack(budgetHp, tmpl.baseStats.maxHp);
   if (allocated.count <= 0) return null;
+
+  // 若己方场上已有同种存活召唤单位且在射程内，直接叠加强化该堆叠（无需再找空地）
+  const existingSummon = findStackableSummonUnit(state, unit.side, tmpl.id, 'summoned');
+  if (existingSummon && (effRange <= 0 || getUnitMinDistance(unit, existingSummon) <= effRange)) {
+    const summonDps = ((tmpl.baseStats.minDamage + tmpl.baseStats.maxDamage) / 2) * allocated.count;
+    const baseValue = budgetHp * 0.78 + summonDps * 1.2 + 24;
+    return { anchor: existingSummon.pos, score: baseValue * intel.personality.summonBias };
+  }
 
   const casterHexes = getUnitOccupiedHexes(unit);
   const unpinnedShooters = intel.enemies.filter((e) => intel.getProfile(e.id)?.isUnpinnedRanged);
@@ -1462,7 +1522,8 @@ function evaluateSingleUnitSpell(
       if (target.kind === 'creature') {
         let effPow = raw;
         if (isDarkMagicVulnerable(target)) effPow *= DARK_MAGIC_VULNERABILITY_MULT;
-        if (target.abilities.deathWard || target.statusEffects?.schoolWards?.death) effPow *= 0.5;
+        if (target.abilities.deathWard) effPow *= 0.5;
+        else if (target.statusEffects?.schoolWards?.death) effPow *= 0.65;
         effPow *= Math.max(0, 1 - tp.stats.magicResistance);
         const kills = Math.max(1, Math.min(target.count, Math.floor(effPow / Math.max(12, tp.stats.maxHp))));
         net = kills * tp.stats.maxHp;
@@ -1577,25 +1638,25 @@ function evaluateSingleUnitSpell(
     return (spread * 0.8 + tp.expectedDps * 0.28 + (target.statusEffects?.curse ? 45 : 0)) * personality.buffBias;
   }
   if (eff === 'precision') {
-    if (!tp.isActiveRanged || (target.statusEffects?.precisionRounds ?? 0) > 1) return 0;
+    if (!tp.isActiveRanged || tp.isHardCCed || (target.statusEffects?.precisionRounds ?? 0) > 1) return 0;
     return (tp.expectedDps * 0.85 + 25) * personality.buffBias;
   }
   if (eff === 'bloodlust' || eff === 'fire_aura') {
-    if (tp.isActiveRanged || target.abilities.noMelee) return 0;
+    if (tp.isActiveRanged || target.abilities.noMelee || tp.isHardCCed) return 0;
     if (eff === 'bloodlust' && (target.statusEffects?.bloodlustRounds ?? 0) > 1) return 0;
     if (eff === 'fire_aura' && target.statusEffects?.fireAura) return 0;
     return tp.expectedDps * 0.52 * personality.buffBias;
   }
   if (eff === 'first_strike') {
-    if (target.abilities.firstStrike || tp.isActiveRanged || target.abilities.noMelee) return 0;
+    if (target.abilities.firstStrike || tp.isActiveRanged || target.abilities.noMelee || tp.isHardCCed) return 0;
     return tp.expectedDps * 0.48 * personality.buffBias;
   }
   if (eff === 'aura_of_fear') {
-    if (target.statusEffects?.auraOfFear || target.abilities.noRetaliation || tp.isActiveRanged || target.abilities.noMelee) return 0;
+    if (target.statusEffects?.auraOfFear || target.abilities.noRetaliation || tp.isActiveRanged || target.abilities.noMelee || tp.isHardCCed) return 0;
     return tp.expectedDps * 0.56 * personality.debuffNecroBias;
   }
   if (eff === 'flight') {
-    if (target.abilities.flying || tp.isActiveRanged || target.abilities.noMelee) return 0;
+    if (target.abilities.flying || tp.isActiveRanged || target.abilities.noMelee || tp.isHardCCed) return 0;
     return (tp.expectedDps * 0.45 + 24) * personality.buffBias;
   }
   if (eff === 'blur') {
@@ -1613,7 +1674,9 @@ function evaluateSingleUnitSpell(
   }
   if (eff === 'magic_mirror') {
     if (target.statusEffects?.magicMirror) return 0;
-    const enemyCasterThreat = intel.enemies.some((e) => intel.getProfile(e.id)?.isSpellcaster);
+    const enemyCasterThreat = intel.enemies.some(
+      (e) => intel.getProfile(e.id)?.isSpellcaster && getUnitMinDistance(target, e) <= 22,
+    );
     return enemyCasterThreat && (target.kind === 'hero' || tp.tierWeight >= 3) ? 68 * personality.buffBias : 0;
   }
   if (eff === 'anti_magic') {
@@ -1626,7 +1689,7 @@ function evaluateSingleUnitSpell(
     if (target.statusEffects?.schoolWards?.[spell.wardSchool]) return 0;
     const enemyHasSchool = intel.enemies.some((e) => e.alignment === spell.wardSchool);
     if (!enemyHasSchool || (target.kind !== 'hero' && tp.tierWeight < 3)) return 0;
-    return 65 * personality.buffBias;
+    return 48 * personality.buffBias;
   }
   if (eff === 'slayer') {
     if (target.statusEffects?.slayer) return 0;
@@ -1657,7 +1720,7 @@ function evaluateSingleUnitSpell(
       score += (Math.min(missing, healPow) * tp.valuePerHp * urgency + poisonCleanse) * personality.healCleanseBias;
     }
   }
-  if (spell.buffModifiers?.length && !hasSpellModifier(target, spell.id)) {
+  if (spell.buffModifiers?.length && !hasSpellModifier(target, spell.id) && !tp.isHardCCed) {
     score += scoreModifierListOnAlly(spell.buffModifiers, tp, state) * personality.buffBias;
   }
   return score;

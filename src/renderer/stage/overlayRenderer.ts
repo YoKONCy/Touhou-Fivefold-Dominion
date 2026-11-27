@@ -333,6 +333,10 @@ export function computeHoverOverlaySignature(staticSig: string, hints: StageOver
     hints.meleeApproachHex ? hexKey(hints.meleeApproachHex) : '',
     hints.meleeTargetHex ? hexKey(hints.meleeTargetHex) : '',
     hints.movePathPreview ? hints.movePathPreview.length : 0,
+    hints.aoeRadius,
+    hints.areaRangedPreview
+      ? `${hexKey(hints.areaRangedPreview.centerHex)}:${hints.areaRangedPreview.radius}:${hints.areaRangedPreview.valid ? 1 : 0}`
+      : '',
     hints.attackPreview
       ? `${hints.attackPreview.valid}:${hints.attackPreview.isRanged}:${hints.attackPreview.rangedPenaltyTier}:${hints.attackPreview.losStatus}`
       : '',
@@ -470,7 +474,16 @@ export function renderHoverOverlay(
   g.clear();
   fg.clear();
 
-  if (hints.targetingMode === 'spell_aoe' && activeUnit) {
+  if (hints.areaRangedPreview && activeUnit) {
+    const { centerHex, radius, valid } = hints.areaRangedPreview;
+    for (const h of getHexRange(centerHex, radius)) {
+      if (valid) {
+        drawHexOn(g, state, h, 0xff6b35, 0.3, 0xffe066, 0.92, 1.45);
+      } else {
+        drawHexOn(g, state, h, 0xff3855, 0.12, 0xff6b81, 0.42, 1.0);
+      }
+    }
+  } else if (hints.targetingMode === 'spell_aoe' && activeUnit) {
     if (hints.hoveredHex) {
       const casterHexes = getUnitOccupiedHexes(activeUnit);
       const inRange =

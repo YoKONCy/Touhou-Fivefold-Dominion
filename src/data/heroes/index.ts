@@ -10,6 +10,11 @@ const LIFE_COMBAT_SPELL_IDS: string[] = ALL_H4_COMBAT_SPELL_IDS.filter(
   (id) => H4_SPELLS[id]?.alignment === 'life',
 );
 
+/** 正统混沌系全部 1~5 阶战斗法术 ID（供雾雨魔理沙 5 阶混沌大宗师配置使用） */
+const CHAOS_COMBAT_SPELL_IDS: string[] = ALL_H4_COMBAT_SPELL_IDS.filter(
+  (id) => H4_SPELLS[id]?.alignment === 'chaos',
+);
+
 /** 四大阵营默认英雄表（博丽灵梦、雾雨魔理沙、八意永琳、蕾米莉亚） */
 export const HERO_DEFINITIONS: Record<string, HeroDefinition> = {
   hero_reimu: {
@@ -100,29 +105,24 @@ export const HERO_DEFINITIONS: Record<string, HeroDefinition> = {
       unlimitedRetaliation: true,
     },
     innateTraitIds: ['marisa_firepower_doctrine'],
-    knownSpellIds: [
-      'chaos_star_bolt',
-      'chaos_meteor_burst',
-      'death_curse',
-      'order_slow',
-      'chaos_magic_arrow',
-      'chaos_haste',
-      'chaos_bloodlust',
-      'chaos_lightning',
-      'chaos_fireball',
-      'chaos_first_strike',
-      'chaos_confusion',
-      'chaos_magic_mirror',
-    ],
+    knownSpellIds: Array.from(
+      new Set([
+        'chaos_star_bolt',
+        'chaos_meteor_burst',
+        ...CHAOS_COMBAT_SPELL_IDS,
+        'death_curse',
+        'order_slow',
+      ]),
+    ),
     signatureSpellCardId: 'marisa_master_spark',
     initialSkills: {
-      chaos_magic: 4,
+      chaos_magic: 5,
       scouting: 3,
       order_magic: 2,
       combat: 3,
     },
     initialSubSkills: {
-      conjuration: 3,
+      conjuration: 4,
       pyromancy: 4,
       sorcery: 3,
       pathfinding: 2,
@@ -321,5 +321,55 @@ export const HERO_DEFINITIONS: Record<string, HeroDefinition> = {
     voxelBlueprintId: 'hero_remilia',
     themeColor: '#d92659',
     accentColor: '#ff9eb8',
+  },
+
+  hero_yuugi: {
+    id: 'hero_yuugi',
+    name: '星熊勇仪',
+    title: '人所谈论的怪力乱神 · 旧都四天王',
+    alignment: 'might',
+    level: 5,
+    baseStats: {
+      attack: 20,
+      defense: 18,
+      minDamage: 28,
+      maxDamage: 38,
+      maxHp: 260,
+      speed: 7,
+      initiative: 12,
+      range: 8,
+      ammo: 16,
+      morale: 3,
+      luck: 2,
+      magicResistance: 0.15,
+      grazeChance: 0.1,
+      spellPower: 0,
+      maxMana: 0,
+    },
+    abilities: {
+      noMeleePenalty: true,
+      unlimitedRetaliation: true,
+    },
+    innateTraitIds: ['yuugi_unspilled_sake'],
+    knownSpellIds: [],
+    signatureSpellCardId: 'yuugi_big_four_step',
+    initialSkills: {
+      combat: 5,
+    },
+    initialSubSkills: {
+      melee: 5,
+      archery: 5,
+      magic_resistance: 5,
+    },
+    initialSelectedClassId: undefined,
+    initialPotions: [
+      { potionId: 'healing_elixir', charges: 2 },
+      { potionId: 'iron_barrier_oil', charges: 2 },
+    ],
+    initialArtifacts: ['oni_shackle_chains', 'hoshiguma_dish'],
+    footprint: '1x1',
+    voxelBlueprintId: 'hero_yuugi',
+    themeColor: '#e87a3e',
+    accentColor: '#ffd95a',
   },
 };

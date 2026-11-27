@@ -20,9 +20,12 @@ export {
   type SoundRenderParams,
 } from './sfxCatalog';
 export {
+  DEFAULT_BGM_PLAYLIST,
   SoundEngine,
   soundEngine,
   type AudioSettings,
+  type BgmPlaybackState,
+  type BgmTrack,
   type PlaySoundOptions,
 } from './soundEngine';
 export {

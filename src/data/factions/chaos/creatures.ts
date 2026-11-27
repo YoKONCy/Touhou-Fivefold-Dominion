@@ -13,14 +13,14 @@ export const CHAOS_CREATURES: Record<string, CreatureDefinition> = {
     alignment: 'chaos',
     branchTag: 't1_a',
     footprint: '1x1',
-    description: '魔导结社 1 阶混沌系暗袭刺客：「影遁潜行」赋予极高擦弹与先手，具备暗系特质对普通活体额外增伤，专切脆弱后排！',
+    description: '魔导结社 1 阶混沌系暗袭刺客：「影遁潜行」赋予极高擦弹与远程减伤（周围 6 格内无敌军时效果翻倍），具备暗系特质对普通活体额外增伤，专切脆弱后排！',
     baseStats: {
       attack: 10,
       defense: 9,
       minDamage: 3,
       maxDamage: 4,
       maxHp: 14,
-      speed: 8,
+      speed: 9,
       initiative: 13,
       range: 1,
       ammo: 0,
@@ -117,7 +117,7 @@ export const CHAOS_CREATURES: Record<string, CreatureDefinition> = {
     alignment: 'chaos',
     branchTag: 'b',
     footprint: '2x1',
-    description: '魔导结社 2 阶混沌系暗系魔导炮台：2×1 浮空禁忌魔典，「无限弹药」且命中概率触发「魔眼石化」即死，兼可施放混沌魔法与死亡魔法。',
+    description: '魔导结社 2 阶混沌系暗系魔导炮台：2×1 浮空禁忌魔典，「无限弹药」且命中时 35% 概率按每本 12 点生命阈值触发「魔眼石化」抹杀敌兵（对英雄转为受魔抗减免的石化伤害），兼可施放混沌魔法与死亡魔法。',
     baseStats: {
       attack: 16,
       defense: 12,
@@ -218,7 +218,7 @@ export const CHAOS_CREATURES: Record<string, CreatureDefinition> = {
     accentColor: '#ffe066',
   },
 
-  /** 混沌 T4-A（对标 H4 Hydra）：魔导巨像 · 不受反击 + 周身全扫 + 攻城破墙 + 器灵构造 */
+  /** 混沌 T4-A（对标 H4 Hydra）：魔导巨像 · 不受反击 + 周身全扫 + 攻城破墙 + 器灵构造 + 35% 魔抗 */
   arcane_colossus: {
     id: 'arcane_colossus',
     name: '魔导巨像',
@@ -226,12 +226,12 @@ export const CHAOS_CREATURES: Record<string, CreatureDefinition> = {
     alignment: 'chaos',
     branchTag: 'a',
     footprint: '2x2',
-    description: '魔导结社 4 阶混沌系魔晶巨像：由黑曜符文石与高能星辉魔晶构筑的 2×2 机械巨神，「不受反击」且「周身全扫」横扫四周全部敌军！',
+    description: '魔导结社 4 阶混沌系魔晶巨像：由黑曜符文石与高能星辉魔晶构筑的 2×2 机械巨神，具备 35% 魔法抗性，「不受反击」且「周身全扫」横扫四周全部敌军！',
     baseStats: {
       attack: 25,
-      defense: 25,
-      minDamage: 28,
-      maxDamage: 46,
+      defense: 26,
+      minDamage: 32,
+      maxDamage: 49,
       maxHp: 260,
       speed: 7,
       initiative: 11,
@@ -239,7 +239,7 @@ export const CHAOS_CREATURES: Record<string, CreatureDefinition> = {
       ammo: 0,
       morale: 0,
       luck: 1,
-      magicResistance: 0.05,
+      magicResistance: 0.35,
       grazeChance: 0.05,
     },
     abilities: {
@@ -263,12 +263,12 @@ export const CHAOS_CREATURES: Record<string, CreatureDefinition> = {
     footprint: '2x2',
     description: '魔导结社 4 阶混沌系终极霸主：2×2 凌空巨龙，「全魔法免疫」绝对无视一切敌我法术与符卡结界，「贯穿吐息」一击焚尽前后两排！',
     baseStats: {
-      attack: 34,
+      attack: 36,
       defense: 34,
       minDamage: 52,
       maxDamage: 92,
-      maxHp: 370,
-      speed: 10,
+      maxHp: 400,
+      speed: 11,
       initiative: 14,
       range: 1,
       ammo: 0,

@@ -64,6 +64,7 @@ export {
   computeDualTrackSpellPower,
   evaluateIllusionSpell,
   findNearestOpenAnchor,
+  findStackableSummonUnit,
   getAvailableCorpseHp,
   getCasterSchoolRank,
   getCreaturePerUnitSpellFactor,
@@ -73,6 +74,7 @@ export {
   getSchoolSpellMultiplier,
   isTargetResistingHostileSpell,
   isUnitOnHighlandPlatform,
+  mergeHpPoolIntoExistingStack,
   validateCorpseSpellTarget,
   validateSpellUnitTarget,
 } from './spells/helpers';
@@ -132,9 +134,9 @@ export function executeH4CastSpell(
       ? 'summon'
       : eff === 'raise_undead' || eff === 'animate_dead' || eff === 'death_call'
         ? 'raise'
-        : spell.reviveBase || eff === 'divine_intervention' || eff === 'guardian_angel'
+        : spell.reviveBase || eff === 'guardian_angel'
           ? 'revive'
-          : spell.healBase || eff === 'heavenly_shield' || eff === 'regeneration'
+          : spell.healBase || eff === 'divine_intervention' || eff === 'heavenly_shield' || eff === 'regeneration'
             ? 'heal'
             : eff === 'blind' || eff === 'hypnotize' || eff === 'berserk' || eff === 'confusion' || eff === 'cloud_of_confusion' || eff === 'cowardice' || eff === 'song_of_peace'
               ? 'mind'

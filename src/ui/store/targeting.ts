@@ -7,6 +7,7 @@ import {
   canPlaceFootprintAt,
   checkSpellLineOfSight,
   findCorpseTargetAtHex,
+  findStackableSummonUnit,
   findUnitAtHex,
   getEffectiveSpellManaCost,
   getEffectiveSpellRange,
@@ -144,10 +145,18 @@ export function computeHoverSpellContext(params: {
   }
 
   if (spell.targetType === 'hex_empty') {
-    const distance = minHexSetDistance(casterHexes, [hex]);
     const tmpl = spell.summonTemplateId ? TOUHOU_CATALOG.creatures[spell.summonTemplateId] : undefined;
+    const existingSummon = tmpl ? findStackableSummonUnit(st, act.side, tmpl.id, 'summoned') : null;
+    const hoveredExisting = Boolean(
+      existingSummon && getUnitOccupiedHexes(existingSummon).some((h) => hexEquals(h, hex)),
+    );
+    const distance = hoveredExisting && existingSummon
+      ? getUnitMinDistance(act, existingSummon)
+      : minHexSetDistance(casterHexes, [hex]);
     const outOfRange = effRange > 0 && distance > effRange;
-    const canDrop = canPlaceFootprintAt(st, hex, tmpl?.footprint ?? '1x1', undefined, Boolean(tmpl?.abilities.flying));
+    const canDrop = existingSummon
+      ? true
+      : canPlaceFootprintAt(st, hex, tmpl?.footprint ?? '1x1', undefined, Boolean(tmpl?.abilities.flying));
     const canCast = !outOfRange && canDrop;
     const reason = outOfRange
       ? `超出召唤射程（当前距离 ${distance} 格 / 上限 ${effRange} 格）`
@@ -158,8 +167,8 @@ export function computeHoverSpellContext(params: {
       st,
       act,
       { ...spell, ignoreLos: true },
-      hex,
-      null,
+      existingSummon ? existingSummon.pos : hex,
+      existingSummon,
       effRange,
       !canDrop && !outOfRange ? reason : undefined,
     );
@@ -169,11 +178,17 @@ export function computeHoverSpellContext(params: {
       manaCost,
       effRange,
       distance,
-      targetHex: hex,
-      targetUnit: null,
+      targetHex: existingSummon ? existingSummon.pos : hex,
+      targetUnit: existingSummon,
       canCast,
       reason,
-      shortLabel: canCast ? `召唤·${tmpl?.name ?? spell.name}` : outOfRange ? '超出射程' : '落点受阻',
+      shortLabel: canCast
+        ? existingSummon
+          ? `叠加召唤·${existingSummon.name}`
+          : `召唤·${tmpl?.name ?? spell.name}`
+        : outOfRange
+          ? '超出射程'
+          : '落点受阻',
       trajectory: traj,
     };
   }
@@ -508,6 +523,8 @@ export function computeTacticalCursor(params: {
   detailModalOpen: boolean;
   spellsDrawerOpen: boolean;
   declaringSpellCard: boolean;
+  areaRangedAimMode?: boolean;
+  hoverAreaRangedPreview?: import('@core/types').AreaRangedPreview | null;
   selectedSpellId: string | null;
   hoverSpellContext: HoverSpellContext | null;
   hoverAttackContext: HoverAttackContext | null;
@@ -523,6 +540,8 @@ export function computeTacticalCursor(params: {
     detailModalOpen,
     spellsDrawerOpen,
     declaringSpellCard,
+    areaRangedAimMode,
+    hoverAreaRangedPreview,
     selectedSpellId,
     hoverSpellContext,
     hoverAttackContext,
@@ -545,6 +564,27 @@ export function computeTacticalCursor(params: {
       return { kind: 'blocked', angleDeg: 0 };
     }
     return { kind: 'spell', angleDeg: 0, label: '符卡宣言' };
+  }
+
+  if ((areaRangedAimMode || hoverAreaRangedPreview) && act && isHumanTurn) {
+    if (!hoverAreaRangedPreview) return { kind: 'ranged', angleDeg: 0, label: '飞石瞄空' };
+    if (!hoverAreaRangedPreview.valid) {
+      return { kind: 'blocked', angleDeg: 0, label: '投岩受阻' };
+    }
+    const tier = hoverAreaRangedPreview.rangedPenaltyTier;
+    const tierTag = tier === 'full' ? '' : tier === 'half' ? '1/2·' : tier === 'quarter' ? '1/4·' : '1/8·';
+    const hitLabel =
+      hoverAreaRangedPreview.targets.length > 0
+        ? `投岩 ${tierTag}${hoverAreaRangedPreview.targets.length}队`
+        : tier === 'full'
+          ? '砸向空地'
+          : `砸空 ${tierTag.replace('·', '')}`;
+    return {
+      kind: tier === 'full' ? 'ranged' : 'ranged_penalty',
+      angleDeg: 0,
+      rangedPenaltyTier: tier,
+      label: hitLabel,
+    };
   }
 
   if (selectedSpellId && act && isHumanTurn) {

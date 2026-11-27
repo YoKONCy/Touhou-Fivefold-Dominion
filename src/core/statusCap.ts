@@ -141,6 +141,15 @@ const STATUS_FLAG_DETECTORS: Array<{
     clear: (u) => { u.statusEffects.tempShieldHp = 0; },
   },
   {
+    key: 'bloodSacrificeShieldHp',
+    label: '战争血祭',
+    isActive: (se) => Boolean(se.bloodSacrificeShieldHp && se.bloodSacrificeShieldHp > 0),
+    clear: (u) => {
+      u.statusEffects.bloodSacrificeShieldHp = 0;
+      u.statusEffects.bloodSacrificeShieldRounds = 0;
+    },
+  },
+  {
     key: 'guardianAngelLives',
     label: '御神护命',
     isActive: (se) => Boolean(se.guardianAngelLives && se.guardianAngelLives > 0),

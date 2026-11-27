@@ -454,6 +454,234 @@ export function checkRangedCapability(
   };
 }
 
+/** 判断区域飞石轰击单位（areaRanged）能否向任意指定六边形（含空地）投掷 1 环 AOE 巨岩 */
+export function checkAreaRangedCapability(
+  state: BattleState,
+  attacker: BattleUnit,
+  targetHex: HexCoord,
+  catalog: CombatContentCatalog,
+): {
+  canRanged: boolean;
+  los: LineOfSightResult;
+  distance: number;
+  rangePenalty: number;
+  penaltyTier: RangedPenaltyTier;
+  fromHex: HexCoord;
+  toHex: HexCoord;
+  blockedKind?: 'no_ranged' | 'no_ammo' | 'melee_engaged' | 'invalid_hex' | 'los_blocked';
+  engagedByUnitName?: string;
+} {
+  const stats = computeUnitStats(attacker, state, catalog);
+  const atkHexes = getUnitOccupiedHexes(attacker);
+  const distance = minHexSetDistance(atkHexes, [targetHex]);
+  const closestPair = findClosestHexPair(atkHexes, [targetHex]);
+  const emptyLos: LineOfSightResult = {
+    canShoot: false,
+    status: 'blocked',
+    losMultiplier: 0,
+    intermediateHexes: [],
+    blockingHexes: [],
+  };
+
+  if (!attacker.abilities.ranged || !attacker.abilities.areaRanged || attacker.abilities.noRanged) {
+    return {
+      canRanged: false,
+      los: emptyLos,
+      distance,
+      rangePenalty: 0,
+      penaltyTier: 'full',
+      ...closestPair,
+      blockedKind: 'no_ranged',
+    };
+  }
+  const hasAmmo = Boolean(attacker.abilities.unlimitedShots) || attacker.ammo > 0;
+  if (!hasAmmo) {
+    return {
+      canRanged: false,
+      los: emptyLos,
+      distance,
+      rangePenalty: 0,
+      penaltyTier: 'full',
+      ...closestPair,
+      blockedKind: 'no_ammo',
+    };
+  }
+  if (!state.tiles[hexKey(targetHex)] || atkHexes.some((h) => hexEquals(h, targetHex))) {
+    return {
+      canRanged: false,
+      los: emptyLos,
+      distance,
+      rangePenalty: 0,
+      penaltyTier: 'full',
+      ...closestPair,
+      blockedKind: 'invalid_hex',
+    };
+  }
+  const canShootWhileEngaged = Boolean(attacker.abilities.noMelee);
+  if (!canShootWhileEngaged && (distance <= 1 || isEngagedInMelee(state, attacker))) {
+    let engagedName: string | undefined;
+    for (const other of Object.values(state.units)) {
+      if (other.status !== 'alive' || other.side === attacker.side) continue;
+      if (minHexSetDistance(atkHexes, getUnitOccupiedHexes(other)) <= 1) {
+        engagedName = other.name;
+        break;
+      }
+    }
+    return {
+      canRanged: false,
+      los: emptyLos,
+      distance,
+      rangePenalty: 0,
+      penaltyTier: 'full',
+      ...closestPair,
+      blockedKind: 'melee_engaged',
+      engagedByUnitName: engagedName,
+    };
+  }
+
+  const tiles = buildTileMap(state);
+  const occupied = getOccupiedHexKeys(state);
+  for (const h of atkHexes) occupied.delete(hexKey(h));
+  occupied.delete(hexKey(targetHex));
+  const standingAtTarget = findUnitAtHex(state, targetHex, false);
+  if (standingAtTarget) {
+    for (const h of getUnitOccupiedHexes(standingAtTarget)) {
+      occupied.delete(hexKey(h));
+    }
+  }
+  for (const ally of Object.values(state.units)) {
+    if (ally.status !== 'alive' || ally.side !== attacker.side || ally.id === attacker.id) continue;
+    const allyHexes = getUnitOccupiedHexes(ally);
+    if (minHexSetDistance(atkHexes, allyHexes) <= 1) {
+      for (const h of allyHexes) occupied.delete(hexKey(h));
+    }
+  }
+
+  let bestLos: LineOfSightResult = emptyLos;
+  let bestFrom: HexCoord = closestPair.fromHex;
+  const bestTo: HexCoord = targetHex;
+  let bestBlockedDist = Infinity;
+
+  for (const aHex of atkHexes) {
+    const los = evaluateLineOfSight(aHex, targetHex, tiles, occupied);
+    if (los.losMultiplier > bestLos.losMultiplier || (los.canShoot && !bestLos.canShoot)) {
+      bestLos = los;
+      bestFrom = aHex;
+    } else if (!bestLos.canShoot && !los.canShoot) {
+      const d = hexDistance(aHex, targetHex);
+      if (d < bestBlockedDist || (d === bestBlockedDist && los.blockingHexes.length > bestLos.blockingHexes.length)) {
+        bestBlockedDist = d;
+        bestLos = los;
+        bestFrom = aHex;
+      }
+    }
+    if (bestLos.status === 'clear') break;
+  }
+
+  const effectiveRange = Math.max(1, stats.range);
+  const { penaltyTier, rangePenalty } = computeRangedPenalty(attacker, effectiveRange, distance, bestLos.status);
+
+  return {
+    canRanged: bestLos.canShoot,
+    los: bestLos,
+    distance,
+    rangePenalty,
+    penaltyTier,
+    fromHex: bestFrom,
+    toHex: bestTo,
+    blockedKind: bestLos.canShoot ? undefined : 'los_blocked',
+  };
+}
+
+/** 构建区域飞石轰击（areaRanged）的可视化飞行路径与阻挡诊断 */
+export function buildAreaRangedTrajectoryPreview(
+  state: BattleState,
+  attacker: BattleUnit,
+  targetHex: HexCoord,
+  rangedCheck: ReturnType<typeof checkAreaRangedCapability>,
+): ProjectileTrajectoryPreview {
+  const standing = findUnitAtHex(state, targetHex, false);
+  const excludeIds = new Set<string>([attacker.id]);
+  if (standing) excludeIds.add(standing.id);
+
+  if (rangedCheck.blockedKind === 'no_ranged') {
+    return {
+      kind: 'ranged',
+      fromHex: rangedCheck.fromHex,
+      toHex: rangedCheck.toHex,
+      blocked: true,
+      reason: attacker.abilities.noRanged ? '处于远程禁手状态，无法投掷' : '该单位无区域投掷能力',
+      losStatus: 'blocked',
+      intermediateHexes: hexLine(rangedCheck.fromHex, rangedCheck.toHex).slice(1, -1),
+      blockingHex: null,
+      partialHexes: [],
+      blockers: [],
+    };
+  }
+  if (rangedCheck.blockedKind === 'no_ammo') {
+    return {
+      kind: 'ranged',
+      fromHex: rangedCheck.fromHex,
+      toHex: rangedCheck.toHex,
+      blocked: true,
+      reason: '巨岩弹药已耗尽，无法发起远程轰击',
+      losStatus: 'blocked',
+      intermediateHexes: hexLine(rangedCheck.fromHex, rangedCheck.toHex).slice(1, -1),
+      blockingHex: null,
+      partialHexes: [],
+      blockers: [],
+    };
+  }
+  if (rangedCheck.blockedKind === 'invalid_hex') {
+    return {
+      kind: 'ranged',
+      fromHex: rangedCheck.fromHex,
+      toHex: rangedCheck.toHex,
+      blocked: true,
+      reason: '无法向自身脚下或战场外投掷巨岩',
+      losStatus: 'blocked',
+      intermediateHexes: [],
+      blockingHex: null,
+      partialHexes: [],
+      blockers: [],
+    };
+  }
+  if (rangedCheck.blockedKind === 'melee_engaged') {
+    const reason = rangedCheck.engagedByUnitName
+      ? `被敌军【${rangedCheck.engagedByUnitName}】贴身交战，无法投掷巨岩`
+      : '与敌军贴身交战中，无法投掷巨岩';
+    return {
+      kind: 'ranged',
+      fromHex: rangedCheck.fromHex,
+      toHex: rangedCheck.toHex,
+      blocked: true,
+      reason,
+      losStatus: 'blocked',
+      intermediateHexes: hexLine(rangedCheck.fromHex, rangedCheck.toHex).slice(1, -1),
+      blockingHex: null,
+      partialHexes: [],
+      blockers: [],
+    };
+  }
+
+  const diag = diagnoseTrajectoryBlockers(state, rangedCheck.los, attacker.side, excludeIds);
+  const blocked = !rangedCheck.canRanged;
+
+  return {
+    kind: 'ranged',
+    fromHex: rangedCheck.fromHex,
+    toHex: rangedCheck.toHex,
+    blocked,
+    reason: diag.primaryBlockReason,
+    losStatus: rangedCheck.los.status,
+    rangedPenaltyTier: rangedCheck.penaltyTier,
+    intermediateHexes: rangedCheck.los.intermediateHexes,
+    blockingHex: blocked ? diag.blockingHex : null,
+    partialHexes: diag.partialHexes,
+    blockers: diag.blockers,
+  };
+}
+
 /** 构建远程攻击可视化飞行路径与阻挡原因诊断 */
 export function buildRangedTrajectoryPreview(
   state: BattleState,

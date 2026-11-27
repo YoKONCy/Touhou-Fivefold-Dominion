@@ -211,6 +211,8 @@ export function createBattleState(
     commandSeq: 0,
     hasCombatStarted: false,
     nextStatusOrder: 0,
+    physicalDamageTakenThisRound: { left: 0, right: 0 },
+    physicalDamageTakenLastRound: { left: 0, right: 0 },
   };
 
   for (const unit of Object.values(state.units)) {

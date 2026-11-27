@@ -1,11 +1,14 @@
 /**
  * 电影级物理建模 Web Audio 音效引擎单元测试（含离线 PCM 声学波形体检与全 42 配方调度验证）
  */
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   buildPhysicalSoundBank,
   createBrownNoiseBuffer,
   createSpatialImpulseResponse,
+  DEFAULT_BGM_PLAYLIST,
   DEFAULT_SFX_CATALOG,
   SoundEngine,
   type SynthEnv,
@@ -240,5 +243,150 @@ describe('电影级物理建模音效引擎 (SoundEngine)', () => {
     expect(engine.getBgmTrackUrl()).toBe('/assets/audio/custom_theme.mp3');
     expect(() => engine.startBgm()).not.toThrow();
     expect(() => engine.stopBgm()).not.toThrow();
+  });
+
+  it('BGM 三曲顺序播放列表应指向真实音频文件，并支持播毕自动顺延循环与手动切歌订阅', () => {
+    expect(DEFAULT_BGM_PLAYLIST.map((t) => t.id)).toEqual([
+      'pixelized_pressure',
+      'quantized_pressure',
+      'battle_1_yokoncy',
+    ]);
+    for (const track of DEFAULT_BGM_PLAYLIST) {
+      const relPath = track.url.replace(/^\/+/, '');
+      const fullPath = resolve(process.cwd(), 'public', relPath);
+      expect(existsSync(fullPath), `缺少 BGM 文件：${fullPath}`).toBe(true);
+    }
+
+    // 搭建轻量级浏览器 Audio 桩对象，真实验证 ended 顺序切歌与切歌回绕
+    const listenersMap = new Map<string, Set<() => void>>();
+    const playedSrcHistory: string[] = [];
+    let latestAudio: {
+      src: string;
+      loop: boolean;
+      preload: string;
+      volume: number;
+      muted: boolean;
+      paused: boolean;
+      currentTime: number;
+      emit: (event: string) => void;
+    } | null = null;
+
+    class MockHtmlAudio {
+      public src: string;
+      public loop = false;
+      public preload = '';
+      public volume = 1;
+      public muted = false;
+      public paused = true;
+      public currentTime = 0;
+
+      constructor(url = '') {
+        this.src = url;
+        latestAudio = this;
+      }
+
+      public addEventListener(event: string, fn: () => void): void {
+        if (!listenersMap.has(event)) listenersMap.set(event, new Set());
+        listenersMap.get(event)!.add(fn);
+      }
+
+      public removeEventListener(event: string, fn: () => void): void {
+        listenersMap.get(event)?.delete(fn);
+      }
+
+      public load(): void {
+        this.currentTime = 0;
+      }
+
+      public play(): Promise<void> {
+        this.paused = false;
+        playedSrcHistory.push(this.src);
+        this.emit('play');
+        return Promise.resolve();
+      }
+
+      public pause(): void {
+        this.paused = true;
+        this.emit('pause');
+      }
+
+      public emit(event: string): void {
+        for (const fn of listenersMap.get(event) ?? []) {
+          fn();
+        }
+      }
+    }
+
+    const g = globalThis as unknown as {
+      window?: unknown;
+      Audio?: unknown;
+    };
+    const prevWindow = g.window;
+    const prevAudio = g.Audio;
+    g.window = {
+      setInterval: globalThis.setInterval.bind(globalThis),
+      clearInterval: globalThis.clearInterval.bind(globalThis),
+      setTimeout: globalThis.setTimeout.bind(globalThis),
+      clearTimeout: globalThis.clearTimeout.bind(globalThis),
+    };
+    g.Audio = MockHtmlAudio;
+
+    try {
+      const engine = new SoundEngine({
+        muted: false,
+        masterVolume: 0.8,
+        bgmVolume: 0.6,
+        bgmEnabled: true,
+      });
+      const observedTrackIds: string[] = [];
+      const unsubscribe = engine.subscribeBgmChange((snap) => {
+        observedTrackIds.push(snap.currentTrack.id);
+      });
+
+      // 启动第 1 首时不应单曲 loop，而应监听 ended 顺序顺延
+      expect(engine.startBgm()).toBe(true);
+      expect(latestAudio).not.toBeNull();
+      expect(latestAudio!.loop).toBe(false);
+      expect(engine.getCurrentBgmTrack().id).toBe('pixelized_pressure');
+
+      // 第 1 首播毕 -> 自动切到第 2 首（Quantized Pressure）
+      latestAudio!.emit('ended');
+      expect(engine.getBgmTrackIndex()).toBe(1);
+      expect(engine.getCurrentBgmTrack().id).toBe('quantized_pressure');
+      expect(latestAudio!.src).toContain('battle_bgm_quantized_pressure.mp3');
+
+      // 第 2 首播毕 -> 自动切到第 3 首（Battle I）
+      latestAudio!.emit('ended');
+      expect(engine.getBgmTrackIndex()).toBe(2);
+      expect(engine.getCurrentBgmTrack().id).toBe('battle_1_yokoncy');
+      expect(latestAudio!.src).toContain('battle_bgm_battle_1.mp3');
+
+      // 第 3 首播毕 -> 自动回绕至第 1 首（顺序循环）
+      latestAudio!.emit('ended');
+      expect(engine.getBgmTrackIndex()).toBe(0);
+      expect(engine.getCurrentBgmTrack().id).toBe('pixelized_pressure');
+      expect(playedSrcHistory.slice(0, 4)).toEqual([
+        DEFAULT_BGM_PLAYLIST[0].url,
+        DEFAULT_BGM_PLAYLIST[1].url,
+        DEFAULT_BGM_PLAYLIST[2].url,
+        DEFAULT_BGM_PLAYLIST[0].url,
+      ]);
+
+      // 手动上一曲（从第 1 首回绕至第 3 首）与按 ID 点选第 2 首
+      expect(engine.prevBgmTrack(true).id).toBe('battle_1_yokoncy');
+      expect(engine.getBgmTrackIndex()).toBe(2);
+      expect(engine.selectBgmTrack('quantized_pressure', true)?.id).toBe('quantized_pressure');
+      expect(engine.getBgmTrackIndex()).toBe(1);
+      expect(observedTrackIds).toContain('quantized_pressure');
+      expect(observedTrackIds).toContain('battle_1_yokoncy');
+
+      // 销毁后应移除 ended 监听，不再响应后续媒体事件
+      unsubscribe();
+      engine.destroy();
+      expect(listenersMap.get('ended')?.size ?? 0).toBe(0);
+    } finally {
+      g.window = prevWindow;
+      g.Audio = prevAudio;
+    }
   });
 });

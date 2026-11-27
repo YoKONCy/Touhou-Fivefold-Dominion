@@ -47,6 +47,8 @@ export interface StageOverlayHints {
   lineLength: number;
   validSpellUnitIds: ReadonlySet<string>;
   validEmptyHexKeys?: ReadonlySet<string>;
+  /** 掷山大力鬼「飞石轰击」悬停 2 环落点范围预览（在瞄空模式与常规悬停敌军/敌人附近空地时均生效） */
+  areaRangedPreview?: { centerHex: HexCoord; radius: number; valid: boolean } | null;
 }
 
 export const FOOTPRINT_VISUAL_SCALE: Record<FootprintSize, number> = {

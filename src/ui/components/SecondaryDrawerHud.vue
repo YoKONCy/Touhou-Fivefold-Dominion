@@ -181,7 +181,7 @@ const canShowDrawer = computed(() => {
             <div class="font-display mb-1.5 text-[11px] text-[#cabba2]">我方阵营（左翼）</div>
             <div class="grid grid-cols-2 gap-1.5">
               <button
-                v-for="f in (['life', 'order', 'chaos', 'death'] as PlayableFactionId[])"
+                v-for="f in (['life', 'order', 'chaos', 'death', 'might'] as PlayableFactionId[])"
                 :key="`left-${f}`"
                 class="lacquer-plaque-btn font-display py-1.5 text-[10.5px]"
                 :class="store.leftFaction === f ? 'lacquer-plaque-btn-active text-[#f5df9e]' : 'text-[#a89a86]'"
@@ -196,7 +196,7 @@ const canShowDrawer = computed(() => {
             <div class="font-display mb-1.5 text-[11px] text-[#cabba2]">敌方阵营（右翼）</div>
             <div class="grid grid-cols-2 gap-1.5">
               <button
-                v-for="f in (['life', 'order', 'chaos', 'death'] as PlayableFactionId[])"
+                v-for="f in (['life', 'order', 'chaos', 'death', 'might'] as PlayableFactionId[])"
                 :key="`right-${f}`"
                 class="lacquer-plaque-btn font-display py-1.5 text-[10.5px]"
                 :class="store.rightFaction === f ? 'lacquer-plaque-btn-active text-[#f5df9e]' : 'text-[#a89a86]'"
@@ -355,11 +355,16 @@ const canShowDrawer = computed(() => {
                 />
               </label>
 
-              <label class="block">
-                <div class="flex items-center justify-between text-[#cabba2]">
-                  <span>战阵背景音乐 (BGM)</span>
+              <!-- 战阵背景音乐播放器（顺序循环 + 手动切歌） -->
+              <div class="border border-[#99763a]/40 bg-[#120d16] p-2">
+                <div class="flex items-center justify-between gap-1 text-[#cabba2]">
+                  <span class="font-display text-[10.5px] font-bold text-[#f3ead8]">
+                    战阵背景音乐
+                  </span>
                   <div class="flex items-center gap-1.5">
-                    <span class="font-num text-[#f5df9e]">{{ Math.round(store.audioSettings.bgmVolume * 100) }}%</span>
+                    <span class="font-num text-[9.5px] text-[#b89d72]">
+                      顺序循环 {{ store.bgmState.currentIndex + 1 }}/{{ store.bgmState.tracks.length }}
+                    </span>
                     <button
                       class="border border-[#99763a]/50 bg-[#18121a] px-1.5 py-px text-[9.5px]"
                       :class="store.audioSettings.bgmEnabled ? 'text-[#9ae8be]' : 'text-[#8a7b69]'"
@@ -369,17 +374,114 @@ const canShowDrawer = computed(() => {
                     </button>
                   </div>
                 </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.05"
-                  :disabled="!store.audioSettings.bgmEnabled"
-                  :value="store.audioSettings.bgmVolume"
-                  class="mt-1 h-1 w-full cursor-pointer accent-[#e88a64] disabled:opacity-35"
-                  @input="store.updateAudioSettings({ bgmVolume: Number(($event.target as HTMLInputElement).value), bgmEnabled: true, muted: false })"
-                />
-              </label>
+
+                <!-- 当前曲目信息与切歌控制条 -->
+                <div class="mt-1.5 flex items-center justify-between gap-2 border border-[#99763a]/25 bg-[#191220] px-2 py-1.5">
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-1.5">
+                      <span
+                        class="inline-block h-1.5 w-1.5 shrink-0 rounded-full"
+                        :class="
+                          store.audioSettings.bgmEnabled && !store.audioSettings.muted
+                            ? 'bg-[#f5df9e] shadow-[0_0_6px_#f5df9e]'
+                            : 'bg-[#6e6050]'
+                        "
+                      />
+                      <span class="font-display truncate text-[11px] font-bold text-[#f5df9e]">
+                        {{ store.bgmState.currentTrack.title }}
+                      </span>
+                    </div>
+                    <div class="font-num mt-0.5 truncate pl-3 text-[9.5px] text-[#a69680]">
+                      {{ store.bgmState.currentTrack.artist }} · {{ store.bgmState.currentTrack.durationText }}
+                    </div>
+                  </div>
+                  <div class="flex shrink-0 items-center gap-1">
+                    <button
+                      class="brass-action-btn font-num flex h-6 w-6 items-center justify-center text-[10px] text-[#e5d5b5] hover:text-[#f5df9e]"
+                      title="上一曲"
+                      @click.prevent="store.prevBgmTrack()"
+                    >
+                      ◂◂
+                    </button>
+                    <button
+                      class="brass-action-btn font-num flex h-6 w-6 items-center justify-center text-[10px]"
+                      :class="
+                        store.audioSettings.bgmEnabled && !store.audioSettings.muted
+                          ? 'text-[#9ae8be]'
+                          : 'text-[#f5df9e]'
+                      "
+                      :title="
+                        store.audioSettings.bgmEnabled && !store.audioSettings.muted
+                          ? '暂停背景音乐'
+                          : '播放背景音乐'
+                      "
+                      @click.prevent="store.toggleBgmPlayback()"
+                    >
+                      {{ store.audioSettings.bgmEnabled && !store.audioSettings.muted ? '❚❚' : '▸' }}
+                    </button>
+                    <button
+                      class="brass-action-btn font-num flex h-6 w-6 items-center justify-center text-[10px] text-[#e5d5b5] hover:text-[#f5df9e]"
+                      title="下一曲"
+                      @click.prevent="store.nextBgmTrack()"
+                    >
+                      ▸▸
+                    </button>
+                  </div>
+                </div>
+
+                <!-- 可点选歌单（按顺序播放） -->
+                <div class="mt-1.5 space-y-1">
+                  <button
+                    v-for="(track, idx) in store.bgmState.tracks"
+                    :key="track.id"
+                    class="flex w-full items-center justify-between gap-2 border px-2 py-1 text-left transition"
+                    :class="
+                      store.bgmState.currentIndex === idx
+                        ? 'border-[#cfa75b]/80 bg-[#271d18] text-[#f5df9e]'
+                        : 'border-[#99763a]/20 bg-[#15101a]/75 text-[#b5a894] hover:border-[#99763a]/55 hover:text-[#efe2c6]'
+                    "
+                    @click.prevent="store.selectBgmTrack(track.id)"
+                  >
+                    <div class="flex min-w-0 items-center gap-1.5">
+                      <span
+                        class="font-num w-4 shrink-0 text-[9.5px]"
+                        :class="store.bgmState.currentIndex === idx ? 'font-bold text-[#f5df9e]' : 'text-[#847563]'"
+                      >
+                        {{ String(idx + 1).padStart(2, '0') }}
+                      </span>
+                      <span class="font-display truncate text-[10.5px]">
+                        {{ track.title }}
+                      </span>
+                    </div>
+                    <div class="flex shrink-0 items-center gap-1.5">
+                      <span
+                        v-if="store.bgmState.currentIndex === idx"
+                        class="font-display text-[9px] text-[#9ae8be]"
+                      >
+                        {{ store.audioSettings.bgmEnabled && !store.audioSettings.muted ? '播' : '选' }}
+                      </span>
+                      <span class="font-num text-[9.5px] text-[#9a8b77]">{{ track.durationText }}</span>
+                    </div>
+                  </button>
+                </div>
+
+                <label class="mt-2 block">
+                  <div class="flex items-center justify-between text-[#cabba2]">
+                    <span>BGM 音量</span>
+                    <span class="font-num text-[#f5df9e]">{{ Math.round(store.audioSettings.bgmVolume * 100) }}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    :disabled="!store.audioSettings.bgmEnabled"
+                    :value="store.audioSettings.bgmVolume"
+                    class="mt-1 h-1 w-full cursor-pointer accent-[#e88a64] disabled:opacity-35"
+                    @input="store.updateAudioSettings({ bgmVolume: Number(($event.target as HTMLInputElement).value), bgmEnabled: true, muted: false })"
+                  />
+                </label>
+              </div>
 
               <label class="block">
                 <div class="flex justify-between text-[#cabba2]">

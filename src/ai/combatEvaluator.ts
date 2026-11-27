@@ -10,11 +10,18 @@
  */
 
 import {
+  AREA_RANGED_RADIUS,
+  computeLightningStrikeDamage,
+  computeStoneGazeCreatureKills,
+  computeStoneGazeHeroDamage,
+  computeStoneGazeThreshold,
   findUnitAtHex,
   getUnitOccupiedHexes,
   hasDoubleStrikeForMode,
   isEngagedInMelee,
+  previewAreaRangedAttack,
   previewAttack,
+  STONE_GAZE_TRIGGER_CHANCE,
   type CombatContentCatalog,
 } from '@core/combatEngine';
 import { isImmuneToLivingEffects, isImmuneToLivingHeal, isUndeadUnit } from '@core/creatureTypes';
@@ -57,7 +64,8 @@ function evaluateAreaMeleeBonus(
       bonus -= (130 + vp.threatScore * 0.4) * intel.profile.ccWakePenaltyWeight;
     }
     if (victim.abilities.fireShield && !unit.abilities.fireResistant && !unit.abilities.magicImmune) {
-      bonus -= estDmg * 0.22 * intel.profile.retaliationRiskWeight;
+      const fireScale = unit.abilities.fireResist25 ? 0.75 : 1;
+      bonus -= estDmg * 0.22 * fireScale * intel.profile.retaliationRiskWeight;
     }
   };
 
@@ -101,7 +109,7 @@ function evaluateAreaMeleeBonus(
       if (minHexSetDistance([step], tgtHexes) !== 1) continue;
       const behind = findUnitAtHex(state, step, false);
       if (behind && behind.id !== primaryTarget.id && behind.side !== unit.side) {
-        scoreSecondaryHit(behind, behind.abilities.fireResistant ? 0.5 : 1.0);
+        scoreSecondaryHit(behind, behind.abilities.fireResistant ? 0.5 : behind.abilities.fireResist25 ? 0.75 : 1.0);
       }
       break;
     }
@@ -118,6 +126,7 @@ function scoreAttackPreview(
   ep: UnitThreatProfile,
   preview: AttackPreview,
   intel: BattlefieldIntel,
+  catalog: CombatContentCatalog,
 ): number {
   const { profile, personality, activeProfile } = intel;
   const landingAnchor = preview.isRanged ? unit.pos : (preview.moveTo ?? unit.pos);
@@ -155,10 +164,26 @@ function scoreAttackPreview(
     score += estKills * 15 * ep.priorityMultiplier;
   }
 
-  // 2. 命中附带强力特技收益（剧毒/冰冻/定身/震慑/衰老/石化）
+  // 2. 命中附带强力特技收益（剧毒/赤雷天罚/冰冻/定身/震慑/衰老/石化）
   if (!killsAll) {
     if (unit.abilities.poisonAttack && !isImmuneToLivingEffects(enemy) && !enemy.abilities.magicImmune) {
       score += Math.min(75, unit.count * 13 * 1.45) * ep.priorityMultiplier;
+    }
+    if (!preview.isRanged && unit.abilities.lightningStrike && !enemy.abilities.magicImmune) {
+      const estLight = computeLightningStrikeDamage(unit, enemy, state, catalog);
+      score += estLight * ep.valuePerHp * 1.05;
+    }
+    if (unit.abilities.stoneGaze && !isImmuneToLivingEffects(enemy) && !enemy.abilities.magicImmune) {
+      const sgThreshold = computeStoneGazeThreshold(unit.count);
+      if (enemy.kind === 'creature') {
+        const estKills = computeStoneGazeCreatureKills(enemy.currentHp, ep.stats.maxHp, enemy.count, sgThreshold);
+        if (estKills > 0) {
+          score += estKills * ep.stats.maxHp * ep.valuePerHp * STONE_GAZE_TRIGGER_CHANCE * 0.95;
+        }
+      } else {
+        const estHeroDmg = computeStoneGazeHeroDamage(sgThreshold, ep.stats.magicResistance);
+        score += estHeroDmg * ep.valuePerHp * STONE_GAZE_TRIGGER_CHANCE * 0.95;
+      }
     }
     if ((unit.abilities.freezingAttack || unit.abilities.terrorOnHit || unit.abilities.stunOnHit) && !ep.isHardCCed) {
       score += ep.threatScore * 0.22;
@@ -204,7 +229,7 @@ function scoreAttackPreview(
     : 0;
   const fireShieldTaken =
     !preview.isRanged && enemy.abilities.fireShield && !unit.abilities.fireResistant && !unit.abilities.magicImmune
-      ? avgDeal * 0.22
+      ? avgDeal * 0.22 * (unit.abilities.fireResist25 ? 0.75 : 1)
       : 0;
   const mirrorTaken =
     enemy.statusEffects?.painMirror
@@ -228,8 +253,9 @@ function scoreAttackPreview(
     selfRiskPenalty += 75 * profile.retaliationRiskWeight;
   }
 
-  // 落点下回合被敌军集火的风险
-  const landingDanger = intel.getFootprintDanger(landingAnchor, unit.footprint);
+  // 落点下回合被敌军集火的风险（巡回突袭折返原格，按原位估算危险！）
+  const finalStopAnchor = !preview.isRanged && unit.abilities.strikeAndReturn && preview.moveTo ? unit.pos : landingAnchor;
+  const landingDanger = intel.getFootprintDanger(finalStopAnchor, unit.footprint);
   const dangerScale =
     unit.kind === 'hero' && !activeProfile.isFrontlineHero
       ? 0.65
@@ -260,7 +286,9 @@ function scoreAttackPreview(
   const safeStrikeBonus =
     (preview.isRanged || preview.isLongWeaponPoke || unit.abilities.noRetaliation) &&
     (!preview.willRetaliate || Boolean(preview.retaliationTargetId && preview.retaliationTargetId !== unit.id))
-      ? 26
+      ? unit.abilities.strikeAndReturn && !preview.isRanged && preview.moveTo
+        ? 44
+        : 26
       : 0;
   const highGroundBonus =
     !preview.isRanged && Math.max(...landingFoot.map((h) => state.tiles[hexKey(h)]?.elevation ?? 1)) >= 2
@@ -320,6 +348,120 @@ export function evaluateBestAttackAction(
     }
   };
 
+  const considerAreaHex = (targetHex: HexCoord, rawScore: number) => {
+    const tag = `atk_hex:${targetHex.q},${targetHex.r}`;
+    const score = rawScore * deterministicScoreJitter(seedSalt, tag, profile.noiseRatio);
+    if (!best || score > best.score) {
+      best = {
+        command: {
+          type: 'ATTACK_HEX',
+          unitId: unit.id,
+          targetHex,
+        },
+        score,
+        tag,
+      };
+    }
+  };
+
+  // 0. 掷山大力鬼「飞石轰击」2 环完全 AOE 智能瞄点（支持超射程瞄准敌人附近空地以避开友军或一石多鸟！）
+  if (unit.abilities.areaRanged && intel.activeProfile.isActiveRanged) {
+    const candInfo = new Map<string, { hex: HexCoord; enemyNear: number; allyNear: number }>();
+    const touchCand = (hex: HexCoord, isEnemy: boolean) => {
+      const k = hexKey(hex);
+      if (!state.tiles[k]) return;
+      const existing = candInfo.get(k);
+      if (existing) {
+        if (isEnemy) existing.enemyNear += 1;
+        else existing.allyNear += 1;
+      } else {
+        candInfo.set(k, { hex, enemyNear: isEnemy ? 1 : 0, allyNear: isEnemy ? 0 : 1 });
+      }
+    };
+    for (const e of enemies) {
+      if (e.statusEffects?.sanctuary) continue;
+      const seenForEnemy = new Set<string>();
+      for (const eh of getUnitOccupiedHexes(e)) {
+        for (const nb of getHexRange(eh, AREA_RANGED_RADIUS)) {
+          const nk = hexKey(nb);
+          if (seenForEnemy.has(nk)) continue;
+          seenForEnemy.add(nk);
+          touchCand(nb, true);
+        }
+      }
+    }
+    for (const ally of intel.allies) {
+      if (ally.id === unit.id) continue;
+      const seenForAlly = new Set<string>();
+      for (const ah of getUnitOccupiedHexes(ally)) {
+        for (const nb of getHexRange(ah, AREA_RANGED_RADIUS)) {
+          const nk = hexKey(nb);
+          if (seenForAlly.has(nk) || !candInfo.has(nk)) continue;
+          seenForAlly.add(nk);
+          touchCand(nb, false);
+        }
+      }
+    }
+    // 优先评估多敌军重叠且远离友军的高价值瞄点，兼顾精准与亚毫秒性能
+    const candidates = Array.from(candInfo.values())
+      .sort((a, b) => (b.enemyNear * 3 - b.allyNear * 4) - (a.enemyNear * 3 - a.allyNear * 4))
+      .slice(0, 32);
+
+    for (const { hex: candHex } of candidates) {
+      const areaPrev = previewAreaRangedAttack(state, unit.id, candHex, catalog);
+      if (!areaPrev.valid || areaPrev.targets.length === 0) continue;
+      let areaScore = 0;
+      let hitEnemyCount = 0;
+      let hitFriendlyCount = 0;
+      for (const t of areaPrev.targets) {
+        const avgDmg = (t.minDamage + t.maxDamage) / 2;
+        const tp = intel.getProfile(t.unitId);
+        if (!tp) continue;
+        const effective = Math.min(avgDmg, tp.totalHp);
+        const killsAll = avgDmg >= tp.totalHp || t.minKills >= tp.unit.count;
+        const estKills = killsAll
+          ? tp.unit.count
+          : Math.min(tp.unit.count, Math.max(t.maxKills, Math.floor(avgDmg / Math.max(1, tp.stats.maxHp))));
+        if (t.isFriendly) {
+          hitFriendlyCount += 1;
+          // 敌我不分：误伤友军施以高额惩罚，促使 AI 优先瞄准敌人身后空地精准避友！
+          let ffPenalty = effective * tp.valuePerHp * 1.48;
+          if (killsAll) {
+            ffPenalty += tp.unit.kind === 'hero' ? 320 : 120 * tp.priorityMultiplier;
+          } else if (estKills > 0) {
+            ffPenalty += estKills * 18 * tp.priorityMultiplier;
+          }
+          areaScore -= ffPenalty;
+        } else {
+          hitEnemyCount += 1;
+          areaScore += effective * tp.valuePerHp * (0.95 + 0.1 * intel.personality.aggression);
+          if (killsAll) {
+            areaScore += tp.unit.kind === 'hero' ? 255 : 102 * tp.priorityMultiplier;
+            if (
+              tp.unit.kind === 'hero' &&
+              state.activeFieldAura &&
+              state.activeFieldAura.casterUnitId === tp.unit.id &&
+              !state.activeFieldAura.captured
+            ) {
+              areaScore += 140;
+            }
+          } else if (estKills > 0) {
+            areaScore += estKills * 15 * tp.priorityMultiplier;
+          }
+          if (tp.isWakeOnDamageCC && !killsAll && !intel.allEnemiesWakeCCed) {
+            areaScore -= (155 + tp.threatScore * 0.52) * profile.ccWakePenaltyWeight;
+          }
+        }
+      }
+      if (hitEnemyCount > 0) {
+        if (hitEnemyCount >= 2) areaScore += hitEnemyCount * 36;
+        if (hitFriendlyCount === 0) areaScore += 16; // 精准空地避友红利
+        areaScore += 26; // 无反击远程区域轰炸安全红利（与 safeStrikeBonus 同量纲）
+        considerAreaHex(candHex, areaScore);
+      }
+    }
+  }
+
   const maxMeleeReach = unit.abilities.longWeapon ? 2 : 1;
   const hasAreaOrPosSpecial = Boolean(
     unit.abilities.multipleAttack ||
@@ -337,11 +479,11 @@ export function evaluateBestAttackAction(
     const ep = intel.getProfile(enemy.id);
     if (!ep || enemy.statusEffects?.sanctuary) continue;
 
-    // 1. 远程攻击优先检查（无需任何近战寻路！）
-    if (intel.activeProfile.isActiveRanged) {
+    // 1. 远程攻击优先检查（区域飞石轰击已由上方 ATTACK_HEX 完整寻优覆盖）
+    if (intel.activeProfile.isActiveRanged && !unit.abilities.areaRanged) {
       const rangedPreview = previewAttack(state, unit.id, enemy.id, catalog);
       if (rangedPreview.valid && rangedPreview.isRanged) {
-        const sc = scoreAttackPreview(state, unit, enemy, ep, rangedPreview, intel);
+        const sc = scoreAttackPreview(state, unit, enemy, ep, rangedPreview, intel, catalog);
         consider(enemy.id, rangedPreview, sc);
         continue;
       }
@@ -417,7 +559,7 @@ export function evaluateBestAttackAction(
     for (const { anchor } of ranked.slice(0, inspectLimit)) {
       const prev = previewAttack(state, unit.id, enemy.id, catalog, anchor);
       if (prev.valid && !prev.isRanged) {
-        const sc = scoreAttackPreview(state, unit, enemy, ep, prev, intel);
+        const sc = scoreAttackPreview(state, unit, enemy, ep, prev, intel, catalog);
         consider(enemy.id, prev, sc);
       }
     }

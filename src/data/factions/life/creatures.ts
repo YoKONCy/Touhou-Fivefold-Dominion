@@ -49,7 +49,7 @@ export const LIFE_CREATURES: Record<string, CreatureDefinition> = {
     description: '信仰圣域 1 阶生命系远程主力：投射贯穿灵札，「精准射击」无视一切距离衰减，且具备「远程先攻」在远程互射中抢先压制敌方还击。',
     baseStats: {
       attack: 11,
-      defense: 10,
+      defense: 9,
       minDamage: 3,
       maxDamage: 5,
       maxHp: 15,
@@ -115,8 +115,8 @@ export const LIFE_CREATURES: Record<string, CreatureDefinition> = {
     footprint: '1x1',
     description: '信仰圣域 2 阶生命系精准炮台：悬浮机械造物，「精准射击」且「无视障碍」衰减，免疫士气波动与心智魔法！',
     baseStats: {
-      attack: 16,
-      defense: 16,
+      attack: 15,
+      defense: 12,
       minDamage: 8,
       maxDamage: 11,
       maxHp: 42,
@@ -224,8 +224,8 @@ export const LIFE_CREATURES: Record<string, CreatureDefinition> = {
     baseStats: {
       attack: 22,
       defense: 22,
-      minDamage: 27,
-      maxDamage: 39,
+      minDamage: 26,
+      maxDamage: 35,
       maxHp: 180,
       speed: 8,
       initiative: 13,
@@ -257,9 +257,9 @@ export const LIFE_CREATURES: Record<string, CreatureDefinition> = {
     baseStats: {
       attack: 27,
       defense: 28,
-      minDamage: 34,
-      maxDamage: 52,
-      maxHp: 215,
+      minDamage: 35,
+      maxDamage: 56,
+      maxHp: 245,
       speed: 10,
       initiative: 15,
       range: 1,

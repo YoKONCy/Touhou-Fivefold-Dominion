@@ -18,7 +18,6 @@ import {
   computeAndApplySpellDamage,
   grantTempAbility,
   isTargetResistingHostileSpell,
-  reviveAndHealUnit,
 } from './helpers';
 
 export function executeSelfAndMassSpell(ctx: SpellCastContext): SpellBranchOutcome {
@@ -91,6 +90,43 @@ export function executeSelfAndMassSpell(ctx: SpellCastContext): SpellBranchOutco
     ctx.affectedUnitIds.push(unit.id);
     ctx.noteText = `二重结界 +${shield}!`;
     state.actionLog.push(`🛡 ${unit.name} 展开「二重结界」，获得 ${shield} 点临时护盾生命！`);
+  } else if (eff === 'war_blood_sacrifice') {
+    if (command.targetUnitId && command.targetUnitId !== unit.id) {
+      return { ok: false, error: '命符「战争血祭」仅可对自身施放', events: [] };
+    }
+    if (unit.abilities.magicImmune) {
+      return { ok: false, error: '全魔法免疫状态下无法施放命符「战争血祭」', events: [] };
+    }
+    const enemySide = unit.side === 'left' ? 'right' : 'left';
+    const prevEnemyPhys = state.physicalDamageTakenLastRound?.[enemySide] ?? 0;
+    if (prevEnemyPhys <= 0) {
+      return { ok: false, error: '上一回合敌方未承受物理伤害，尚无法发动命符「战争血祭」', events: [] };
+    }
+    const rawShield = Math.round(prevEnemyPhys * 0.35);
+    const shieldCap =
+      unit.kind === 'hero'
+        ? Math.max(1, Math.round(casterStats.maxHp * 2))
+        : Math.max(1, unit.count) * 50;
+    const finalShield = Math.max(1, Math.min(rawShield, shieldCap));
+    unit.statusEffects.bloodSacrificeShieldHp = finalShield;
+    unit.statusEffects.bloodSacrificeShieldRounds = 3;
+    touchStatusFlag(unit, 'bloodSacrificeShieldHp');
+    unit.modifiers = unit.modifiers.filter((m) => m.id !== 'spell:chaos_war_blood_sacrifice:speed');
+    pushSpellModifier(unit, {
+      id: 'spell:chaos_war_blood_sacrifice:speed',
+      stat: 'speed',
+      mode: 'flat',
+      value: 5,
+      sourceName: '战争血祭·疾行',
+      remainingRounds: 2,
+      spellPolarity: 'positive',
+      spellId: spell.id,
+    });
+    ctx.affectedUnitIds.push(unit.id);
+    ctx.noteText = `战争血祭 护盾+${finalShield} 行动力+5!`;
+    state.actionLog.push(
+      `🩸 ${unit.name} 发动命符「战争血祭」，转化上回合敌方所受 ${prevEnemyPhys} 点物理伤害的 35% 为自身 ${finalShield} 点血祭护盾（上限 ${shieldCap}，持续 3 回合），并额外获得 +5 行动力（持续 2 回合）！`,
+    );
   } else if (eff === 'mana_flare') {
     state.battleSpellFlags.manaFlareActive = true;
     ctx.affectedUnitIds.push(unit.id);
@@ -140,7 +176,7 @@ export function executeSelfAndMassSpell(ctx: SpellCastContext): SpellBranchOutco
       ctx.affectedUnitIds.push(a.id);
     }
     ctx.noteText = `${spell.name}!`;
-    state.actionLog.push(`🛡 ${unit.name} 展开「${spell.name}」，全队获得该系 50% 魔法与防卫抗性！`);
+    state.actionLog.push(`🛡 ${unit.name} 展开「${spell.name}」，全队获得该系 35% 魔法与防卫抗性！`);
   } else if (eff === 'mass_exorcism') {
     let total = 0;
     for (const a of allies) {
@@ -249,15 +285,14 @@ export function executeSelfAndMassSpell(ctx: SpellCastContext): SpellBranchOutco
       if (a.abilities.magicImmune || isImmuneToLivingHeal(a)) continue;
       cleanseNegativeEffects(a, true);
       const aStats = computeUnitStats(a, state, catalog);
-      const revPower = Math.max(calcPower(spell.reviveBase ?? 180, 2.0), aStats.maxHp * a.maxCount);
-      const res = reviveAndHealUnit(state, a, revPower, catalog, false);
+      const before = a.currentHp;
       a.currentHp = aStats.maxHp;
-      ctx.reviveMap[a.id] = res;
-      if (res.healedHp > 0) ctx.healMap[a.id] = res.healedHp;
+      const gained = Math.max(0, a.currentHp - before);
+      if (gained > 0) ctx.healMap[a.id] = gained;
       ctx.affectedUnitIds.push(a.id);
     }
     ctx.noteText = '八百万神降!';
-    state.actionLog.push(`✨ ${unit.name} 发动终极神迹「八百万神降」，全军活体友军满血复生并彻底清祓一切厄祟！`);
+    state.actionLog.push(`✨ ${unit.name} 发动终极神迹「八百万神降」，全军活体友军当前残血单位满血治愈并彻底清祓一切厄祟与毒疫！`);
   } else if (eff === 'holy_shout') {
     for (const e of enemies) {
       const isUnholy = isUndeadUnit(e) || e.alignment === 'death' || e.abilities.darkNature;

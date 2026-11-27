@@ -35,7 +35,7 @@ export const ORDER_SPELL_COPY: Record<string, SpellCopyEntry> = {
   },
   order_create_illusion: {
     summary: '折射蜃楼光影的造像幻术。',
-    effect: '施法者实力显著高于目标单兵时，按目标当前血量与法强预算在旁侧生成可控幻象，预算不足整兵时生成残血幻象，不可复制幻象或过强高阶目标。',
+    effect: '施法者实力显著高于目标单兵时，按目标当前血量与法强预算生成可控幻象，若己方已有同种存活幻象则直接叠加至该单位，预算不足整兵时生成残血单位，不可复制幻象或过强高阶目标。',
   },
   order_flight: {
     summary: '挣脱大地束缚的浮游秘术。',
@@ -106,11 +106,11 @@ export const ORDER_SPELL_COPY: Record<string, SpellCopyEntry> = {
   },
   order_phantom_image: {
     summary: '映照月华水镜的高阶镜像术。',
-    effect: '施法者实力足够压制目标单兵时，高比例映照并按法强预算在旁侧生成强力幻象分身，预算不足整兵时生成残血单位且不可复制幻象。',
+    effect: '施法者实力足够压制目标单兵时，高比例映照并按法强预算生成强力幻象分身，若己方已有同种存活幻象则直接叠加至该单位，预算不足整兵时生成残血单位且不可复制幻象。',
   },
   order_hypnotize: {
     summary: '牵引心神的迷梦傀儡戏。',
-    effect: '使一名活体敌军在 3 回合内倒戈，归入施法者阵营听候调遣。',
+    effect: '仅限 2 格近距施放，使一名活体敌军在 3 回合内倒戈，归入施法者阵营听候调遣。',
   },
   order_pain_mirror: {
     summary: '映返痛楚的因果水镜。',

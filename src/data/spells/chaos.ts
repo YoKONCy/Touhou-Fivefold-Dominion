@@ -161,6 +161,12 @@ export const CHAOS_H4_SPELLS: Record<string, SpellDef> = {
     vfxKey: 'death_curse', specialEffect: 'standard',
     description: '混沌 4 级（全敌）：引动厄神旋涡诅咒敌阵，全体非魔免敌军陷入最大厄运（幸运 -10）！',
   },
+  chaos_war_blood_sacrifice: {
+    id: 'chaos_war_blood_sacrifice', name: '战争血祭', spellCardPrefix: '命符', enName: 'War Blood Sacrifice',
+    alignment: 'chaos', level: 4, manaCost: 8, targetType: 'self', range: 0, ignoreLos: true,
+    vfxKey: 'star_burst', specialEffect: 'war_blood_sacrifice',
+    description: '混沌 4 级自用血祭护盾：仅限对自身施放，将上一回合敌方全体承受的物理伤害总和的 35% 转化为自身临时护盾（持续 3 回合），并额外赋予自身 +5 行动力（持续 2 回合）；兵种护盾上限为当前存活数量乘 50，英雄上限为最大生命值的 200%，重复施放时刷新为新值并重置持续回合。',
+  },
   chaos_armageddon: {
     id: 'chaos_armageddon', name: '星陨终末', spellCardPrefix: '终末', enName: 'Armageddon',
     alignment: 'chaos', level: 5, manaCost: 12, targetType: 'self', range: 0, ignoreLos: true,

@@ -13,6 +13,7 @@ import {
   evaluateIllusionSpell,
   findCorpseTargetAtHex,
   getAvailableCorpseHp,
+  getEffectiveSpellRange,
   getUnitReachableMap,
   previewAttack,
 } from '@core/combatEngine';
@@ -972,5 +973,219 @@ describe('召唤、招魂残骸池、镜像幻象与召唤物三分类体系', (
     });
     expect(okReviveAllyUndead.ok, okReviveAllyUndead.error).toBe(true);
     expect(allyUndead.status).toBe('alive');
+  });
+
+  it('催眠（order_hypnotize）施法距离严格固定为 2 格（不受高台/被动扩张），且精准持续 3 回合后恢复原阵营', () => {
+    const map = buildShrineNightBattleMap();
+    clearMapObstacles(map.tiles, { includePartialLos: true, flattenAllElevation: 1, resetMoveCost: true });
+    const { state } = createBattleState(
+      {
+        mapWidth: map.width,
+        mapHeight: map.height,
+        tiles: map.tiles,
+        leftSlots: [{ kind: 'hero', defId: 'hero_eirin', col: 5, row: 10 }],
+        rightSlots: [
+          { kind: 'creature', defId: 'exorcist_blade', count: 8, col: 7, row: 10 }, // 距永琳 2 格
+          { kind: 'creature', defId: 'kedama', count: 12, col: 8, row: 10 }, // 距永琳 3 格
+        ],
+        controllers: { left: 'human', right: 'human' },
+        seed: 9601,
+      },
+      TOUHOU_CATALOG,
+    );
+
+    const eirin = Object.values(state.units).find((u) => u.defId === 'hero_eirin')!;
+    const nearEnemy = Object.values(state.units).find((u) => u.defId === 'exorcist_blade')!;
+    const farEnemy = Object.values(state.units).find((u) => u.defId === 'kedama')!;
+
+    // 即使英雄站在高台且拉满魅力/侦查等副技能，催眠有效施法距离仍严格固定为 2 格
+    state.tiles[hexKey(eirin.pos)].elevation = 2;
+    state.tiles[hexKey(eirin.pos)].terrain = 'highland';
+    eirin.skills = { ...eirin.skills, order_magic: 5, scouting: 5 };
+    eirin.subSkills = { ...eirin.subSkills, charm: 5 };
+    eirin.mana = 100;
+    eirin.knownSpellIds = [...ALL_H4_SPELL_IDS];
+
+    const hypSpell = TOUHOU_CATALOG.spells.order_hypnotize;
+    expect(hypSpell.range).toBe(2);
+    expect(getEffectiveSpellRange(state, eirin, hypSpell)).toBe(2);
+
+    // 距离 3 格的敌军超出施法距离
+    const farRes = castSpellAsUnit(state, eirin, { spellId: 'order_hypnotize', targetUnitId: farEnemy.id });
+    expect(farRes.ok).toBe(false);
+    expect(farRes.error).toContain('超出施法距离');
+
+    // 距离 2 格的敌军成功催眠，精确持续 3 回合
+    const nearRes = castSpellAsUnit(state, eirin, { spellId: 'order_hypnotize', targetUnitId: nearEnemy.id });
+    expect(nearRes.ok, nearRes.error).toBe(true);
+    expect(nearEnemy.side).toBe('left');
+    expect(nearEnemy.statusEffects.hypnotizedRounds).toBe(3);
+
+    // 通过连续防御推进 3 个完整回合：第 1、2 回合末仍归己方，第 3 回合末精准恢复原阵营
+    const advanceOneFullRound = () => {
+      const startRound = state.round;
+      let guard = 0;
+      while (state.round === startRound && state.phase === 'active' && guard < 40) {
+        const actId = state.activeUnitId;
+        if (!actId) break;
+        const r = dispatchCombatCommand(state, { type: 'DEFEND', unitId: actId }, TOUHOU_CATALOG);
+        expect(r.ok, r.error).toBe(true);
+        guard += 1;
+      }
+      expect(state.round).toBe(startRound + 1);
+    };
+
+    advanceOneFullRound();
+    expect(nearEnemy.side).toBe('left');
+    expect(nearEnemy.statusEffects.hypnotizedRounds).toBe(2);
+
+    advanceOneFullRound();
+    expect(nearEnemy.side).toBe('left');
+    expect(nearEnemy.statusEffects.hypnotizedRounds).toBe(1);
+
+    advanceOneFullRound();
+    expect(nearEnemy.side).toBe('right');
+    expect(nearEnemy.statusEffects.hypnotizedRounds).toBe(0);
+  });
+
+  it('招魂、幻象与召唤若己方场上已有同种存活单位，应直接叠加数量与生命池至该单位而不分散生成', () => {
+    const map = buildShrineNightBattleMap();
+    clearMapObstacles(map.tiles, { includePartialLos: true, flattenAllElevation: 1, resetMoveCost: true });
+    const { state } = createBattleState(
+      {
+        mapWidth: map.width,
+        mapHeight: map.height,
+        tiles: map.tiles,
+        leftSlots: [{ kind: 'hero', defId: 'hero_remilia', col: 5, row: 10 }],
+        rightSlots: [
+          { kind: 'creature', defId: 'exorcist_blade', count: 12, col: 8, row: 8 },
+          { kind: 'creature', defId: 'kedama', count: 20, col: 8, row: 10 },
+          { kind: 'creature', defId: 'ofuda_archer', count: 20, col: 8, row: 12 },
+        ],
+        controllers: { left: 'human', right: 'human' },
+        seed: 9602,
+      },
+      TOUHOU_CATALOG,
+    );
+
+    const remilia = Object.values(state.units).find((u) => u.defId === 'hero_remilia')!;
+    const enemyBlade = Object.values(state.units).find((u) => u.defId === 'exorcist_blade')!;
+    const enemyKedama = Object.values(state.units).find((u) => u.defId === 'kedama')!;
+    const enemyArcher = Object.values(state.units).find((u) => u.defId === 'ofuda_archer')!;
+
+    remilia.mana = 300;
+    remilia.skills = { ...remilia.skills, death_magic: 5, order_magic: 5, nature_magic: 5 };
+    remilia.knownSpellIds = [...ALL_H4_SPELL_IDS];
+
+    // 1. 招魂·血族叠加验证：第一次招出吸血鬼后，第二次再招吸血鬼直接叠加在同一只吸血鬼身上
+    const vampMaxHp = TOUHOU_CATALOG.creatures.crimson_vampire.baseStats.maxHp;
+    const kedamaMaxHp = TOUHOU_CATALOG.creatures.kedama.baseStats.maxHp;
+    const archerMaxHp = TOUHOU_CATALOG.creatures.ofuda_archer.baseStats.maxHp;
+    enemyKedama.count = 15; // 阵亡 5 只毛玉
+    enemyArcher.count = 14; // 阵亡 6 只弓手
+    const expectedHp1 = 5 * kedamaMaxHp;
+    const expectedHp2 = 6 * archerMaxHp;
+    const raise1 = castSpellAsUnit(state, remilia, { spellId: 'death_raise_vampires', targetUnitId: enemyKedama.id });
+    expect(raise1.ok, raise1.error).toBe(true);
+    const vampsAfter1 = Object.values(state.units).filter(
+      (u) => u.side === 'left' && u.defId === 'crimson_vampire' && u.summonKind === 'raised',
+    );
+    expect(vampsAfter1).toHaveLength(1);
+    const vampStack = vampsAfter1[0];
+    const hpAfter1 = (vampStack.count - 1) * vampMaxHp + vampStack.currentHp;
+    expect(hpAfter1).toBe(expectedHp1);
+
+    const raise2 = castSpellAsUnit(state, remilia, { spellId: 'death_raise_vampires', targetUnitId: enemyArcher.id });
+    expect(raise2.ok, raise2.error).toBe(true);
+    const vampsAfter2 = Object.values(state.units).filter(
+      (u) => u.side === 'left' && u.defId === 'crimson_vampire' && u.summonKind === 'raised',
+    );
+    // 仍只有 1 支吸血鬼单位，数量与总生命精准叠加！
+    expect(vampsAfter2).toHaveLength(1);
+    expect(vampsAfter2[0].id).toBe(vampStack.id);
+    const hpAfter2 = (vampStack.count - 1) * vampMaxHp + vampStack.currentHp;
+    expect(hpAfter2).toBe(expectedHp1 + expectedHp2);
+    expect(vampStack.count).toBe(Math.ceil((expectedHp1 + expectedHp2) / vampMaxHp));
+    expect(vampStack.maxCount).toBe(vampStack.count);
+
+    // 2. 幻象叠加验证：连续两次对同一目标施放幻象术，直接叠加到已有同种幻象单位上
+    const ill1 = castSpellAsUnit(state, remilia, { spellId: 'order_phantom_image', targetUnitId: enemyBlade.id });
+    expect(ill1.ok, ill1.error).toBe(true);
+    const illsAfter1 = Object.values(state.units).filter(
+      (u) => u.side === 'left' && u.defId === 'exorcist_blade' && u.isIllusion,
+    );
+    expect(illsAfter1).toHaveLength(1);
+    const illStack = illsAfter1[0];
+    const bladeMaxHp = TOUHOU_CATALOG.creatures.exorcist_blade.baseStats.maxHp;
+    const illHp1 = (illStack.count - 1) * bladeMaxHp + illStack.currentHp;
+
+    const ill2 = castSpellAsUnit(state, remilia, { spellId: 'order_phantom_image', targetUnitId: enemyBlade.id });
+    expect(ill2.ok, ill2.error).toBe(true);
+    const illsAfter2 = Object.values(state.units).filter(
+      (u) => u.side === 'left' && u.defId === 'exorcist_blade' && u.isIllusion,
+    );
+    expect(illsAfter2).toHaveLength(1);
+    expect(illsAfter2[0].id).toBe(illStack.id);
+    const illHp2 = (illStack.count - 1) * bladeMaxHp + illStack.currentHp;
+    expect(illHp2).toBe(illHp1 * 2);
+
+    // 3. 召唤叠加验证 + UI 高亮/悬停联动：第二次施放同种召唤直接叠加到已有召唤单位上
+    const sum1 = castSpellAsUnit(state, remilia, {
+      spellId: 'nature_summon_wolf',
+      targetHex: offsetToAxial(6, 10),
+    });
+    expect(sum1.ok, sum1.error).toBe(true);
+    const wolvesAfter1 = Object.values(state.units).filter(
+      (u) => u.side === 'left' && u.defId === 'summon_wolf' && u.summonKind === 'summoned',
+    );
+    expect(wolvesAfter1).toHaveLength(1);
+    const wolfStack = wolvesAfter1[0];
+    const wolfCount1 = wolfStack.count;
+
+    // UI 高亮应把已有召唤单位纳入合法目标，悬停直接提示「叠加召唤」
+    const summonSpell = TOUHOU_CATALOG.spells.nature_summon_wolf;
+    const hints = buildBattleOverlayHints({
+      state,
+      activeUnit: remilia,
+      inspectedUnitId: remilia.id,
+      hoveredHex: null,
+      hoveredUnitId: null,
+      isHumanTurn: true,
+      isAnimating: false,
+      declaringSpellCard: false,
+      selectedSpellId: summonSpell.id,
+      pendingSpellFirstUnitId: null,
+      hoverSpellContext: null,
+      hoverAttackContext: null,
+      activeReachableMap: null,
+      activeReachableHexKeys: new Set(),
+      activeAttackableUnitIds: new Set(),
+    });
+    expect(hints.validSpellUnitIds.has(wolfStack.id)).toBe(true);
+    expect(hints.validEmptyHexKeys?.has(hexKey(wolfStack.pos))).toBe(true);
+
+    const hoverExistingWolf = computeHoverSpellContext({
+      state,
+      activeUnit: remilia,
+      spell: summonSpell,
+      hoveredHex: wolfStack.pos,
+      pendingSpellFirstUnitId: null,
+    });
+    expect(hoverExistingWolf.canCast).toBe(true);
+    expect(hoverExistingWolf.shortLabel).toContain('叠加召唤');
+
+    // 第二次直接点击已有召唤狼所在格施放召唤，数量翻倍且场上仍只有 1 支召唤狼
+    const sum2 = castSpellAsUnit(state, remilia, {
+      spellId: 'nature_summon_wolf',
+      targetHex: wolfStack.pos,
+    });
+    expect(sum2.ok, sum2.error).toBe(true);
+    const wolvesAfter2 = Object.values(state.units).filter(
+      (u) => u.side === 'left' && u.defId === 'summon_wolf' && u.summonKind === 'summoned',
+    );
+    expect(wolvesAfter2).toHaveLength(1);
+    expect(wolvesAfter2[0].id).toBe(wolfStack.id);
+    expect(wolfStack.count).toBe(wolfCount1 * 2);
+    expect(wolfStack.maxCount).toBe(wolfCount1 * 2);
   });
 });

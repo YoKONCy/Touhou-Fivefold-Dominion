@@ -4,7 +4,7 @@
 
 import { isImmuneToLivingEffects, isImmuneToMorale } from '../creatureTypes';
 import { hexDistance, hexKey, hexRay, minHexSetDistance } from '../hex';
-import { computeUnitStats } from '../modifiers';
+import { computeUnitStats, getUnitEffectiveMagicResistance } from '../modifiers';
 import { nextInt, nextRandom } from '../rng';
 import { enforceUnitStatusSlotCap, markStatusEffectOrder } from '../statusCap';
 import { HERO_TRAIT_REGISTRY } from '../traits';
@@ -16,10 +16,41 @@ import type {
   StatModifier,
   StrikeReport,
 } from '../types';
-import { applyDamageToUnit, calculateDamageRange } from './damage';
+import { applyDamageToUnit, calculateDamageRange, clearDuelLocksOnTarget } from './damage';
 import { findUnitAtHex, getUnitOccupiedHexes } from './spatial';
 import { computeMoraleLuckRates } from './turnQueue';
 import type { CombatContentCatalog } from './types';
+
+/** 禁忌之书「魔眼石化」触发概率（35%）与每单位增加的石化生命阈值（12 点） */
+export const STONE_GAZE_TRIGGER_CHANCE = 0.35;
+export const STONE_GAZE_THRESHOLD_PER_UNIT = 12;
+
+/** 计算魔眼石化总生命阈值（单位存活数量 × 12） */
+export function computeStoneGazeThreshold(strikerCount: number): number {
+  return Math.max(1, strikerCount) * STONE_GAZE_THRESHOLD_PER_UNIT;
+}
+
+/** 计算魔眼石化对活体兵种堆叠可抹杀的整兵数量（首兵当前血量高于阈值则无法触发） */
+export function computeStoneGazeCreatureKills(
+  frontCurrentHp: number,
+  unitMaxHp: number,
+  aliveCount: number,
+  threshold: number,
+): number {
+  if (aliveCount <= 0 || frontCurrentHp <= 0 || frontCurrentHp > threshold) {
+    return 0;
+  }
+  const safeMaxHp = Math.max(1, unitMaxHp);
+  const remaining = threshold - frontCurrentHp;
+  const extraFullKills = Math.floor(remaining / safeMaxHp);
+  return Math.min(aliveCount, 1 + extraFullKills);
+}
+
+/** 计算魔眼石化对英雄造成的直接伤害（阈值 - 阈值 × 魔抗比例） */
+export function computeStoneGazeHeroDamage(threshold: number, magicResistance: number): number {
+  if (magicResistance >= 1 || threshold <= 0) return 0;
+  return Math.max(0, Math.round(threshold - threshold * magicResistance));
+}
 
 /** 按当前单位快照计算一次正式的打击伤害（支持两阶段同时反击与全 H4 特技） */
 export function rollStrikeDamage(
@@ -117,7 +148,6 @@ export function rollStrikeDamage(
   }
 
   const immuneToControl = Boolean(isImmuneToLivingEffects(defender) || defender.abilities.magicImmune);
-  let petrifyKills = 0;
   let appliedStatus: 'stunned' | 'terrified' | 'frozen' | 'aged' | 'poisoned' | undefined;
 
   if (!isRanged && attacker.abilities.freezingAttack && !defender.abilities.coldResistant && !defender.abilities.magicImmune) {
@@ -127,14 +157,6 @@ export function rollStrikeDamage(
   }
 
   if (!immuneToControl) {
-    if (attacker.abilities.stoneGaze && nextRandom(state.rng) < 0.18) {
-      if (defender.kind === 'creature') {
-        petrifyKills = nextInt(state.rng, 1, 2);
-      } else {
-        damage = Math.round(damage * 1.2);
-      }
-    }
-
     if (!appliedStatus && !isRanged && attacker.abilities.terrorOnHit && nextRandom(state.rng) < 0.38) {
       appliedStatus = 'terrified';
     } else if (!appliedStatus && !isRanged && attacker.abilities.stunOnHit) {
@@ -165,17 +187,71 @@ export function rollStrikeDamage(
     losStatus,
     traitNotes: range.notes,
     blocked: false,
-    petrifyKills: petrifyKills > 0 ? petrifyKills : undefined,
     appliedStatus,
   };
 }
 
-/** 对存活小兵堆叠施加石化即死等额外折损人数 */
+/** 命中后结算魔眼石化（35% 概率触发，按 12 点/单位石化阈值抹杀敌兵或按魔抗折算伤害英雄） */
+export function resolveStoneGazeOnHit(
+  state: BattleState,
+  striker: BattleUnit,
+  victim: BattleUnit,
+  strike: StrikeReport,
+  catalog: CombatContentCatalog,
+  events: CombatEvent[],
+  strikerCountOverride?: number,
+): void {
+  if (!striker.abilities.stoneGaze || strike.blocked || strike.damage <= 0) return;
+  if (victim.status !== 'alive') return;
+  if (isImmuneToLivingEffects(victim) || victim.abilities.magicImmune) return;
+
+  const threshold = computeStoneGazeThreshold(strikerCountOverride ?? striker.count);
+
+  if (victim.kind === 'creature') {
+    const vStats = computeUnitStats(victim, state, catalog);
+    const potentialKills = computeStoneGazeCreatureKills(
+      victim.currentHp,
+      vStats.maxHp,
+      victim.count,
+      threshold,
+    );
+    if (potentialKills <= 0) return;
+    if (nextRandom(state.rng) >= STONE_GAZE_TRIGGER_CHANCE) return;
+
+    const actualKills = applyBonusKills(state, victim, potentialKills, events, vStats.maxHp);
+    if (actualKills > 0) {
+      strike.petrifyKills = actualKills;
+      strike.kills += actualKills;
+      handlePostKillRewards(state, striker, victim, actualKills);
+      if (victim.status === 'alive') {
+        state.actionLog.push(
+          `🪨 ${striker.name} 触发「魔眼石化」（阈值 ${threshold}），瞬间石化抹杀 ${victim.name} ${actualKills} 名兵力！`,
+        );
+      }
+    }
+    return;
+  }
+
+  // 英雄目标触发石化：直接造成 阈值 - 阈值 × 魔抗比例 的石化伤害
+  const victimMr = getUnitEffectiveMagicResistance(victim, state, catalog);
+  const heroDmg = computeStoneGazeHeroDamage(threshold, victimMr);
+  if (heroDmg <= 0) return;
+  if (nextRandom(state.rng) >= STONE_GAZE_TRIGGER_CHANCE) return;
+
+  applyDamageToUnit(state, victim, heroDmg, catalog, events, true, 'magic');
+  strike.petrifyDamage = heroDmg;
+  state.actionLog.push(
+    `🪨 ${striker.name} 触发「魔眼石化」（阈值 ${threshold}，魔抗 ${Math.round(victimMr * 100)}%），对 ${victim.name} 造成 ${heroDmg} 点石化伤害！`,
+  );
+}
+
+/** 对存活小兵堆叠施加石化即死等额外折损人数（可选将新首兵血量重置为满额 maxHp） */
 export function applyBonusKills(
   state: BattleState,
   target: BattleUnit,
   bonusKills: number,
   events: CombatEvent[],
+  resetTopHpToMax?: number,
 ): number {
   if (target.status !== 'alive' || target.kind !== 'creature' || bonusKills <= 0) return 0;
   const actual = Math.min(target.count, bonusKills);
@@ -184,8 +260,12 @@ export function applyBonusKills(
     target.count = 0;
     target.currentHp = 0;
     target.status = 'dead';
+    target.statusEffects.duelTargetUnitId = undefined;
     events.push({ type: 'UNIT_DIED', unitId: target.id });
     state.actionLog.push(`${target.name} 在魔眼石化下全军化作雕像！`);
+    clearDuelLocksOnTarget(state, target.id, 'target_defeated', events);
+  } else if (resetTopHpToMax && resetTopHpToMax > 0) {
+    target.currentHp = resetTopHpToMax;
   }
   return actual;
 }
@@ -247,8 +327,15 @@ export function resolveFireShield(
   if (!defender.abilities.fireShield || attacker.status !== 'alive') return;
   if (attacker.abilities.fireResistant || attacker.abilities.magicImmune) return;
 
-  const fsDamage = Math.max(1, Math.round(strike.damage * 0.22));
-  const fsKills = applyDamageToUnit(state, attacker, fsDamage, catalog, events);
+  const fireResistMult = attacker.abilities.fireResist25 ? 0.75 : 1;
+  const duelMult =
+    attacker.abilities.berserkDuel &&
+    attacker.statusEffects?.duelTargetUnitId &&
+    defender.id !== attacker.statusEffects.duelTargetUnitId
+      ? 0.9
+      : 1;
+  const fsDamage = Math.max(1, Math.round(strike.damage * 0.22 * fireResistMult * duelMult));
+  const fsKills = applyDamageToUnit(state, attacker, fsDamage, catalog, events, true, 'magic');
   strike.secondaryHits = strike.secondaryHits ?? [];
   strike.secondaryHits.push({
     targetId: attacker.id,
@@ -257,7 +344,8 @@ export function resolveFireShield(
     kind: 'fire_shield',
   });
   const loss = attacker.kind === 'creature' ? `（折损 ${fsKills} 兵）` : '';
-  state.actionLog.push(`🔥 ${defender.name} 的「烈焰护盾」灼伤 ${attacker.name}，反弹 ${fsDamage} 点火焰伤害${loss}！`);
+  const resistTxt = attacker.abilities.fireResist25 ? '（抗火 -25%）' : '';
+  state.actionLog.push(`🔥 ${defender.name} 的「烈焰护盾」灼伤 ${attacker.name}，反弹 ${fsDamage} 点火焰伤害${resistTxt}${loss}！`);
 }
 
 /** 擦弹成功后，为己方英雄补充灵力与符卡充能 */
@@ -324,7 +412,7 @@ export function resolveAreaMeleeEffects(
       }
       if (minHexSetDistance(atkHexes, getUnitOccupiedHexes(candidate)) <= 1) {
         const sub = rollStrikeDamage(state, attacker, candidate, false, false, 1, 'clear', 1, catalog, chargeSteps, 0.85);
-        const kills = sub.blocked ? 0 : applyDamageToUnit(state, candidate, sub.damage, catalog, events);
+        const kills = sub.blocked ? 0 : applyDamageToUnit(state, candidate, sub.damage, catalog, events, true, 'physical');
         secondaryHits.push({
           targetId: candidate.id,
           damage: sub.damage,
@@ -350,7 +438,7 @@ export function resolveAreaMeleeEffects(
       const candHexes = getUnitOccupiedHexes(candidate);
       if (minHexSetDistance(atkHexes, candHexes) <= 1 && minHexSetDistance(tgtHexes, candHexes) <= 1) {
         const sub = rollStrikeDamage(state, attacker, candidate, false, false, 1, 'clear', 1, catalog, chargeSteps, 0.85);
-        const kills = sub.blocked ? 0 : applyDamageToUnit(state, candidate, sub.damage, catalog, events);
+        const kills = sub.blocked ? 0 : applyDamageToUnit(state, candidate, sub.damage, catalog, events, true, 'physical');
         secondaryHits.push({
           targetId: candidate.id,
           damage: sub.damage,
@@ -394,9 +482,9 @@ export function resolveAreaMeleeEffects(
       const behind = findUnitAtHex(state, step, false);
       if (behind && behind.id !== primaryTarget.id && behind.side !== attacker.side && !hitUnitIds.has(behind.id)) {
         hitUnitIds.add(behind.id);
-        const fireMult = behind.abilities.fireResistant ? 0.5 : 1.0;
+        const fireMult = behind.abilities.fireResistant ? 0.5 : behind.abilities.fireResist25 ? 0.75 : 1.0;
         const sub = rollStrikeDamage(state, attacker, behind, false, false, 1, 'clear', 1, catalog, 0, fireMult);
-        const kills = sub.blocked ? 0 : applyDamageToUnit(state, behind, sub.damage, catalog, events);
+        const kills = sub.blocked ? 0 : applyDamageToUnit(state, behind, sub.damage, catalog, events, true, 'physical');
         secondaryHits.push({
           targetId: behind.id,
           damage: sub.damage,

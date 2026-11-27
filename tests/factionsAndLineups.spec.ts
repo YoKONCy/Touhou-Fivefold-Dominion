@@ -7,18 +7,23 @@
 import { describe, expect, it } from 'vitest';
 import { chooseTacticalAiCommand } from '@ai/tacticalAi';
 import {
+  computeStoneGazeCreatureKills,
+  computeStoneGazeHeroDamage,
+  computeStoneGazeThreshold,
   createBattleState,
   dispatchCombatCommand,
   getUnitOccupiedHexes,
   getUnitReachableMap,
   previewAttack,
+  STONE_GAZE_THRESHOLD_PER_UNIT,
+  STONE_GAZE_TRIGGER_CHANCE,
 } from '@core/combatEngine';
 import { isDarkMagicVulnerable } from '@core/creatureTypes';
 import { hexDistance, hexKey, offsetToAxial } from '@core/hex';
-import { computeUnitStats } from '@core/modifiers';
+import { computeUnitStats, getUnitEffectiveMagicResistance, isStealthDeepened } from '@core/modifiers';
 import { createReimuVsMarisaBattle, TOUHOU_CATALOG } from '@data/battlePresets';
 import { buildShrineNightBattleMap } from '@data/definitions';
-import { buildUnitSpecialtyBadges } from '@ui/hudMetadata';
+import { buildUnitSpecialtyBadges, buildUnitStatusBadges } from '@ui/hudMetadata';
 import { getUnitHeaderCreatureTags } from '@ui/semanticFormat';
 import { clearRowToPlain, flattenAllMapTiles, runAiBattleToFinish } from './helpers/testUtils';
 
@@ -746,7 +751,13 @@ describe('幻月庭园·秩序阵营与幽冥公馆·死亡阵营编队及专属
         expect(r.ok).toBe(true);
         steps += 1;
       }
-      expect(aiBattle.phase).toBe('finished');
+      expect(
+        aiBattle.phase,
+        `[${variant}] round=${aiBattle.round} alive=${Object.values(aiBattle.units)
+          .filter((u) => u.status === 'alive')
+          .map((u) => `${u.side}:${u.name}x${u.count}(hp${u.currentHp},mp${u.mana},pos${u.pos.q},${u.pos.r})`)
+          .join('|')} logs=${aiBattle.actionLog.slice(-10).join(' // ')}`,
+      ).toBe('finished');
       expect(aiBattle.winner).toBeTruthy();
     }
   });
@@ -1093,11 +1104,42 @@ describe('幻月庭园·秩序阵营与幽冥公馆·死亡阵营编队及专属
   });
 
   it('退魔剑士与净邪巫女攻防下调 1 点，全非英雄单位魔抗严格遵循特例表与 5% 默认值且支持负魔抗', () => {
-    // 1. 退魔剑士与净邪巫女基础攻防校验
+    // 1. 退魔剑士与净邪巫女基础攻防及全阵营最新平衡数值校验
     expect(TOUHOU_CATALOG.creatures.exorcist_blade.baseStats.attack).toBe(20);
     expect(TOUHOU_CATALOG.creatures.exorcist_blade.baseStats.defense).toBe(20);
     expect(TOUHOU_CATALOG.creatures.prayer_maiden.baseStats.attack).toBe(19);
     expect(TOUHOU_CATALOG.creatures.prayer_maiden.baseStats.defense).toBe(18);
+    expect(TOUHOU_CATALOG.creatures.onbashira_steed.baseStats.minDamage).toBe(26);
+    expect(TOUHOU_CATALOG.creatures.onbashira_steed.baseStats.maxDamage).toBe(35);
+    expect(TOUHOU_CATALOG.creatures.hakurei_seraph.baseStats.maxHp).toBe(245);
+    expect(TOUHOU_CATALOG.creatures.crimson_star_dragon.baseStats.maxHp).toBe(400);
+    expect(TOUHOU_CATALOG.creatures.crimson_star_dragon.baseStats.attack).toBe(36);
+    expect(TOUHOU_CATALOG.creatures.crimson_star_dragon.baseStats.speed).toBe(11);
+    expect(TOUHOU_CATALOG.creatures.arcane_colossus.baseStats.defense).toBe(26);
+    expect(TOUHOU_CATALOG.creatures.arcane_colossus.baseStats.minDamage).toBe(32);
+    expect(TOUHOU_CATALOG.creatures.arcane_colossus.baseStats.maxDamage).toBe(49);
+    expect(TOUHOU_CATALOG.creatures.arcane_colossus.baseStats.magicResistance).toBeCloseTo(0.35, 4);
+    expect(TOUHOU_CATALOG.creatures.bone_dragon.baseStats.maxHp).toBe(275);
+    expect(TOUHOU_CATALOG.creatures.abyss_gap_devil.baseStats.maxHp).toBe(215);
+    expect(TOUHOU_CATALOG.creatures.combat_mk2.baseStats.maxHp).toBe(95);
+    expect(TOUHOU_CATALOG.creatures.purity_titan.baseStats.maxHp).toBe(225);
+    expect(TOUHOU_CATALOG.creatures.purity_titan.baseStats.attack).toBe(24);
+    expect(TOUHOU_CATALOG.creatures.forest_shadow_imp.baseStats.speed).toBe(9);
+    expect(TOUHOU_CATALOG.creatures.lunar_genie.baseStats.defense).toBe(14);
+    expect(TOUHOU_CATALOG.creatures.ofuda_archer.baseStats.defense).toBe(9);
+    expect(TOUHOU_CATALOG.creatures.yinyang_turret.baseStats.defense).toBe(12);
+    expect(TOUHOU_CATALOG.creatures.yinyang_turret.baseStats.attack).toBe(15);
+    expect(TOUHOU_CATALOG.creatures.hakurei_seraph.baseStats.minDamage).toBe(35);
+    expect(TOUHOU_CATALOG.creatures.hakurei_seraph.baseStats.maxDamage).toBe(56);
+    expect(TOUHOU_CATALOG.creatures.wraith_spirit.baseStats.defense).toBe(15);
+    expect(TOUHOU_CATALOG.creatures.hell_raven.baseStats.maxHp).toBe(37);
+    expect(TOUHOU_CATALOG.creatures.hell_raven.baseStats.defense).toBe(13);
+    expect(TOUHOU_CATALOG.creatures.hell_raven.baseStats.minDamage).toBe(8);
+    expect(TOUHOU_CATALOG.creatures.hell_raven.baseStats.maxDamage).toBe(11);
+    expect(TOUHOU_CATALOG.heroes.hero_marisa.initialSkills.chaos_magic).toBe(5);
+    expect(TOUHOU_CATALOG.heroes.hero_marisa.knownSpellIds).toContain('chaos_chain_lightning');
+    expect(TOUHOU_CATALOG.heroes.hero_marisa.knownSpellIds).toContain('chaos_disintegrate');
+    expect(TOUHOU_CATALOG.heroes.hero_marisa.knownSpellIds).toContain('chaos_armageddon');
 
     // 2. 全量非英雄单位（含四大阵营、中立储备与全部召唤模板）魔抗基线严格校验
     const specialMr: Record<string, number> = {
@@ -1110,6 +1152,8 @@ describe('幻月庭园·秩序阵营与幽冥公馆·死亡阵营编队及专属
       wraith_spirit: -0.05,
       hakurei_seraph: 0.15,
       hourai_doll: 0.1,
+      arcane_colossus: 0.35,
+      might_red_priest: 0.3,
     };
 
     for (const [id, def] of Object.entries(TOUHOU_CATALOG.creatures)) {
@@ -1176,5 +1220,143 @@ describe('幻月庭园·秩序阵营与幽冥公馆·死亡阵营编队及专属
     const dmgHusk = evHusk && evHusk.type === 'SPELL_CAST' ? evHusk.damageMap?.[husk.id]?.damage ?? 0 : 0;
     const dmgKedama = evKedama && evKedama.type === 'SPELL_CAST' ? evKedama.damageMap?.[kedama.id]?.damage ?? 0 : 0;
     expect(dmgHusk).toBeGreaterThan(dmgKedama);
+    // 4. 潜行深潜规则校验：周围 6 格内无存活敌军时，影遁潜行擦弹与远程减伤均额外获得一倍效果（+32% 擦弹 / 远程 -30%）
+    const { state: stealthState } = createBattleState(
+      {
+        battleId: 'test_stealth_deepened_6_hex',
+        seed: 20261129,
+        mapWidth: map.width,
+        mapHeight: map.height,
+        tiles: map.tiles,
+        leftSlots: [{ kind: 'creature', defId: 'forest_shadow_imp', count: 20, col: 4, row: 10 }],
+        rightSlots: [{ kind: 'creature', defId: 'ofuda_archer', count: 20, col: 11, row: 10 }],
+        controllers: { left: 'human', right: 'human' },
+      },
+      TOUHOU_CATALOG,
+    );
+    const imp = Object.values(stealthState.units).find((u) => u.defId === 'forest_shadow_imp')!;
+    const archer = Object.values(stealthState.units).find((u) => u.defId === 'ofuda_archer')!;
+
+    // 距离 7 格（>6）：触发深潜×2（基础 16% + 潜行 32% = 48% 擦弹，远程减伤 -30%）
+    expect(hexDistance(imp.pos, archer.pos)).toBe(7);
+    expect(isStealthDeepened(imp, stealthState)).toBe(true);
+    expect(computeUnitStats(imp, stealthState, TOUHOU_CATALOG).grazeChance).toBeCloseTo(0.48, 3);
+    expect(buildUnitStatusBadges(imp, stealthState).some((b) => b.id === 'status_stealth_deepened')).toBe(true);
+    const deepPrev = previewAttack(stealthState, archer.id, imp.id, TOUHOU_CATALOG);
+    expect(deepPrev.notes.some((n) => n.includes('影遁深潜(-30%)'))).toBe(true);
+
+    // 敌军拉近到距离 6 格（<=6）：退回基础潜行（基础 16% + 潜行 16% = 32% 擦弹，远程减伤 -15%）
+    archer.pos = offsetToAxial(10, 10);
+    expect(hexDistance(imp.pos, archer.pos)).toBe(6);
+    expect(isStealthDeepened(imp, stealthState)).toBe(false);
+    expect(computeUnitStats(imp, stealthState, TOUHOU_CATALOG).grazeChance).toBeCloseTo(0.32, 3);
+    expect(buildUnitStatusBadges(imp, stealthState).some((b) => b.id === 'status_stealth_deepened')).toBe(false);
+    const nearPrev = previewAttack(stealthState, archer.id, imp.id, TOUHOU_CATALOG);
+    expect(nearPrev.notes.some((n) => n.includes('影遁减伤(-15%)'))).toBe(true);
+    expect(deepPrev.expectedMaxDamage).toBeLessThan(nearPrev.expectedMaxDamage);
+
+    // 5. 禁忌之书「魔眼石化」按数量×12 生命阈值、35% 概率与英雄魔抗折算伤害精准校验
+    expect(STONE_GAZE_TRIGGER_CHANCE).toBeCloseTo(0.35, 4);
+    expect(STONE_GAZE_THRESHOLD_PER_UNIT).toBe(12);
+    expect(computeStoneGazeThreshold(10)).toBe(120);
+    // 首兵血量 121 > 120：无法触发；首兵血量 120：抹杀 1 名；每只 20 血：精确抹杀 6 名
+    expect(computeStoneGazeCreatureKills(121, 180, 5, 120)).toBe(0);
+    expect(computeStoneGazeCreatureKills(120, 180, 5, 120)).toBe(1);
+    expect(computeStoneGazeCreatureKills(20, 20, 10, 120)).toBe(6);
+    expect(computeStoneGazeHeroDamage(120, 0.25)).toBe(90);
+    expect(computeStoneGazeHeroDamage(120, 0.5)).toBe(60);
+
+    // 实战连射抽样验证：10 本禁忌之书射向 20 血活体小兵（命中后触发石化抹杀 6 名）、射向 >120 血首兵（0 触发）、射向英雄（精确 120×(1-魔抗)）
+    let smallTriggerCount = 0;
+    let smallExactSixKills = false;
+    let tankTriggerCount = 0;
+    let heroTriggerCount = 0;
+    for (let i = 0; i < 60; i += 1) {
+      const { state: sgState } = createBattleState(
+        {
+          battleId: `test_stone_gaze_${i}`,
+          seed: 50000 + i * 37,
+          mapWidth: map.width,
+          mapHeight: map.height,
+          tiles: map.tiles,
+          leftSlots: [{ kind: 'creature', defId: 'grimoire_familiar', count: 10, col: 4, row: 10 }],
+          rightSlots: [
+            { kind: 'creature', defId: 'kedama', count: 30, col: 8, row: 10 },
+            { kind: 'creature', defId: 'onbashira_steed', count: 5, col: 8, row: 12 },
+            { kind: 'hero', defId: 'hero_reimu', col: 8, row: 8 },
+          ],
+          controllers: { left: 'human', right: 'human' },
+        },
+        TOUHOU_CATALOG,
+      );
+      const book = Object.values(sgState.units).find((u) => u.defId === 'grimoire_familiar')!;
+      const smallTarget = Object.values(sgState.units).find((u) => u.defId === 'kedama')!;
+      const tankTarget = Object.values(sgState.units).find((u) => u.defId === 'onbashira_steed')!;
+      const heroTarget = Object.values(sgState.units).find((u) => u.defId === 'hero_reimu')!;
+      // 设定小兵单兵 20 HP、极高防御确保普攻不至于清完堆叠且方便核对阈值抹杀
+      smallTarget.baseStats.maxHp = 20;
+      smallTarget.currentHp = 20;
+      smallTarget.baseStats.defense = 200;
+      smallTarget.baseStats.grazeChance = 0;
+      // 设定肉盾单兵 400 HP（挨一发后首兵血量仍远 > 120）
+      tankTarget.baseStats.maxHp = 400;
+      tankTarget.currentHp = 400;
+      tankTarget.baseStats.defense = 200;
+      tankTarget.baseStats.grazeChance = 0;
+      // 英雄留足血量验证 120 - 120×魔抗
+      heroTarget.baseStats.maxHp = 800;
+      heroTarget.currentHp = 800;
+      heroTarget.baseStats.grazeChance = 0;
+
+      // 1) 20 HP 活体兵种
+      sgState.activeUnitId = book.id;
+      const rSmall = dispatchCombatCommand(
+        sgState,
+        { type: 'ATTACK', unitId: book.id, targetId: smallTarget.id },
+        TOUHOU_CATALOG,
+      );
+      const exSmall = rSmall.events.find((e) => e.type === 'COMBAT_EXCHANGE');
+      if (exSmall?.type === 'COMBAT_EXCHANGE' && exSmall.attackerStrike?.petrifyKills) {
+        smallTriggerCount += 1;
+        // 普攻打残首兵后剩余首兵血量 <= 20，阈值 120 至少抹杀 6 名（残血首兵+5名满血，若首兵恰好 20 也是 6 名）
+        if (exSmall.attackerStrike.petrifyKills === 6) {
+          smallExactSixKills = true;
+        }
+      }
+
+      // 2) 首兵残血仍 > 120 HP 的重装目标：绝不触发石化
+      book.hasActedThisRound = false;
+      sgState.activeUnitId = book.id;
+      const rTank = dispatchCombatCommand(
+        sgState,
+        { type: 'ATTACK', unitId: book.id, targetId: tankTarget.id },
+        TOUHOU_CATALOG,
+      );
+      const exTank = rTank.events.find((e) => e.type === 'COMBAT_EXCHANGE');
+      if (exTank?.type === 'COMBAT_EXCHANGE' && exTank.attackerStrike?.petrifyKills) {
+        tankTriggerCount += 1;
+      }
+
+      // 3) 英雄目标：触发时伤害严格等于 round(120 - 120 * 魔抗)
+      book.hasActedThisRound = false;
+      sgState.activeUnitId = book.id;
+      const heroMr = getUnitEffectiveMagicResistance(heroTarget, sgState, TOUHOU_CATALOG);
+      const expectedHeroPetrify = Math.round(120 - 120 * heroMr);
+      const rHero = dispatchCombatCommand(
+        sgState,
+        { type: 'ATTACK', unitId: book.id, targetId: heroTarget.id },
+        TOUHOU_CATALOG,
+      );
+      const exHero = rHero.events.find((e) => e.type === 'COMBAT_EXCHANGE');
+      if (exHero?.type === 'COMBAT_EXCHANGE' && exHero.attackerStrike?.petrifyDamage) {
+        heroTriggerCount += 1;
+        expect(exHero.attackerStrike.petrifyDamage).toBe(expectedHeroPetrify);
+      }
+    }
+    expect(smallTriggerCount).toBeGreaterThanOrEqual(8);
+    expect(smallTriggerCount).toBeLessThanOrEqual(36);
+    expect(smallExactSixKills).toBe(true);
+    expect(tankTriggerCount).toBe(0);
+    expect(heroTriggerCount).toBeGreaterThanOrEqual(8);
   });
 });

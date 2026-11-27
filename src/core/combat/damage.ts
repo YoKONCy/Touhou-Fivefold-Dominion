@@ -16,25 +16,84 @@ import {
   resolveActiveHeroClass,
 } from '../h4Skills';
 import { getFootprintHexes, hexKey, type HexCoord } from '../hex';
-import { computeUnitStats, getUnitEffectiveMagicResistance } from '../modifiers';
+import { computeUnitStats, getUnitEffectiveMagicResistance, isStealthDeepened } from '../modifiers';
 import { HERO_TRAIT_REGISTRY, type AttackHookContext } from '../traits';
 import type { BattleState, BattleUnit, CombatEvent, SideId } from '../types';
 import { getUnitOccupiedHexes } from './spatial';
 import type { CombatContentCatalog } from './types';
 
-export { previewAttack } from './attackPreview';
+export { AREA_RANGED_RADIUS, previewAreaRangedAttack, previewAttack } from './attackPreview';
 export {
   applyBonusKills,
   applyHitStatusEffect,
+  computeStoneGazeCreatureKills,
+  computeStoneGazeHeroDamage,
+  computeStoneGazeThreshold,
   grantGrazeReward,
   handlePostKillRewards,
   resolveAreaMeleeEffects,
   resolveFireShield,
+  resolveStoneGazeOnHit,
   rollStrikeDamage,
+  STONE_GAZE_THRESHOLD_PER_UNIT,
+  STONE_GAZE_TRIGGER_CHANCE,
 } from './strikeEffects';
 
 /** 毒瘴妖等「剧毒喷射」每单位基础剧毒威力 */
 export const POISON_ATTACK_DAMAGE_PER_UNIT = 13;
+
+/** 赤雷巨鹏「赤雷天罚」每只固定雷电魔法追击威力（无视物理防御，受雷抗与魔抗减免） */
+export const LIGHTNING_STRIKE_DAMAGE_PER_UNIT = 28;
+
+/** 当目标倒下或失去可见性时，清理战场上所有锁定该目标的狂战士死斗状态 */
+export function clearDuelLocksOnTarget(
+  state: BattleState,
+  targetId: string,
+  reason: 'target_defeated' | 'target_hidden',
+  events: CombatEvent[],
+): void {
+  for (const unit of Object.values(state.units)) {
+    if (unit.status !== 'alive') continue;
+    if (unit.statusEffects?.duelTargetUnitId !== targetId) continue;
+    unit.statusEffects.duelTargetUnitId = undefined;
+    events.push({ type: 'DUEL_CLEARED', unitId: unit.id, reason });
+    state.actionLog.push(
+      reason === 'target_defeated'
+        ? `🔥 ${unit.name} 的死斗宿敌已倒下，狂暴锁定解除，重归掌控！`
+        : `🔥 ${unit.name} 失去了死斗宿敌的踪迹，狂暴锁定解除！`,
+    );
+  }
+}
+
+/** 计算赤雷天罚单次稳定落雷魔法伤害（按攻击方兵力独立结算，无视物理防御，受雷抗与魔法抗性减免，绝不计入物理伤害） */
+export function computeLightningStrikeDamage(
+  striker: BattleUnit,
+  victim: BattleUnit,
+  state: BattleState,
+  catalog: CombatContentCatalog,
+  strikerCountOverride?: number,
+): number {
+  if (victim.abilities.magicImmune) return 0;
+  const victimMr = getUnitEffectiveMagicResistance(victim, state, catalog);
+  if (victim.side !== striker.side && victimMr >= 1) {
+    return 0;
+  }
+  const unitCount = Math.max(1, strikerCountOverride ?? striker.count);
+  let dmg = unitCount * LIGHTNING_STRIKE_DAMAGE_PER_UNIT;
+  if (victim.abilities.lightningResistant) {
+    dmg *= 0.75;
+  }
+  if (
+    victim.abilities.berserkDuel &&
+    victim.statusEffects?.duelTargetUnitId &&
+    striker.id !== victim.statusEffects.duelTargetUnitId
+  ) {
+    dmg *= 0.9;
+  }
+  dmg *= Math.max(0, 1 - victimMr);
+  if (dmg <= 0) return 0;
+  return Math.max(1, Math.round(dmg));
+}
 
 /** 判定单位在本回合是否仍保有反击次数 */
 export function canUnitRetaliateThisRound(unit: BattleUnit): boolean {
@@ -96,11 +155,12 @@ export function computePoisonAttackDamage(
       : null;
   const unitCount = Math.max(1, strikerCountOverride ?? striker.count);
   let dmg = unitCount * POISON_ATTACK_DAMAGE_PER_UNIT;
-  if (
-    !strikerCls?.passive?.ignoreEnemyWards &&
-    (victim.abilities.deathWard || victim.statusEffects?.schoolWards?.death)
-  ) {
-    dmg *= 0.5;
+  if (!strikerCls?.passive?.ignoreEnemyWards) {
+    if (victim.abilities.deathWard) {
+      dmg *= 0.5;
+    } else if (victim.statusEffects?.schoolWards?.death) {
+      dmg *= 0.65;
+    }
   }
   dmg *= Math.max(0, 1 - victimMr);
   if (dmg <= 0) return 0;
@@ -140,6 +200,12 @@ export function calculateDamageRange(
     HERO_TRAIT_REGISTRY[traitId]?.onBeforeAttack?.(hookCtx);
   }
 
+  // 熔岩巨兽「碎甲重击」：近战忽略目标 50% 防御力
+  if (!isRanged && attacker.abilities.armorPierce) {
+    hookCtx.defensePenetration = Math.max(hookCtx.defensePenetration, 0.5);
+    hookCtx.notes.push('碎甲重击(无视50%防御)');
+  }
+
   const atkCls =
     attacker.kind === 'hero'
       ? resolveActiveHeroClass(
@@ -173,7 +239,8 @@ export function calculateDamageRange(
   const lifeWardActive = !ignoresWards && Boolean(defender.abilities.lifeWard && attacker.alignment === 'life');
   const chaosWardActive = !ignoresWards && Boolean(defender.abilities.chaosWard && attacker.alignment === 'chaos');
   const schoolWardActive = !ignoresWards && Boolean(defender.statusEffects?.schoolWards?.[attacker.alignment]);
-  const wardDefenseMult = schoolWardActive || lifeWardActive || chaosWardActive ? 1.5 : deathWardActive ? 1.25 : 1;
+  const wardDefenseMult =
+    lifeWardActive || chaosWardActive ? 1.5 : schoolWardActive ? 1.35 : deathWardActive ? 1.25 : 1;
   const bodyDefenseMult =
     (defender.abilities.insubstantial ? 2 : 1) * (isRanged && defender.abilities.skeletal ? 2 : 1);
 
@@ -201,12 +268,12 @@ export function calculateDamageRange(
   );
   if (ignoresWards && (defender.abilities.deathWard || defender.abilities.lifeWard || defender.abilities.chaosWard || defender.statusEffects?.schoolWards?.[attacker.alignment])) {
     hookCtx.notes.push('破界贯通(无视结界)');
-  } else if (schoolWardActive) {
-    hookCtx.notes.push('敌方派系守护(防+50%)');
   } else if (lifeWardActive) {
     hookCtx.notes.push('敌方抗生结界(防+50%)');
   } else if (chaosWardActive) {
     hookCtx.notes.push('敌方抗混结界(防+50%)');
+  } else if (schoolWardActive) {
+    hookCtx.notes.push('敌方派系守护(防+35%)');
   } else if (deathWardActive) {
     hookCtx.notes.push('敌方抗死结界(防+25%)');
   }
@@ -278,9 +345,25 @@ export function calculateDamageRange(
     hookCtx.notes.push('净秽裁决(+20%)');
   }
 
-  const fireAuraMult = !isRanged && attacker.statusEffects?.fireAura && !defender.abilities.fireResistant ? 1.25 : 1;
+  const fireAuraMult =
+    !isRanged && attacker.statusEffects?.fireAura && !defender.abilities.fireResistant
+      ? defender.abilities.fireResist25
+        ? 1 + 0.25 * 0.75
+        : 1.25
+      : 1;
   if (fireAuraMult > 1) {
-    hookCtx.notes.push('不死炎缠(+25%)');
+    hookCtx.notes.push(defender.abilities.fireResist25 ? '不死炎缠(+19%·抗火25%)' : '不死炎缠(+25%)');
+  }
+
+  // 狂战士「死斗狂暴」：锁定宿敌期间承受来自宿敌以外单位的伤害 -10%
+  const duelOutsideResistMult =
+    defender.abilities.berserkDuel &&
+    defender.statusEffects?.duelTargetUnitId &&
+    attacker.id !== defender.statusEffects.duelTargetUnitId
+      ? 0.9
+      : 1;
+  if (duelOutsideResistMult < 1) {
+    hookCtx.notes.push('死斗专注(-10%外伤)');
   }
 
   const bloodlustMult =
@@ -291,9 +374,10 @@ export function calculateDamageRange(
     hookCtx.notes.push('鬼神狂战(+25%近战)');
   }
 
-  const stealthMult = isRanged && defender.abilities.stealth ? 0.85 : 1;
+  const stealthDeepened = isRanged && defender.abilities.stealth && isStealthDeepened(defender, state);
+  const stealthMult = isRanged && defender.abilities.stealth ? (stealthDeepened ? 0.7 : 0.85) : 1;
   if (stealthMult < 1) {
-    hookCtx.notes.push('影遁减伤(-15%)');
+    hookCtx.notes.push(stealthDeepened ? '影遁深潜(-30%)' : '影遁减伤(-15%)');
   }
   const defenderStealthSub = defender.kind === 'hero' ? (defender.subSkills?.stealth ?? 0) : 0;
   const subStealthMult = isRanged && defenderStealthSub > 0 ? Math.max(0.7, 1 - defenderStealthSub * 0.05) : 1;
@@ -358,6 +442,7 @@ export function calculateDamageRange(
     giantSlayerMult *
     orderPurgeMult *
     fireAuraMult *
+    duelOutsideResistMult *
     bloodlustMult *
     stealthMult *
     subStealthMult *
@@ -401,7 +486,7 @@ export function simulateKills(
   return Math.max(0, target.count - newCount);
 }
 
-/** 真正将伤害施加到目标单位（含替身雏偶、致盲/和平破控、二重结界、御神护命、英雄倒地与符卡收取） */
+/** 真正将伤害施加到目标单位（含替身雏偶、致盲/和平破控、战争血祭护盾、二重结界、御神护命、死斗解锁与符卡收取） */
 export function applyDamageToUnit(
   state: BattleState,
   target: BattleUnit,
@@ -409,6 +494,7 @@ export function applyDamageToUnit(
   catalog: CombatContentCatalog,
   events: CombatEvent[],
   allowMartyrRedirect = true,
+  damageCategory: 'physical' | 'magic' | 'other' = 'other',
 ): number {
   if (target.status !== 'alive' || damage <= 0) return 0;
 
@@ -416,9 +502,18 @@ export function applyDamageToUnit(
     const martyr = state.units[target.statusEffects.martyrProtectedByUnitId];
     if (martyr && martyr.status === 'alive' && martyr.id !== target.id && martyr.side === target.side) {
       state.actionLog.push(`✝ 「替身雏偶」生效：${martyr.name} 替 ${target.name} 承受了 ${damage} 点伤害！`);
-      return applyDamageToUnit(state, martyr, damage, catalog, events, false);
+      return applyDamageToUnit(state, martyr, damage, catalog, events, false, damageCategory);
     }
     target.statusEffects.martyrProtectedByUnitId = undefined;
+  }
+
+  // 统计本回合双方各阵营累计承受的真实物理伤害（供下回合混沌四阶法术「命符·战争血祭」核算）
+  if (damageCategory === 'physical') {
+    if (!state.physicalDamageTakenThisRound) {
+      state.physicalDamageTakenThisRound = { left: 0, right: 0 };
+    }
+    state.physicalDamageTakenThisRound[target.side] =
+      (state.physicalDamageTakenThisRound[target.side] ?? 0) + damage;
   }
 
   if (target.statusEffects?.blindRounds && target.statusEffects.blindRounds > 0) {
@@ -430,6 +525,22 @@ export function applyDamageToUnit(
   }
 
   let effectiveDamage = damage;
+  // 优先消耗限时 3 回合的「战争血祭」护盾，再消耗常规「二重结界」护盾
+  if (target.statusEffects?.bloodSacrificeShieldHp && target.statusEffects.bloodSacrificeShieldHp > 0) {
+    const absorbed = Math.min(target.statusEffects.bloodSacrificeShieldHp, effectiveDamage);
+    target.statusEffects.bloodSacrificeShieldHp -= absorbed;
+    effectiveDamage -= absorbed;
+    if (target.statusEffects.bloodSacrificeShieldHp <= 0) {
+      target.statusEffects.bloodSacrificeShieldHp = 0;
+      target.statusEffects.bloodSacrificeShieldRounds = 0;
+    }
+    if (absorbed > 0) {
+      state.actionLog.push(
+        `🩸 「战争血祭」护盾为 ${target.name} 吸收了 ${absorbed} 点伤害（剩余护盾 ${target.statusEffects.bloodSacrificeShieldHp}）！`,
+      );
+    }
+    if (effectiveDamage <= 0) return 0;
+  }
   if (target.statusEffects?.tempShieldHp && target.statusEffects.tempShieldHp > 0) {
     const absorbed = Math.min(target.statusEffects.tempShieldHp, effectiveDamage);
     target.statusEffects.tempShieldHp -= absorbed;
@@ -499,6 +610,8 @@ export function applyDamageToUnit(
       events.push({ type: 'UNIT_DIED', unitId: target.id });
       state.actionLog.push(`${target.name} 全军覆没。`);
     }
+    target.statusEffects.duelTargetUnitId = undefined;
+    clearDuelLocksOnTarget(state, target.id, 'target_defeated', events);
     return oldCount;
   }
 

@@ -17,6 +17,7 @@ export {
   allocateHpPoolToStack,
   canPlaceFootprintAt,
   evaluateIllusionSpell,
+  findStackableSummonUnit,
   getAvailableCorpseHp,
   getCasterSchoolRank,
   getEffectiveSpellManaCost,
@@ -24,17 +25,27 @@ export {
   getNecromancyCorpseRejection,
   isTargetResistingHostileSpell,
   isUnitOnHighlandPlatform,
+  mergeHpPoolIntoExistingStack,
   validateCorpseSpellTarget,
 } from './h4SpellExecutor';
 
 export { createBattleState } from './combat/battleSetup';
 export { dispatchCombatCommand } from './combat/commands';
 export {
+  AREA_RANGED_RADIUS,
   canUnitRetaliateThisRound,
+  computeLightningStrikeDamage,
   computePoisonAttackDamage,
+  computeStoneGazeCreatureKills,
+  computeStoneGazeHeroDamage,
+  computeStoneGazeThreshold,
   hasDoubleStrikeForMode,
+  LIGHTNING_STRIKE_DAMAGE_PER_UNIT,
   POISON_ATTACK_DAMAGE_PER_UNIT,
+  previewAreaRangedAttack,
   previewAttack,
+  STONE_GAZE_THRESHOLD_PER_UNIT,
+  STONE_GAZE_TRIGGER_CHANCE,
 } from './combat/damage';
 export {
   applyHeroBaseClassTemplate,
@@ -55,8 +66,10 @@ export {
   isEngagedInMelee,
 } from './combat/spatial';
 export {
+  buildAreaRangedTrajectoryPreview,
   buildRangedTrajectoryPreview,
   buildSpellTrajectoryPreview,
+  checkAreaRangedCapability,
   checkRangedCapability,
   checkSpellLineOfSight,
   diagnoseTrajectoryBlockers,

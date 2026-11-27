@@ -72,7 +72,10 @@ export function appendControlAndResistanceBadges(ab: UnitAbilities, list: HudIco
         accent: '#d094ff',
         badges: [SPEC_BADGE_CONTROL, SPEC_BADGE_OFFENSE],
         summary: '凝视瞬间化血肉为玄石的禁忌魔瞳。',
-        lines: ['命中活体非魔免敌军时有 18% 概率额外石化即死 1 至 2 名兵力，对英雄转为 +20% 咒伤，对机械、不死、元素、幻象无效。'],
+        lines: [
+          '命中活体非魔免敌军时有 35% 概率触发魔眼石化，每名存活单位提供 12 点石化生命阈值。',
+          '对兵种按石化阈值整名抹杀，若当前首兵生命高于阈值则无法触发；对英雄直接造成按魔法抗性比例减免的石化伤害；对机械、不死、元素、幻象无效。',
+        ],
       },
     });
   }
@@ -156,6 +159,26 @@ export function appendControlAndResistanceBadges(ab: UnitAbilities, list: HudIco
       },
     });
   }
+
+  if (ab.fireResist25) {
+    list.push({
+      id: 'fireResist25',
+      icon: 'fireResistant',
+      polarity: 'positive',
+      shortLabel: '抗火',
+      accent: '#ffba8a',
+      bg: 'rgba(58, 24, 14, 0.94)',
+      border: '#d96b38',
+      tooltip: {
+        title: '熔岩抗火',
+        tag: '防御特技',
+        accent: '#ff9652',
+        badges: [SPEC_BADGE_DEFENSE],
+        summary: '炽热熔岩甲壳显著削弱一切火焰灼烧侵袭。',
+        lines: ['承受火焰法术、烈焰护盾反伤、不死炎缠与火息贯穿时，火焰伤害降低 25%。'],
+      },
+    });
+  }
 }
 
 /** 构造重型进攻、不死/亡灵特质、剧毒恐惧与深渊寒霜特技徽章 */
@@ -236,6 +259,112 @@ export function appendHeavyOffenseAndUndeadSpecialtyBadges(ab: UnitAbilities, li
         badges: [SPEC_BADGE_OFFENSE],
         summary: '喷吐烈焰洞穿前后两排的毁灭吐息。',
         lines: ['主动近战攻伐时沿进攻方向一并灼烧主目标身后紧邻格上的敌军。'],
+      },
+    });
+  }
+
+  if (ab.berserkDuel) {
+    list.push({
+      id: 'berserkDuel',
+      icon: 'atk',
+      polarity: 'positive',
+      shortLabel: '死斗',
+      accent: '#ff9a76',
+      bg: 'rgba(62, 18, 16, 0.94)',
+      border: '#e85a3e',
+      tooltip: {
+        title: '死斗狂暴',
+        tag: '进攻特技',
+        accent: '#ff7052',
+        badges: [SPEC_BADGE_OFFENSE, SPEC_BADGE_DEFENSE],
+        summary: '一旦近身接战便死磕到底的狂烈决斗意志。',
+        lines: [
+          '初始由玩家掌控；主动近战攻击或遭近战打击后即锁定首个对手进入死斗，轮到行动时自动追砍直至宿敌倒下或隐身。',
+          '死斗锁定期间，承受来自宿敌以外所有单位的伤害降低 10%。',
+        ],
+      },
+    });
+  }
+
+  if (ab.strikeAndReturn) {
+    list.push({
+      id: 'strikeAndReturn',
+      icon: 'charge',
+      polarity: 'positive',
+      shortLabel: '巡回',
+      accent: '#ffd88a',
+      bg: 'rgba(54, 34, 16, 0.94)',
+      border: '#d98c3e',
+      tooltip: {
+        title: '巡回突袭',
+        tag: '机动特技',
+        accent: '#ffbd5c',
+        badges: [SPEC_BADGE_OFFENSE, SPEC_BADGE_UTILITY],
+        summary: '长距奔袭咬击后瞬间折返的游击猎法。',
+        lines: ['经移动发起近战攻击且存活未被控时，交锋结算完毕立即折返回起跳原位；贴脸原地攻击不位移。'],
+      },
+    });
+  }
+
+  if (ab.areaRanged) {
+    list.push({
+      id: 'areaRanged',
+      icon: 'siegeBreaker',
+      polarity: 'positive',
+      shortLabel: '投岩',
+      accent: '#f5c78a',
+      bg: 'rgba(54, 30, 18, 0.94)',
+      border: '#cc7a3d',
+      tooltip: {
+        title: '飞石轰击',
+        tag: '进攻特技',
+        accent: '#f2aa5c',
+        badges: [SPEC_BADGE_OFFENSE],
+        summary: '投掷整块山岩碾压 2 环区域的完全范围攻击。',
+        lines: [
+          '可瞄准任意敌军或敌人附近空地落点，超射程按常规距离衰减仍可投掷，对中心格及周围 2 环内全部敌我单位均造成 100% 物理远程伤害。',
+          '无主次衰减且不触发目标单点反击，切记避开贴脸激战的己方友军。',
+        ],
+      },
+    });
+  }
+
+  if (ab.lightningStrike) {
+    list.push({
+      id: 'lightningStrike',
+      icon: 'chaos_magic',
+      polarity: 'positive',
+      shortLabel: '赤雷',
+      accent: '#9cf0ff',
+      bg: 'rgba(20, 38, 62, 0.94)',
+      border: '#59c7f2',
+      tooltip: {
+        title: '赤雷天罚',
+        tag: '进攻特技',
+        accent: '#7be8ff',
+        badges: [SPEC_BADGE_OFFENSE],
+        summary: '近战扑击瞬间必然引落赤色天雷的猛禽神技。',
+        lines: ['每次近战命中 100% 稳定触发雷电魔法追击，每只造成固定 28 点无视物防雷伤，受雷抗与魔抗减免，不计入物理伤害。'],
+      },
+    });
+  }
+
+  if (ab.armorPierce) {
+    list.push({
+      id: 'armorPierce',
+      icon: 'giantSlayer',
+      polarity: 'positive',
+      shortLabel: '碎甲',
+      accent: '#ffb573',
+      bg: 'rgba(58, 22, 14, 0.94)',
+      border: '#e6642e',
+      tooltip: {
+        title: '碎甲重击',
+        tag: '进攻特技',
+        accent: '#ff8a47',
+        badges: [SPEC_BADGE_OFFENSE],
+        summary: '以地底巨兽蛮力强行撕裂重甲防壁的破防利爪。',
+        lines: ['近战攻击时直接无视目标 50% 有效防御力，专克重装高防前排。'],
       },
     });
   }
@@ -571,7 +700,10 @@ export function appendCreatureTypeAndCasterBadges(unit: BattleUnit, ab: UnitAbil
         accent: '#a994ff',
         badges: [SPEC_BADGE_DEFENSE],
         summary: '隐匿于暗影之中的轻灵身法。',
-        lines: ['常驻 +16% 擦弹率，且遭受远程弹幕射击时伤害额外 -15%。'],
+        lines: [
+          '常驻 +16% 擦弹率，且遭受远程弹幕射击时伤害额外 -15%。',
+          '周围 6 格内没有存活敌军时进入深潜状态，擦弹率提升至 +32% 且远程减伤提升至 -30%。',
+        ],
       },
     });
   }

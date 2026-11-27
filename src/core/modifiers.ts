@@ -4,6 +4,7 @@
 
 import { computeArmyAlignmentMorale } from './alignment';
 import { isImmuneToMorale, isUndeadUnit } from './creatureTypes';
+import { getFootprintHexes, minHexSetDistance } from './hex';
 import {
   ALL_PRIMARY_SKILL_IDS,
   ALL_SECONDARY_SKILL_IDS,
@@ -82,6 +83,23 @@ export function resolveActiveArtifactSets(
     }
   }
   return active;
+}
+
+/** 影遁潜行深潜安全距离：周围 6 格内无存活敌军时效果翻倍 */
+export const STEALTH_DEEP_SAFE_RANGE = 6;
+
+/** 判断具备「影遁潜行」的单位周围 6 格内是否没有任何存活敌军（满足时潜行额外获得一倍效果） */
+export function isStealthDeepened(unit: BattleUnit, state: BattleState): boolean {
+  if (!unit.abilities.stealth || unit.status !== 'alive') return false;
+  const myHexes = getFootprintHexes(unit.pos, unit.footprint);
+  for (const other of Object.values(state.units)) {
+    if (other.status !== 'alive' || other.side === unit.side) continue;
+    const otherHexes = getFootprintHexes(other.pos, other.footprint);
+    if (minHexSetDistance(myHexes, otherHexes) <= STEALTH_DEEP_SAFE_RANGE) {
+      return false;
+    }
+  }
+  return true;
 }
 
 /** 计算某阶梯等级在给定阈值数组下达成的段数（例如 [2, 4, 5] 下 Lv.4 返回 2） */
@@ -538,12 +556,13 @@ export function collectUnitModifiers(
 
   // 9. 特技被动与异常状态修正
   if (unit.abilities.stealth) {
+    const deepened = isStealthDeepened(unit, state);
     list.push({
       id: 'sys:stealth_graze',
       stat: 'grazeChance',
       mode: 'flat',
-      value: 0.16,
-      sourceName: '特技·影遁潜行',
+      value: deepened ? 0.32 : 0.16,
+      sourceName: deepened ? '特技·影遁潜行·深潜×2' : '特技·影遁潜行',
       remainingRounds: null,
     });
   }

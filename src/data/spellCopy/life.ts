@@ -32,11 +32,11 @@ export const LIFE_SPELL_COPY: Record<string, SpellCopyEntry> = {
   },
   life_chaos_ward: {
     summary: '隔绝混沌魔法的单体结界。',
-    effect: '使一名友军获得 50% 混沌魔法抗性，迎击混沌系单位时防御提升 50%。',
+    effect: '使一名友军获得 35% 混沌魔法抗性，迎击混沌系单位时防御提升 35%。',
   },
   life_death_ward: {
     summary: '抵御幽冥死气的单体结界。',
-    effect: '使一名友军获得 50% 死亡魔法抗性，迎击死亡系、不死与暗系单位时防御提升 50%。',
+    effect: '使一名友军获得 35% 死亡魔法抗性，迎击死亡系、不死与暗系单位时防御提升 35%。',
   },
   life_defender: {
     summary: '稳固全军阵线的守御加护。',
@@ -62,11 +62,11 @@ export const LIFE_SPELL_COPY: Record<string, SpellCopyEntry> = {
   },
   life_nature_ward: {
     summary: '隔绝自然魔法的单体结界。',
-    effect: '使一名友军获得 50% 自然魔法抗性，迎击自然系单位时防御提升 50%。',
+    effect: '使一名友军获得 35% 自然魔法抗性，迎击自然系单位时防御提升 35%。',
   },
   life_order_ward: {
     summary: '隔绝秩序魔法的单体结界。',
-    effect: '使一名友军获得 50% 秩序魔法抗性，迎击秩序系单位时防御提升 50%。',
+    effect: '使一名友军获得 35% 秩序魔法抗性，迎击秩序系单位时防御提升 35%。',
   },
   life_retribution: {
     summary: '以攻代守的因果反噬之印。',
@@ -99,11 +99,11 @@ export const LIFE_SPELL_COPY: Record<string, SpellCopyEntry> = {
   },
   life_mass_chaos_ward: {
     summary: '护持全阵的御混大结界。',
-    effect: '使全体友军获得 50% 混沌魔法抗性，迎击混沌系单位时防御提升 50%。',
+    effect: '使全体友军获得 35% 混沌魔法抗性，迎击混沌系单位时防御提升 35%。',
   },
   life_mass_death_ward: {
     summary: '护持全阵的御冥大结界。',
-    effect: '使全体友军获得 50% 死亡魔法抗性，迎击死亡系、不死与暗系单位时防御提升 50%。',
+    effect: '使全体友军获得 35% 死亡魔法抗性，迎击死亡系、不死与暗系单位时防御提升 35%。',
   },
   life_mass_exorcism: {
     summary: '涤荡全阵厄祟的神社大祓。',
@@ -116,11 +116,11 @@ export const LIFE_SPELL_COPY: Record<string, SpellCopyEntry> = {
   },
   life_mass_nature_ward: {
     summary: '护持全阵的御森大结界。',
-    effect: '使全体友军获得 50% 自然魔法抗性，迎击自然系单位时防御提升 50%。',
+    effect: '使全体友军获得 35% 自然魔法抗性，迎击自然系单位时防御提升 35%。',
   },
   life_mass_order_ward: {
     summary: '护持全阵的御律大结界。',
-    effect: '使全体友军获得 50% 秩序魔法抗性，迎击秩序系单位时防御提升 50%。',
+    effect: '使全体友军获得 35% 秩序魔法抗性，迎击秩序系单位时防御提升 35%。',
   },
   life_prayer: {
     summary: '凝聚神道愿力的全阵祈祷。',
@@ -128,7 +128,7 @@ export const LIFE_SPELL_COPY: Record<string, SpellCopyEntry> = {
   },
   life_divine_intervention: {
     summary: '请动八百万神明降世的终极神迹。',
-    effect: '使全体活体非魔免友军强力恢复并苏生阵亡兵力，同时净化一切负面状态与毒疫。',
+    effect: '将全体活体非魔免友军的当前受伤单位与英雄回复至满血，并彻底净化一切负面状态与毒疫，不复活已阵亡兵力。',
     flavor: '“赛钱箱里偶尔多出一枚铜板时，神明也会格外慷慨。”',
   },
   life_guardian_angel: {

@@ -162,9 +162,9 @@ export const ORDER_H4_SPELLS: Record<string, SpellDef> = {
   },
   order_hypnotize: {
     id: 'order_hypnotize', name: '迷梦傀儡', spellCardPrefix: '梦符', enName: 'Hypnotize',
-    alignment: 'order', level: 5, manaCost: 12, targetType: 'enemy_unit', range: 18,
+    alignment: 'order', level: 5, manaCost: 12, targetType: 'enemy_unit', range: 2, fixedRange: true,
     vfxKey: 'order_slow', specialEffect: 'hypnotize',
-    description: '秩序 5 级终极心智：将一名非心智免疫敌军拖入迷梦傀儡戏，令其 3 回合内倒戈归入己方阵营作战！',
+    description: '秩序 5 级终极心智：仅限 2 格近距施放，将一名非心智免疫敌军拖入迷梦傀儡戏，令其 3 回合内倒戈归入己方阵营作战！',
   },
   order_pain_mirror: {
     id: 'order_pain_mirror', name: '因果水镜', spellCardPrefix: '痛镜', enName: 'Pain Mirror',

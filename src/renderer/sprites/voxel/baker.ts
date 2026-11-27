@@ -7,6 +7,7 @@ import { HD_CHAOS_FACTION_RIG_SPECS } from '../../hdChaosFactionSprites';
 import { HD_DEATH_FACTION_RIG_SPECS } from '../../hdDeathFactionSprites';
 import { HD_HERO_REIMU_SPEC, HD_HERO_REMILIA_SPEC } from '../../hdHeroSprites';
 import { HD_LIFE_FACTION_RIG_SPECS } from '../../hdLifeFactionSprites';
+import { HD_MIGHT_FACTION_RIG_SPECS } from '../../hdMightFactionSprites';
 import { HD_ORDER_FACTION_RIG_SPECS } from '../../hdOrderFactionSprites';
 import { RIG_SPECS } from './coreBlueprints';
 import {
@@ -40,6 +41,7 @@ const HD_RIG_SPECS: Record<string, SpriteRigSpec> = {
   ...HD_DEATH_FACTION_RIG_SPECS,
   ...HD_ORDER_FACTION_RIG_SPECS,
   ...HD_CHAOS_FACTION_RIG_SPECS,
+  ...HD_MIGHT_FACTION_RIG_SPECS,
 };
 
 function getRigSpec(blueprintId: string): SpriteRigSpec {

@@ -48,13 +48,13 @@ export const LIFE_H4_SPELLS: Record<string, SpellDef> = {
     id: 'life_chaos_ward', name: '御混结界', spellCardPrefix: '结界', enName: 'Chaos Ward',
     alignment: 'life', level: 2, manaCost: 3, targetType: 'ally_unit', range: 16,
     wardSchool: 'chaos', vfxKey: 'holy_ward', specialEffect: 'ward_single',
-    description: '生命 2 级：为友军展开御混结界，获得混沌法术 50% 抗性且迎击混沌生物时防御 +50%。',
+    description: '生命 2 级：为友军展开御混结界，获得混沌法术 35% 抗性且迎击混沌生物时防御 +35%。',
   },
   life_death_ward: {
     id: 'life_death_ward', name: '御冥结界', spellCardPrefix: '结界', enName: 'Death Ward',
     alignment: 'life', level: 2, manaCost: 3, targetType: 'ally_unit', range: 16,
     wardSchool: 'death', vfxKey: 'holy_ward', specialEffect: 'ward_single',
-    description: '生命 2 级：为友军展开御冥结界，获得死亡法术 50% 抗性且迎击死亡/暗系生物时防御 +50%。',
+    description: '生命 2 级：为友军展开御冥结界，获得死亡法术 35% 抗性且迎击死亡/暗系生物时防御 +35%。',
   },
   life_defender: {
     id: 'life_defender', name: '不动如山', spellCardPrefix: '守符', enName: 'Defender',
@@ -92,13 +92,13 @@ export const LIFE_H4_SPELLS: Record<string, SpellDef> = {
     id: 'life_nature_ward', name: '御森结界', spellCardPrefix: '结界', enName: 'Nature Ward',
     alignment: 'life', level: 2, manaCost: 3, targetType: 'ally_unit', range: 16,
     wardSchool: 'nature', vfxKey: 'holy_ward', specialEffect: 'ward_single',
-    description: '生命 2 级：为友军展开御森结界，获得自然法术 50% 抗性且迎击自然生物时防御 +50%。',
+    description: '生命 2 级：为友军展开御森结界，获得自然法术 35% 抗性且迎击自然生物时防御 +35%。',
   },
   life_order_ward: {
     id: 'life_order_ward', name: '御律结界', spellCardPrefix: '结界', enName: 'Order Ward',
     alignment: 'life', level: 2, manaCost: 3, targetType: 'ally_unit', range: 16,
     wardSchool: 'order', vfxKey: 'holy_ward', specialEffect: 'ward_single',
-    description: '生命 2 级：为友军展开御律结界，获得秩序法术 50% 抗性且迎击秩序生物时防御 +50%。',
+    description: '生命 2 级：为友军展开御律结界，获得秩序法术 35% 抗性且迎击秩序生物时防御 +35%。',
   },
   life_retribution: {
     id: 'life_retribution', name: '因果报应', spellCardPrefix: '罚符', enName: 'Retribution',
@@ -148,13 +148,13 @@ export const LIFE_H4_SPELLS: Record<string, SpellDef> = {
     id: 'life_mass_chaos_ward', name: '大界·御混', spellCardPrefix: '大界', enName: 'Mass Chaos Ward',
     alignment: 'life', level: 4, manaCost: 8, targetType: 'self', range: 0, ignoreLos: true,
     wardSchool: 'chaos', vfxKey: 'holy_ward', specialEffect: 'ward_mass',
-    description: '生命 4 级（全军）：张开博丽大结界护持全军，全体友军对混沌法术抗性 +50%、迎战混沌防御 +50%。',
+    description: '生命 4 级（全军）：张开博丽大结界护持全军，全体友军对混沌法术抗性 +35%、迎战混沌防御 +35%。',
   },
   life_mass_death_ward: {
     id: 'life_mass_death_ward', name: '大界·御冥', spellCardPrefix: '大界', enName: 'Mass Death Ward',
     alignment: 'life', level: 4, manaCost: 8, targetType: 'self', range: 0, ignoreLos: true,
     wardSchool: 'death', vfxKey: 'holy_ward', specialEffect: 'ward_mass',
-    description: '生命 4 级（全军）：张开博丽大结界护持全军，全体友军对死亡法术抗性 +50%、迎战冥暗防御 +50%。',
+    description: '生命 4 级（全军）：张开博丽大结界护持全军，全体友军对死亡法术抗性 +35%、迎战冥暗防御 +35%。',
   },
   life_mass_exorcism: {
     id: 'life_mass_exorcism', name: '大祓净世', spellCardPrefix: '大祓', enName: 'Mass Exorcism',
@@ -174,13 +174,13 @@ export const LIFE_H4_SPELLS: Record<string, SpellDef> = {
     id: 'life_mass_nature_ward', name: '大界·御森', spellCardPrefix: '大界', enName: 'Mass Nature Ward',
     alignment: 'life', level: 4, manaCost: 8, targetType: 'self', range: 0, ignoreLos: true,
     wardSchool: 'nature', vfxKey: 'holy_ward', specialEffect: 'ward_mass',
-    description: '生命 4 级（全军）：张开博丽大结界护持全军，全体友军对自然法术抗性 +50%、迎战自然防御 +50%。',
+    description: '生命 4 级（全军）：张开博丽大结界护持全军，全体友军对自然法术抗性 +35%、迎战自然防御 +35%。',
   },
   life_mass_order_ward: {
     id: 'life_mass_order_ward', name: '大界·御律', spellCardPrefix: '大界', enName: 'Mass Order Ward',
     alignment: 'life', level: 4, manaCost: 8, targetType: 'self', range: 0, ignoreLos: true,
     wardSchool: 'order', vfxKey: 'holy_ward', specialEffect: 'ward_mass',
-    description: '生命 4 级（全军）：张开博丽大结界护持全军，全体友军对秩序法术抗性 +50%、迎战秩序防御 +50%。',
+    description: '生命 4 级（全军）：张开博丽大结界护持全军，全体友军对秩序法术抗性 +35%、迎战秩序防御 +35%。',
   },
   life_prayer: {
     id: 'life_prayer', name: '巫女祈祷', spellCardPrefix: '祈符', enName: 'Prayer',
@@ -191,8 +191,8 @@ export const LIFE_H4_SPELLS: Record<string, SpellDef> = {
   life_divine_intervention: {
     id: 'life_divine_intervention', name: '八百万神降', spellCardPrefix: '神迹', enName: 'Divine Intervention',
     alignment: 'life', level: 5, manaCost: 12, targetType: 'self', range: 0, ignoreLos: true,
-    reviveBase: 180, vfxKey: 'holy_heal', specialEffect: 'divine_intervention',
-    description: '生命 5 级终极神迹：神灵降世庇佑全军，全体活体非魔免友军满血苏生并彻底清祓一切厄祟毒疫！',
+    vfxKey: 'holy_heal', specialEffect: 'divine_intervention',
+    description: '生命 5 级终极神迹：神灵降世庇佑全军，将全体活体非魔免友军当前受伤单位与英雄回复至满血，并彻底清祓一切厄祟与毒疫（不复活已阵亡兵力）。',
   },
   life_guardian_angel: {
     id: 'life_guardian_angel', name: '御神护命', spellCardPrefix: '神使', enName: 'Guardian Angel',

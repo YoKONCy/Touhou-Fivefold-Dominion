@@ -164,6 +164,12 @@ export const CHAOS_SPELL_VFX_CATALOG: Record<string, SpellVfxChoreography> = {
     perTargetFx: 'crimson_shackle_chains', perTargetPalette: 'calamity_rose',
     sound: 'spell_debuff', shake: 4.2, light: 1.5,
   },
+  chaos_war_blood_sacrifice: {
+    casterFx: 'vampiric_claw_burst', casterPalette: 'crimson_blood',
+    impactFx: 'fire_ring', impactPalette: 'scarlet_moon',
+    secondaryFx: 'force_field', secondaryPalette: 'shrine_gold',
+    sound: 'spell_buff', shake: 4.5, light: 1.65,
+  },
   chaos_armageddon: {
     casterFx: 'fire_tornado', casterPalette: 'hell_inferno',
     travel: 'meteor_rain', travelColor: 0xff4d1a,

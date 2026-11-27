@@ -229,6 +229,26 @@ export const HERO_TRAIT_REGISTRY: Record<string, HeroTraitDef> = {
       ctx.notes.push('红魔冥律增幅(+12%)');
     },
   },
+
+  yuugi_unspilled_sake: {
+    id: 'yuugi_unspilled_sake',
+    name: '怪力乱神',
+    description:
+      '天生拥有山岳四天王之力，常规攻击无视目标 20% 防御，且每拥有 1.0 点 P 点使自身近战与远程物理伤害额外提升 6%，每次击杀再获 +0.4 P 点豪情。',
+    onBeforeAttack: (ctx) => {
+      ctx.defensePenetration = Math.max(ctx.defensePenetration, 0.2);
+      ctx.notes.push('鬼王怪力(无视20%防御)');
+      const p = ctx.attacker.powerPoints ?? 0;
+      if (p > 0) {
+        ctx.damageMultiplier *= 1 + p * 0.06;
+        ctx.notes.push(`豪饮劲力(+${Math.round(p * 6)}%)`);
+      }
+    },
+    onAfterKill: ({ killer }) => {
+      const maxP = killer.maxPowerPoints ?? 4;
+      killer.powerPoints = Math.min(maxP, Number(((killer.powerPoints ?? 0) + 0.4).toFixed(2)));
+    },
+  },
 };
 
 /**

@@ -458,4 +458,28 @@ export const CHAOS_SPELL_ICON_DRAWERS: Record<string, SpellIconDrawFn> = {
     p.line(10, 5, 5, 15, '#ff5722', 1);
     p.circle(5, 15, 2, '#ffcf40');
   },
+
+  // 30. 命符「战争血祭」War Blood Sacrifice（4级）：猩红血盾环绕的炽金祭仪血核
+  chaos_war_blood_sacrifice: (p) => {
+    p.glow(11.5, 11.5, 10, '#ff2e4c', 0.72);
+    // 外圈赤金血祭护盾棱框
+    p.poly(
+      [
+        [11.5, 3],
+        [19, 6.5],
+        [17.5, 15.5],
+        [11.5, 20.5],
+        [5.5, 15.5],
+        [4, 6.5],
+      ],
+      '#7a0f22',
+    );
+    p.ring(11.5, 11.5, 7.6, '#ff4d63', 1.5);
+    // 盾心凝血晶核与金纹
+    p.diamond(11.5, 11.5, 4.4, 5.2, '#ff2e4c');
+    p.diamond(11.5, 11, 2.2, 2.6, '#ffe082');
+    p.px(11.5, 10, '#ffffff');
+    p.sparkle(6, 6, '#ffd166', 1);
+    p.sparkle(17, 16, '#ff8096', 1);
+  },
 };

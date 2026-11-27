@@ -52,9 +52,53 @@ export interface PlaySoundOptions {
   delay?: number;
 }
 
+export interface BgmTrack {
+  id: string;
+  title: string;
+  artist: string;
+  durationText: string;
+  url: string;
+}
+
+export interface BgmPlaybackState {
+  tracks: readonly BgmTrack[];
+  currentIndex: number;
+  currentTrack: BgmTrack;
+  isPlaying: boolean;
+}
+
 const STORAGE_KEY = 'touhou_h4_audio_settings_v1';
 
-const DEFAULT_BGM_URL = `${(typeof import.meta !== 'undefined' && (import.meta as { env?: { BASE_URL?: string } }).env?.BASE_URL) || '/'}assets/audio/battle_bgm.mp3`;
+const AUDIO_BASE_URL =
+  (typeof import.meta !== 'undefined' && (import.meta as { env?: { BASE_URL?: string } }).env?.BASE_URL) ||
+  '/';
+
+/** 战阵背景音乐默认顺序播放列表（播毕自动顺延至下一首并循环） */
+export const DEFAULT_BGM_PLAYLIST: readonly BgmTrack[] = [
+  {
+    id: 'pixelized_pressure',
+    title: 'Pixelized Pressure',
+    artist: 'yokoncy',
+    durationText: '03:32',
+    url: `${AUDIO_BASE_URL}assets/audio/battle_bgm.mp3`,
+  },
+  {
+    id: 'quantized_pressure',
+    title: 'Quantized Pressure',
+    artist: 'yokoncy',
+    durationText: '03:12',
+    url: `${AUDIO_BASE_URL}assets/audio/battle_bgm_quantized_pressure.mp3`,
+  },
+  {
+    id: 'battle_1_yokoncy',
+    title: 'Battle I',
+    artist: 'yokoncy · Paul Romero 等原曲',
+    durationText: '03:14',
+    url: `${AUDIO_BASE_URL}assets/audio/battle_bgm_battle_1.mp3`,
+  },
+];
+
+const DEFAULT_BGM_URL = DEFAULT_BGM_PLAYLIST[0].url;
 
 const DEFAULT_SETTINGS: AudioSettings = {
   muted: false,
@@ -94,14 +138,36 @@ export class SoundEngine {
   private ambienceWindSrc: AudioBufferSourceNode | null = null;
   private ambienceChimeTimer: number | null = null;
   private ambienceRunning = false;
-  /** 背景音乐（BGM）流式循环播放句柄与渐入定时器 */
+  /** 背景音乐（BGM）顺序播放列表、流式播放句柄与渐入定时器 */
+  private bgmPlaylist: BgmTrack[] = DEFAULT_BGM_PLAYLIST.map((track) => ({ ...track }));
+  private bgmTrackIndex = 0;
   private bgmTrackUrl: string = DEFAULT_BGM_URL;
+  private bgmLoadedTrackUrl = '';
   private bgmAudio: HTMLAudioElement | null = null;
   private bgmFadeTimer: number | null = null;
   private bgmPendingAutoplay = false;
+  private bgmChangeListeners = new Set<(state: BgmPlaybackState) => void>();
   /** 调试/单测统计计数 */
   private playCounter = 0;
   private gestureListenersInstalled = false;
+
+  /** 当前 BGM 曲目播毕时自动顺序切换至下一首 */
+  private readonly handleBgmEnded = (): void => {
+    if (!this.settings.bgmEnabled || this.settings.muted) {
+      this.emitBgmChange();
+      return;
+    }
+    if (this.bgmPlaylist.length > 1 && this.isCurrentTrackInPlaylist()) {
+      this.nextBgmTrack(true);
+      return;
+    }
+    this.emitBgmChange();
+  };
+
+  /** 监听底层媒体元素播放/暂停事件以实时同步播放器界面 */
+  private readonly handleBgmPlaybackEvent = (): void => {
+    this.emitBgmChange();
+  };
 
   constructor(initialSettings?: Partial<AudioSettings>) {
     this.settings = {
@@ -152,43 +218,176 @@ export class SoundEngine {
     window.addEventListener('keydown', onGesture, { capture: true, passive: true });
   }
 
+  /** 获取完整 BGM 顺序播放列表 */
+  public getBgmPlaylist(): BgmTrack[] {
+    return this.bgmPlaylist.map((track) => ({ ...track }));
+  }
+
+  /** 获取当前播放曲目在播放列表中的序号 */
+  public getBgmTrackIndex(): number {
+    return this.bgmTrackIndex;
+  }
+
+  /** 获取当前 BGM 曲目元信息 */
+  public getCurrentBgmTrack(): BgmTrack {
+    const listed = this.bgmPlaylist[this.bgmTrackIndex];
+    if (listed && listed.url === this.bgmTrackUrl) {
+      return { ...listed };
+    }
+    return {
+      id: 'custom_bgm',
+      title: '自定义曲目',
+      artist: '',
+      durationText: '--:--',
+      url: this.bgmTrackUrl,
+    };
+  }
+
+  /** 获取当前 BGM 播放器完整快照（供界面订阅实时同步） */
+  public getBgmPlaybackState(): BgmPlaybackState {
+    return {
+      tracks: this.getBgmPlaylist(),
+      currentIndex: this.bgmTrackIndex,
+      currentTrack: this.getCurrentBgmTrack(),
+      isPlaying: Boolean(
+        this.bgmAudio && !this.bgmAudio.paused && this.settings.bgmEnabled && !this.settings.muted,
+      ),
+    };
+  }
+
+  /** 订阅 BGM 切歌与播停状态变化，返回取消订阅函数 */
+  public subscribeBgmChange(listener: (state: BgmPlaybackState) => void): () => void {
+    this.bgmChangeListeners.add(listener);
+    return () => {
+      this.bgmChangeListeners.delete(listener);
+    };
+  }
+
   /** 获取当前配置的 BGM 音轨路径 */
   public getBgmTrackUrl(): string {
     return this.bgmTrackUrl;
   }
 
-  /** 切换背景音乐音轨（切换时若处于播放状态将自动衔接新曲） */
+  /** 按序号或曲目 ID 切换至指定 BGM（默认自动从头衔接播放） */
+  public selectBgmTrack(indexOrId: number | string, autoPlay = true): BgmTrack | null {
+    const len = this.bgmPlaylist.length;
+    if (len === 0) return null;
+
+    let nextIndex = -1;
+    if (typeof indexOrId === 'number') {
+      if (!Number.isFinite(indexOrId)) return null;
+      nextIndex = ((Math.trunc(indexOrId) % len) + len) % len;
+    } else {
+      nextIndex = this.bgmPlaylist.findIndex((track) => track.id === indexOrId);
+      if (nextIndex < 0) return null;
+    }
+
+    const target = this.bgmPlaylist[nextIndex];
+    const wasPlaying = Boolean(this.bgmAudio && !this.bgmAudio.paused);
+    const shouldReload =
+      this.bgmTrackIndex !== nextIndex ||
+      this.bgmTrackUrl !== target.url ||
+      this.bgmLoadedTrackUrl !== target.url;
+
+    this.stopBgm();
+    this.bgmTrackIndex = nextIndex;
+    this.bgmTrackUrl = target.url;
+
+    if (this.bgmAudio) {
+      this.bgmAudio.loop = this.shouldLoopSingleTrack();
+      if (shouldReload) {
+        this.bgmAudio.src = target.url;
+        this.bgmLoadedTrackUrl = target.url;
+        this.bgmAudio.load();
+      }
+      try {
+        this.bgmAudio.currentTime = 0;
+      } catch {
+        // 媒体尚未就绪或无头桩对象不允许写入 currentTime 时静默忽略
+      }
+    }
+
+    if ((autoPlay || wasPlaying) && this.settings.bgmEnabled && !this.settings.muted) {
+      this.startBgm();
+    } else {
+      this.emitBgmChange();
+    }
+
+    return { ...target };
+  }
+
+  /** 顺序切换至下一首 BGM（末尾自动循环回到第 1 首） */
+  public nextBgmTrack(autoPlay = true): BgmTrack {
+    const nextIndex = (this.bgmTrackIndex + 1) % Math.max(1, this.bgmPlaylist.length);
+    return this.selectBgmTrack(nextIndex, autoPlay) ?? this.getCurrentBgmTrack();
+  }
+
+  /** 切换至上一首 BGM（第 1 首自动回绕至末尾曲目） */
+  public prevBgmTrack(autoPlay = true): BgmTrack {
+    const len = Math.max(1, this.bgmPlaylist.length);
+    const prevIndex = (this.bgmTrackIndex - 1 + len) % len;
+    return this.selectBgmTrack(prevIndex, autoPlay) ?? this.getCurrentBgmTrack();
+  }
+
+  /** 切换背景音乐音轨（兼容外部自定义 URL，切换时若处于播放状态将自动衔接新曲） */
   public setBgmTrack(url: string): void {
     if (!url || this.bgmTrackUrl === url) return;
+    const matchedIdx = this.bgmPlaylist.findIndex((track) => track.url === url);
+    if (matchedIdx >= 0) {
+      const wasPlaying = Boolean(this.bgmAudio && !this.bgmAudio.paused);
+      this.selectBgmTrack(matchedIdx, wasPlaying);
+      return;
+    }
+
     const wasPlaying = Boolean(this.bgmAudio && !this.bgmAudio.paused);
     this.stopBgm();
     this.bgmTrackUrl = url;
     if (this.bgmAudio) {
+      this.bgmAudio.loop = this.shouldLoopSingleTrack();
       this.bgmAudio.src = url;
+      this.bgmLoadedTrackUrl = url;
       this.bgmAudio.load();
+      try {
+        this.bgmAudio.currentTime = 0;
+      } catch {
+        // 忽略无头或未就绪节点异常
+      }
     }
     if (wasPlaying && this.settings.bgmEnabled && !this.settings.muted) {
       this.startBgm();
+    } else {
+      this.emitBgmChange();
     }
   }
 
-  /** 启动或恢复战斗背景音乐循环播放（带 450ms 平滑淡入，并自动兼容浏览器自动播放拦截） */
+  /** 启动或恢复战斗背景音乐顺序循环播放（带 450ms 平滑淡入，并自动兼容浏览器自动播放拦截） */
   public startBgm(): boolean {
     if (!this.settings.bgmEnabled || this.settings.muted) {
+      this.emitBgmChange();
       return false;
     }
     if (typeof window === 'undefined' || typeof Audio === 'undefined') {
+      this.emitBgmChange();
       return false;
     }
 
     if (!this.bgmAudio) {
       const audio = new Audio(this.bgmTrackUrl);
-      audio.loop = true;
+      audio.loop = this.shouldLoopSingleTrack();
       audio.preload = 'auto';
       audio.volume = 0;
+      audio.addEventListener('ended', this.handleBgmEnded);
+      audio.addEventListener('play', this.handleBgmPlaybackEvent);
+      audio.addEventListener('pause', this.handleBgmPlaybackEvent);
+      this.bgmLoadedTrackUrl = this.bgmTrackUrl;
       this.bgmAudio = audio;
-    } else if (this.bgmAudio.src && !this.bgmAudio.src.endsWith(this.bgmTrackUrl)) {
+    } else if (this.bgmLoadedTrackUrl !== this.bgmTrackUrl) {
+      this.bgmAudio.loop = this.shouldLoopSingleTrack();
       this.bgmAudio.src = this.bgmTrackUrl;
+      this.bgmLoadedTrackUrl = this.bgmTrackUrl;
+      this.bgmAudio.load();
+    } else {
+      this.bgmAudio.loop = this.shouldLoopSingleTrack();
     }
 
     const targetVol = this.computeEffectiveBgmVolume();
@@ -197,6 +396,7 @@ export class SoundEngine {
     if (!this.bgmAudio.paused) {
       this.bgmAudio.volume = targetVol;
       this.bgmPendingAutoplay = false;
+      this.emitBgmChange();
       return true;
     }
 
@@ -207,13 +407,16 @@ export class SoundEngine {
         .then(() => {
           this.bgmPendingAutoplay = false;
           this.fadeBgmTo(this.computeEffectiveBgmVolume(), 450);
+          this.emitBgmChange();
         })
         .catch(() => {
           this.bgmPendingAutoplay = true;
+          this.emitBgmChange();
         });
     } else {
       this.bgmPendingAutoplay = false;
       this.fadeBgmTo(targetVol, 450);
+      this.emitBgmChange();
     }
     return true;
   }
@@ -229,6 +432,7 @@ export class SoundEngine {
         // 忽略无头或已释放媒体节点异常
       }
     }
+    this.emitBgmChange();
   }
 
   /** 初始化并唤醒电影级双混响母带管线（安全幂等，无头环境自动静默跳过） */
@@ -561,10 +765,39 @@ export class SoundEngine {
 
   public destroy(): void {
     this.stopBgm();
+    if (this.bgmAudio) {
+      this.bgmAudio.removeEventListener('ended', this.handleBgmEnded);
+      this.bgmAudio.removeEventListener('play', this.handleBgmPlaybackEvent);
+      this.bgmAudio.removeEventListener('pause', this.handleBgmPlaybackEvent);
+      this.bgmAudio = null;
+      this.bgmLoadedTrackUrl = '';
+    }
+    this.bgmChangeListeners.clear();
     this.stopAmbience();
     if (this.ctx) {
       void this.ctx.close().catch(() => {});
       this.ctx = null;
+    }
+  }
+
+  private isCurrentTrackInPlaylist(): boolean {
+    const listed = this.bgmPlaylist[this.bgmTrackIndex];
+    return Boolean(listed && listed.url === this.bgmTrackUrl);
+  }
+
+  private shouldLoopSingleTrack(): boolean {
+    return this.bgmPlaylist.length <= 1 || !this.isCurrentTrackInPlaylist();
+  }
+
+  private emitBgmChange(): void {
+    if (this.bgmChangeListeners.size === 0) return;
+    const snapshot = this.getBgmPlaybackState();
+    for (const listener of this.bgmChangeListeners) {
+      try {
+        listener(snapshot);
+      } catch {
+        // 隔离外部界面订阅异常，避免影响音频播放流
+      }
     }
   }
 
@@ -610,8 +843,10 @@ export class SoundEngine {
         this.bgmAudio.muted = true;
         if (!this.settings.bgmEnabled) {
           this.stopBgm();
+          return;
         }
       }
+      this.emitBgmChange();
       return;
     }
     if (!this.bgmAudio || this.bgmAudio.paused) {
@@ -621,6 +856,7 @@ export class SoundEngine {
     this.clearBgmFadeTimer();
     this.bgmAudio.muted = false;
     this.bgmAudio.volume = targetVol;
+    this.emitBgmChange();
   }
 
   private applyBusVolumes(): void {

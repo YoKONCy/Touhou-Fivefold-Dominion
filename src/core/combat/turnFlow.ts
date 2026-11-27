@@ -4,10 +4,12 @@
 
 import { isImmuneToLivingHeal } from '../creatureTypes';
 import { resolveActiveHeroClass } from '../h4Skills';
+import { getFootprintHexes, hexEquals, minHexSetDistance, reconstructHexPath } from '../hex';
 import { computeUnitStats } from '../modifiers';
 import type { BattleState, CombatEvent } from '../types';
-import { applyDamageToUnit, rollStrikeDamage } from './damage';
-import { getUnitMinDistance } from './spatial';
+import { performAttackResolution } from './commands';
+import { applyDamageToUnit, clearDuelLocksOnTarget, previewAttack, rollStrikeDamage } from './damage';
+import { getUnitMinDistance, getUnitOccupiedHexes, getUnitReachableMap } from './spatial';
 import { buildRoundTurnQueue, checkVictory } from './turnQueue';
 import type { CombatContentCatalog } from './types';
 
@@ -85,7 +87,7 @@ export function advanceTurn(
         if (nearest) {
           const strike = rollStrikeDamage(state, nextUnit, nearest, false, false, 1, 'clear', 1, catalog);
           if (!strike.blocked) {
-            strike.kills = applyDamageToUnit(state, nearest, strike.damage, catalog, events);
+            strike.kills = applyDamageToUnit(state, nearest, strike.damage, catalog, events, true, 'physical');
           }
           events.push({
             type: 'COMBAT_EXCHANGE',
@@ -104,6 +106,68 @@ export function advanceTurn(
         nextUnit.hasActedThisRound = true;
         if (checkVictory(state, events)) return;
         continue;
+      }
+
+      // 狂战士「死斗狂暴」：锁定宿敌期间轮到其行动时自动追击死斗，堵路则顺劈挡路敌军
+      if (nextUnit.abilities.berserkDuel && se.duelTargetUnitId) {
+        const duelTarget = state.units[se.duelTargetUnitId];
+        if (!duelTarget || duelTarget.status !== 'alive') {
+          clearDuelLocksOnTarget(state, se.duelTargetUnitId, 'target_defeated', events);
+        } else if (duelTarget.abilities.stealth || duelTarget.statusEffects?.sanctuary) {
+          clearDuelLocksOnTarget(state, se.duelTargetUnitId, 'target_hidden', events);
+        } else {
+          const duelPreview = previewAttack(state, nextUnit.id, duelTarget.id, catalog, undefined, true);
+          if (duelPreview.valid) {
+            state.actionLog.push(`🔥 ${nextUnit.name} 狂暴锁定宿敌 ${duelTarget.name}，不顾一切发起死斗猛攻！`);
+            performAttackResolution(state, nextUnit, duelTarget, duelPreview, catalog, events);
+          } else {
+            // 够不到宿敌：向宿敌全力逼近；若完全被敌军堵路，则顺手劈砍最近的挡路敌军
+            const reachable = getUnitReachableMap(state, nextUnit, catalog);
+            const duelHexes = getUnitOccupiedHexes(duelTarget);
+            const curDist = minHexSetDistance(getUnitOccupiedHexes(nextUnit), duelHexes);
+            let bestHex = nextUnit.pos;
+            let bestDist = curDist;
+            for (const key of reachable.costs.keys()) {
+              const [qs, rs] = key.split(',');
+              const coord = { q: Number(qs), r: Number(rs) };
+              if (hexEquals(coord, nextUnit.pos)) continue;
+              const d = minHexSetDistance(getFootprintHexes(coord, nextUnit.footprint), duelHexes);
+              if (d < bestDist) {
+                bestDist = d;
+                bestHex = coord;
+              }
+            }
+            if (!hexEquals(bestHex, nextUnit.pos)) {
+              const path = reconstructHexPath(reachable, bestHex);
+              if (path && path.length > 1) {
+                const prevQ = nextUnit.pos.q;
+                nextUnit.pos = { ...bestHex };
+                if (bestHex.q !== prevQ) {
+                  nextUnit.facing = bestHex.q > prevQ ? 'right' : 'left';
+                }
+                events.push({ type: 'UNIT_MOVED', unitId: nextUnit.id, path });
+                state.actionLog.push(`🔥 ${nextUnit.name} 狂暴追击宿敌 ${duelTarget.name}，疾步逼近！`);
+              }
+            } else {
+              const blocker = Object.values(state.units)
+                .filter((u) => u.status === 'alive' && u.side !== nextUnit.side && !u.statusEffects?.sanctuary)
+                .sort((a, b) => getUnitMinDistance(nextUnit, a) - getUnitMinDistance(nextUnit, b))
+                .find((u) => previewAttack(state, nextUnit.id, u.id, catalog, undefined, true).valid);
+              if (blocker) {
+                const blockerPreview = previewAttack(state, nextUnit.id, blocker.id, catalog, undefined, true);
+                state.actionLog.push(`🔥 ${nextUnit.name} 追击 ${duelTarget.name} 受阻，怒斩挡路的 ${blocker.name}！`);
+                performAttackResolution(state, nextUnit, blocker, blockerPreview, catalog, events);
+              } else {
+                events.push({ type: 'UNIT_SKIPPED_TURN', unitId: nextUnit.id, reason: 'berserk' });
+                state.actionLog.push(`🔥 ${nextUnit.name} 被战阵彻底卡死去路，对着 ${duelTarget.name} 狂吼蓄势！`);
+              }
+            }
+          }
+          state.hasCombatStarted = true;
+          nextUnit.hasActedThisRound = true;
+          if (checkVictory(state, events)) return;
+          continue;
+        }
       }
 
       if (nextUnit.abilities.manaLeech && !nextUnit.hasWaitedThisRound) {
@@ -149,6 +213,12 @@ export function advanceTurn(
 
     // 本巡全员已行动完毕 → 进入新回合
     state.round += 1;
+    // 滚动结算上一回合双方累计承受的物理伤害（供混沌四阶法术「命符·战争血祭」读取）
+    state.physicalDamageTakenLastRound = {
+      left: state.physicalDamageTakenThisRound?.left ?? 0,
+      right: state.physicalDamageTakenThisRound?.right ?? 0,
+    };
+    state.physicalDamageTakenThisRound = { left: 0, right: 0 };
 
     if (state.activeFieldAura) {
       state.activeFieldAura.remainingRounds -= 1;
@@ -191,6 +261,13 @@ export function advanceTurn(
       }
       if (se.bloodlustRounds && se.bloodlustRounds > 0) {
         se.bloodlustRounds = Math.max(0, se.bloodlustRounds - 1);
+      }
+      if (se.bloodSacrificeShieldRounds && se.bloodSacrificeShieldRounds > 0) {
+        se.bloodSacrificeShieldRounds = Math.max(0, se.bloodSacrificeShieldRounds - 1);
+        if (se.bloodSacrificeShieldRounds === 0 && (se.bloodSacrificeShieldHp ?? 0) > 0) {
+          se.bloodSacrificeShieldHp = 0;
+          state.actionLog.push(`🩸 ${unit.name} 的「战争血祭」护盾时限已满，血盾消散。`);
+        }
       }
       if (se.agedRounds && se.agedRounds > 0) {
         se.agedRounds = Math.max(0, se.agedRounds - 1);

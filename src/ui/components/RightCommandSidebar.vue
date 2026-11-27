@@ -69,6 +69,7 @@ const statusWord = computed(() => {
   if (!store.activeUnit) return '';
   if (!store.isHumanTurn) return '敌阵演算';
   if (store.declaringSpellCard) return '符卡瞄准';
+  if (store.areaRangedAimMode) return '投岩瞄空';
   if (store.selectedSpellId) return '术式选点';
   if (store.canToggleAttackMode && store.effectiveAttackMode === 'melee') return '近战模式';
   return '静候指令';
@@ -98,6 +99,14 @@ const activeTargetingBanner = computed(() => {
         accent: '#f5df9e',
       };
     }
+  }
+  if (store.areaRangedAimMode && act.abilities.areaRanged) {
+    return {
+      title: '飞石轰击 · 瞄空投岩',
+      meta: `2 环全员 100% 物伤 · 敌我不分 · 弹药 ${act.ammo}/${act.maxAmmo}`,
+      iconUrl: null as string | null,
+      accent: '#ffbc73',
+    };
   }
   if (store.selectedSpell) {
     const sp = store.selectedSpell;
@@ -198,6 +207,7 @@ const displayStatusBadges = computed(() => {
 /** 交锋预测上下文（《圣女战旗》式双栏对比） */
 const atkCtx = computed(() => store.hoverAttackContext);
 const spellCtx = computed(() => store.hoverSpellContext);
+const areaRangedCtx = computed(() => store.hoverAreaRangedPreview);
 
 const atkAvatarLeft = computed(() =>
   atkCtx.value ? getVoxelAvatarDataUrl(atkCtx.value.attacker.voxelBlueprintId, 36) : '',
@@ -296,6 +306,19 @@ function inspectDisplayUnit(e: MouseEvent): void {
           </span>
           <button
             class="flex h-6 w-6 shrink-0 items-center justify-center border border-[#99763a]/55 bg-[#120d14] transition hover:border-[#f5df9e]"
+            :title="`切换下一首 BGM（当前 ${store.bgmState.currentIndex + 1}/${store.bgmState.tracks.length}：${store.bgmState.currentTrack.title}）`"
+            @click="store.nextBgmTrack(true)"
+          >
+            <svg viewBox="0 0 12 12" shape-rendering="crispEdges" class="h-3 w-3">
+              <rect x="2" y="2" width="1" height="8" fill="#f5df9e" />
+              <rect x="3" y="3" width="2" height="6" fill="#f5df9e" />
+              <rect x="5" y="4" width="2" height="4" fill="#cfa75b" />
+              <rect x="7" y="5" width="1" height="2" fill="#cfa75b" />
+              <rect x="9" y="2" width="1" height="8" fill="#90e8d4" />
+            </svg>
+          </button>
+          <button
+            class="flex h-6 w-6 shrink-0 items-center justify-center border border-[#99763a]/55 bg-[#120d14] transition hover:border-[#f5df9e]"
             :title="store.audioSettings.muted ? '已静音（点击恢复鸣音）' : '鸣音中（点击静音）'"
             @click="store.toggleAudioMute()"
           >
@@ -385,8 +408,31 @@ function inspectDisplayUnit(e: MouseEvent): void {
           </span>
         </button>
 
+        <!-- 掷山大力鬼专属：飞石瞄空投岩切换（替代无魔导兵种右槽位） -->
+        <button
+          v-if="store.canAreaRangedAim && !canOpenSpellbook"
+          class="lacquer-plaque-btn group flex h-8.5 items-center justify-center gap-1.5 px-2 disabled:opacity-40"
+          :class="{ 'lacquer-plaque-btn-active border-[#f2aa5c]': store.areaRangedAimMode }"
+          :disabled="store.isAnimating"
+          title="开启后可瞄准全图任意格（含移动范围内空地）；常规远程模式下悬停敌军或敌军附近空地（含超射程）亦可直接 2 环投岩"
+          @click="store.toggleAreaRangedAimMode()"
+        >
+          <span
+            v-if="store.areaRangedAimMode"
+            class="absolute inset-y-1.5 left-0.5 w-[2.5px] bg-[#ff9d2e]"
+          />
+          <PixelBadgeIcon name="siegeBreaker" size-class="h-4 w-4 shrink-0" />
+          <span
+            class="font-display text-[11px] font-bold"
+            :class="store.areaRangedAimMode ? 'text-[#ffe09e]' : 'text-[#f2c48d] group-hover:text-[#ffe09e]'"
+          >
+            {{ store.areaRangedAimMode ? '取消瞄空' : '投岩瞄空' }}
+          </span>
+        </button>
+
         <!-- 魔导折本 / 符卡 -->
         <button
+          v-else
           class="lacquer-plaque-btn group flex h-8.5 items-center justify-center gap-1.5 px-2 disabled:opacity-32"
           :class="{
             'col-span-2': !store.canToggleAttackMode,
@@ -520,7 +566,7 @@ function inspectDisplayUnit(e: MouseEvent): void {
         <button
           class="lacquer-plaque-btn group flex h-7.5 items-center justify-center gap-1.5 px-2"
           :class="{ 'lacquer-plaque-btn-active': store.activeDrawer === 'settings' }"
-          title="战局规则与网格配置"
+          title="战局规则、网格与音律播放器"
           @click="store.toggleDrawer('settings')"
         >
           <span
@@ -596,9 +642,78 @@ function inspectDisplayUnit(e: MouseEvent): void {
       class="sidebar-info-scroll touch-scroll flex min-h-0 flex-1 flex-col overflow-y-auto pr-0.5"
       :class="isTinyHeight ? 'gap-1.5' : 'gap-2'"
     >
+      <!-- ①-0 掷山大力鬼飞石轰击 2 环落点预测卡 -->
+      <section
+        v-if="areaRangedCtx"
+        class="washi-recess border-l-2 p-2 text-[10.5px]"
+        :class="areaRangedCtx.valid ? 'border-l-[#f29f4b]' : 'border-l-[#e04b5a]'"
+      >
+        <div class="flex items-center justify-between gap-1">
+          <span class="font-display font-bold text-[#ffd296]">
+            飞石轰击 · 2 环全伤
+          </span>
+          <div class="flex items-center gap-1">
+            <span
+              v-if="areaRangedCtx.valid && areaRangedCtx.rangedPenaltyTier !== 'full'"
+              class="font-num border border-[#e0a84c]/70 bg-[#3d2910] px-1 py-px text-[9px] font-bold text-[#ffe19c]"
+            >
+              {{
+                areaRangedCtx.rangedPenaltyTier === 'half'
+                  ? '1/2伤'
+                  : areaRangedCtx.rangedPenaltyTier === 'quarter'
+                    ? '1/4伤'
+                    : '1/8伤'
+              }}
+            </span>
+            <span
+              class="font-num border px-1 py-px text-[9px] font-bold"
+              :class="
+                areaRangedCtx.valid
+                  ? 'border-[#f29f4b]/70 bg-[#3a2210] text-[#ffe0a8]'
+                  : 'border-[#e04b5a]/70 bg-[#3d1019] text-[#ffb8c2]'
+              "
+            >
+              {{ areaRangedCtx.valid ? `波及 ${areaRangedCtx.targets.length} 队` : '受阻' }}
+            </span>
+          </div>
+        </div>
+
+        <div
+          v-if="!areaRangedCtx.valid && areaRangedCtx.reason"
+          class="mt-1.5 border border-[#e04b5a]/60 bg-[#360e17] px-2 py-1 text-[10px] leading-snug text-[#ffc2cb]"
+        >
+          ✕ {{ areaRangedCtx.reason }}
+        </div>
+        <div v-else class="mt-1.5 space-y-1">
+          <div
+            v-if="areaRangedCtx.targets.length === 0"
+            class="border border-[#99763a]/40 bg-[#18121a] px-2 py-1 text-[10px] text-[#baa98f]"
+          >
+            当前落点 2 环内无单位（可砸空地试探）。
+          </div>
+          <div
+            v-for="t in areaRangedCtx.targets"
+            :key="t.unitId"
+            class="flex items-center justify-between gap-1 border px-1.5 py-0.5 text-[10px]"
+            :class="
+              t.isFriendly
+                ? 'border-[#e04b5a]/70 bg-[#3a1219] text-[#ffbfc9]'
+                : 'border-[#99763a]/45 bg-[#1b141c] text-[#f0e3cb]'
+            "
+          >
+            <span class="truncate">
+              {{ t.isFriendly ? '⚠友军·' : '' }}{{ t.unitName }}
+            </span>
+            <span class="font-num shrink-0 font-bold">
+              {{ t.minDamage }}–{{ t.maxDamage }} 伤
+            </span>
+          </div>
+        </div>
+      </section>
+
       <!-- ①-A 施法瞄准预测与阻挡诊断卡 -->
       <section
-        v-if="spellCtx"
+        v-else-if="spellCtx"
         class="washi-recess border-l-2 p-2 text-[10.5px]"
         :class="spellCtx.canCast ? 'border-l-[#b88aff]' : 'border-l-[#e04b5a]'"
       >

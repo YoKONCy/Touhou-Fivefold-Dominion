@@ -33,13 +33,16 @@ import {
   applyBonusKills,
   applyDamageToUnit,
   applyHitStatusEffect,
+  computeLightningStrikeDamage,
   computePoisonAttackDamage,
   grantGrazeReward,
   handlePostKillRewards,
   hasDoubleStrikeForMode,
+  previewAreaRangedAttack,
   previewAttack,
   resolveAreaMeleeEffects,
   resolveFireShield,
+  resolveStoneGazeOnHit,
   rollStrikeDamage,
 } from './damage';
 import {
@@ -110,6 +113,11 @@ export function dispatchCombatCommand(
     return executeAttackCommand(state, unit, command, catalog, events);
   }
 
+  // ====== 2B. 区域飞石轰击指令（支持瞄准空地或单位格，超射程按距离衰减，2 环全员敌我不分 100% 物理伤害） ======
+  if (command.type === 'ATTACK_HEX') {
+    return executeAreaRangedCommand(state, unit, command.targetHex, catalog, events);
+  }
+
   // ====== 3. 通用五系法术指令 ======
   if (command.type === 'CAST_SPELL') {
     const res = executeH4CastSpell(state, unit, command, catalog, events, {
@@ -168,32 +176,103 @@ export function dispatchCombatCommand(
   return { ok: false, error: '未知指令类型', events: [] };
 }
 
-/** 执行近战/远程攻击与两阶段反击结算 */
-function executeAttackCommand(
+/** 执行区域飞石轰击指令（掷山大力鬼：可瞄准任意空地或单位格，超射程按常规距离衰减，2 环全员 100% 物理远程伤害） */
+function executeAreaRangedCommand(
   state: BattleState,
   unit: BattleUnit,
-  command: Extract<CombatCommand, { type: 'ATTACK' }>,
+  targetHex: HexCoord,
   catalog: CombatContentCatalog,
   events: CombatEvent[],
 ): CommandResult {
-  const target = state.units[command.targetId];
-  if (!target || target.status !== 'alive' || target.side === unit.side) {
-    return { ok: false, error: '目标无效', events: [] };
+  const areaPreview = previewAreaRangedAttack(state, unit.id, targetHex, catalog);
+  if (!areaPreview.valid) {
+    return { ok: false, error: areaPreview.reason ?? '无法向目标格投掷巨岩', events: [] };
   }
 
-  const preview = previewAttack(
-    state,
-    unit.id,
-    target.id,
-    catalog,
-    command.moveTo,
-    Boolean(command.forceMelee),
+  if (unit.statusEffects?.sanctuary) {
+    unit.statusEffects.sanctuary = false;
+  }
+  unit.facing = targetHex.q >= unit.pos.q ? 'right' : 'left';
+  if (!unit.abilities.unlimitedShots) {
+    unit.ammo = Math.max(0, unit.ammo - 1);
+  }
+
+  const hits: Array<{ targetId: string; isFriendly: boolean; strike: StrikeReport }> = [];
+  const logParts: string[] = [];
+
+  for (const tInfo of areaPreview.targets) {
+    const victim = state.units[tInfo.unitId];
+    if (!victim || victim.status !== 'alive') continue;
+    const strike = rollStrikeDamage(
+      state,
+      unit,
+      victim,
+      true,
+      false,
+      1,
+      areaPreview.losStatus,
+      areaPreview.rangedMultiplier,
+      catalog,
+      0,
+      1,
+    );
+    if (!strike.blocked) {
+      strike.kills = applyDamageToUnit(state, victim, strike.damage, catalog, events, true, 'physical');
+      if (strike.grazed) grantGrazeReward(state, victim, strike.grazeManaGain, catalog);
+      if (victim.side !== unit.side) {
+        handlePostKillRewards(state, unit, victim, strike.kills);
+      }
+      applyHitStatusEffect(state, victim, strike.appliedStatus);
+    }
+    if (victim.status === 'alive' && victim.kind === 'hero') {
+      victim.spellCardCharge = Math.min(100, (victim.spellCardCharge ?? 0) + 6);
+    }
+    hits.push({ targetId: victim.id, isFriendly: victim.side === unit.side, strike });
+    const tag = victim.side === unit.side ? '【误伤友军】' : '';
+    const lossTxt = victim.kind === 'creature' ? `(-${strike.kills}兵)` : '';
+    logParts.push(
+      strike.blocked
+        ? `${tag}${victim.name} 格挡`
+        : `${tag}${victim.name} ${strike.damage}${lossTxt}`,
+    );
+  }
+
+  if (unit.status === 'alive' && unit.kind === 'hero') {
+    unit.spellCardCharge = Math.min(100, (unit.spellCardCharge ?? 0) + 5);
+  }
+
+  state.actionLog.push(
+    hits.length > 0
+      ? `🪨 【飞石轰击】${unit.name} 投掷巨岩砸向 (${targetHex.q}, ${targetHex.r})，2 环波及：${logParts.join('、')}！`
+      : `🪨 【飞石轰击】${unit.name} 将巨岩砸向空地 (${targetHex.q}, ${targetHex.r})，烟尘四起但未击中任何单位。`,
   );
-  if (!preview.valid) {
-    return { ok: false, error: preview.reason ?? '无法攻击该目标', events: [] };
-  }
 
-  const chargeSteps = !preview.isRanged && preview.movePath && preview.movePath.length > 1 ? preview.movePath.length - 1 : 0;
+  events.push({
+    type: 'AREA_RANGED_ATTACK',
+    attackerId: unit.id,
+    targetHex,
+    affectedHexes: areaPreview.affectedHexes,
+    hits,
+  });
+
+  state.hasCombatStarted = true;
+  consumeActiveUnitTurn(state, unit);
+  advanceTurn(state, catalog, events);
+  return { ok: true, events };
+}
+
+/** 内部单次攻防交锋核心结算（不推进回合队列，供常规指令与狂战士自动死斗复用） */
+export function performAttackResolution(
+  state: BattleState,
+  unit: BattleUnit,
+  target: BattleUnit,
+  preview: ReturnType<typeof previewAttack>,
+  catalog: CombatContentCatalog,
+  events: CombatEvent[],
+): void {
+  const originPos: HexCoord = { ...unit.pos };
+  const didMove = Boolean(preview.moveTo && preview.movePath && preview.movePath.length > 1);
+  const chargeSteps = !preview.isRanged && didMove && preview.movePath ? preview.movePath.length - 1 : 0;
   if (preview.moveTo && preview.movePath && preview.movePath.length > 1) {
     unit.pos = { ...preview.moveTo };
     events.push({ type: 'UNIT_MOVED', unitId: unit.id, path: preview.movePath });
@@ -223,16 +302,10 @@ function executeAttackCommand(
   ) => {
     if (strike.blocked) return;
 
-    strike.kills = applyDamageToUnit(state, victim, strike.damage, catalog, events);
-    if (strike.petrifyKills && victim.status === 'alive') {
-      const pKills = applyBonusKills(state, victim, strike.petrifyKills, events);
-      strike.petrifyKills = pKills;
-      strike.kills += pKills;
-    } else {
-      strike.petrifyKills = undefined;
-    }
+    strike.kills = applyDamageToUnit(state, victim, strike.damage, catalog, events, true, 'physical');
     if (strike.grazed) grantGrazeReward(state, victim, strike.grazeManaGain, catalog);
     handlePostKillRewards(state, striker, victim, strike.kills);
+    resolveStoneGazeOnHit(state, striker, victim, strike, catalog, events, strikerCountOverride);
     applyHitStatusEffect(state, victim, strike.appliedStatus);
 
     const strikerHeroCls =
@@ -254,7 +327,7 @@ function executeAttackCommand(
     ) {
       const pDmg = computePoisonAttackDamage(striker, victim, state, catalog, strikerCountOverride);
       if (pDmg > 0) {
-        const pKills = applyDamageToUnit(state, victim, pDmg, catalog, events);
+        const pKills = applyDamageToUnit(state, victim, pDmg, catalog, events, true, 'magic');
         strike.poisonInstantDamage = pDmg;
         strike.poisonInstantKills = pKills;
         handlePostKillRewards(state, striker, victim, pKills);
@@ -269,6 +342,34 @@ function executeAttackCommand(
         );
       }
     }
+
+    // 赤雷巨鹏「赤雷天罚」：近战命中后 100% 稳定劈落雷电魔法追击（不计入物理伤害）
+    if (
+      !strike.isRanged &&
+      striker.abilities.lightningStrike &&
+      strike.damage > 0 &&
+      victim.status === 'alive' &&
+      !victim.abilities.magicImmune
+    ) {
+      const lDmg = computeLightningStrikeDamage(striker, victim, state, catalog, strikerCountOverride);
+      if (lDmg > 0) {
+        const lKills = applyDamageToUnit(state, victim, lDmg, catalog, events, true, 'magic');
+        strike.lightningDamage = lDmg;
+        strike.lightningKills = lKills;
+        strike.secondaryHits = strike.secondaryHits ?? [];
+        strike.secondaryHits.push({
+          targetId: victim.id,
+          damage: lDmg,
+          kills: lKills,
+          kind: 'lightning',
+        });
+        handlePostKillRewards(state, striker, victim, lKills);
+        state.actionLog.push(
+          `⚡ ${striker.name} 触发「赤雷天罚」，稳定劈落 ${lDmg} 点雷电魔法伤害${victim.kind === 'creature' ? `（折损 ${lKills} 兵）` : ''}！`,
+        );
+      }
+    }
+
     if (
       !strike.isRanged &&
       strike.damage > 0 &&
@@ -299,7 +400,7 @@ function executeAttackCommand(
           : 0;
       if (mirrorRatio > 0) {
         const refDmg = Math.max(1, Math.round(strike.damage * mirrorRatio));
-        const refKills = applyDamageToUnit(state, striker, refDmg, catalog, events);
+        const refKills = applyDamageToUnit(state, striker, refDmg, catalog, events, true, 'magic');
         strike.secondaryHits = strike.secondaryHits ?? [];
         strike.secondaryHits.push({
           targetId: striker.id,
@@ -446,6 +547,7 @@ function executeAttackCommand(
       defenderUnlucky: follow.defenderUnlucky,
       grazed: follow.grazed,
       petrifyKills: follow.petrifyKills,
+      petrifyDamage: follow.petrifyDamage,
     };
     if (follow.secondaryHits && follow.secondaryHits.length > 0) {
       attackerStrike.secondaryHits = [...(attackerStrike.secondaryHits ?? []), ...follow.secondaryHits];
@@ -472,7 +574,12 @@ function executeAttackCommand(
         ? ' + 二段追击被格挡'
         : ` + 二段连击 ${s.followUpStrike.damage}${victim.kind === 'creature' ? `(-${s.followUpStrike.kills}兵)` : ''}`
       : '';
-    const petrifyTxt = s.petrifyKills ? `(石化+${s.petrifyKills})` : '';
+    const petrifyTxt = s.petrifyKills
+      ? `(石化-${s.petrifyKills}兵)`
+      : s.petrifyDamage
+        ? `(石化+${s.petrifyDamage}伤)`
+        : '';
+    const lightningTxt = s.lightningDamage ? `(赤雷+${s.lightningDamage})` : '';
     const luckTags = [
       s.grazed ? '(擦弹!)' : '',
       s.luckyCrit ? '(幸运暴击!)' : '',
@@ -480,7 +587,7 @@ function executeAttackCommand(
       s.defenderLucky ? '(幸运护身!)' : '',
       s.defenderUnlucky ? '(厄运破防!)' : '',
     ].join('');
-    return `${actor.name} 造成 ${s.damage} 伤害${formatLoss(victim, s.kills)}${petrifyTxt}${luckTags}${followTxt}`;
+    return `${actor.name} 造成 ${s.damage} 伤害${formatLoss(victim, s.kills)}${petrifyTxt}${lightningTxt}${luckTags}${followTxt}`;
   };
   const atkSummary = describeStrike(unit, target, attackerStrike);
   const defSummary = defenderStrike
@@ -507,6 +614,88 @@ function executeAttackCommand(
     defenderStrike,
   });
 
+  // 狂战士「死斗狂暴」：近战交手或被近战打击时锁定首个对手直至一方倒下或目标隐身
+  if (!useRanged) {
+    if (
+      unit.abilities.berserkDuel &&
+      unit.status === 'alive' &&
+      !unit.statusEffects.duelTargetUnitId &&
+      target.status === 'alive' &&
+      !target.abilities.stealth &&
+      !target.statusEffects?.sanctuary
+    ) {
+      unit.statusEffects.duelTargetUnitId = target.id;
+      events.push({ type: 'DUEL_LOCKED', unitId: unit.id, targetId: target.id });
+      state.actionLog.push(`🔥 ${unit.name} 触发「死斗狂暴」，死死锁定宿敌 ${target.name}（宿敌外承伤 -10%）！`);
+    }
+    if (
+      target.abilities.berserkDuel &&
+      target.status === 'alive' &&
+      !target.statusEffects.duelTargetUnitId &&
+      unit.status === 'alive' &&
+      !unit.abilities.stealth &&
+      !unit.statusEffects?.sanctuary
+    ) {
+      target.statusEffects.duelTargetUnitId = unit.id;
+      events.push({ type: 'DUEL_LOCKED', unitId: target.id, targetId: unit.id });
+      state.actionLog.push(`🔥 ${target.name} 受创激怒进入「死斗狂暴」，死死锁定宿敌 ${unit.name}（宿敌外承伤 -10%）！`);
+    }
+  }
+
+  // 巡回猎犬「巡回突袭」：移动后发动近战攻击且存活未被控，交锋结束自动折返起跳原格
+  if (
+    !useRanged &&
+    unit.abilities.strikeAndReturn &&
+    didMove &&
+    preview.movePath &&
+    unit.status === 'alive' &&
+    unit.statusEffects.stunnedRounds === 0 &&
+    (unit.statusEffects.frozenRounds ?? 0) === 0 &&
+    unit.statusEffects.terrifiedRounds === 0 &&
+    !findUnitAtHex(state, originPos, false)
+  ) {
+    unit.pos = { ...originPos };
+    unit.facing = target.pos.q >= unit.pos.q ? 'right' : 'left';
+    events.push({
+      type: 'UNIT_MOVED',
+      unitId: unit.id,
+      path: [...preview.movePath].reverse(),
+    });
+    state.actionLog.push(`🐕 ${unit.name} 发动「巡回突袭」，扑咬后疾速折返原位！`);
+  }
+}
+
+/** 执行近战/远程攻击与两阶段反击结算 */
+function executeAttackCommand(
+  state: BattleState,
+  unit: BattleUnit,
+  command: Extract<CombatCommand, { type: 'ATTACK' }>,
+  catalog: CombatContentCatalog,
+  events: CombatEvent[],
+): CommandResult {
+  const target = state.units[command.targetId];
+  if (!target || target.status !== 'alive' || target.side === unit.side) {
+    return { ok: false, error: '目标无效', events: [] };
+  }
+
+  const preview = previewAttack(
+    state,
+    unit.id,
+    target.id,
+    catalog,
+    command.moveTo,
+    Boolean(command.forceMelee),
+  );
+  if (!preview.valid) {
+    return { ok: false, error: preview.reason ?? '无法攻击该目标', events: [] };
+  }
+
+  // 区域飞石轰击单位在远程模式下点击敌军时，直接以目标格为中心执行 100% 完全 AOE 轰击
+  if (preview.isRanged && unit.abilities.areaRanged) {
+    return executeAreaRangedCommand(state, unit, target.pos, catalog, events);
+  }
+
+  performAttackResolution(state, unit, target, preview, catalog, events);
   state.hasCombatStarted = true;
   consumeActiveUnitTurn(state, unit);
   advanceTurn(state, catalog, events);
@@ -570,26 +759,38 @@ function executeSpellCardCommand(
       const hitAny = getUnitOccupiedHexes(candidate).some((h) => lineKeySet.has(hexKey(h)));
       if (!hitAny) continue;
 
-      if (candidate.abilities.magicImmune) {
+      const isMightPhysicalCard = card.alignment === 'might';
+      if (!isMightPhysicalCard && candidate.abilities.magicImmune) {
         damageMap[candidate.id] = { damage: 0, kills: 0, grazed: false };
         state.actionLog.push(`${candidate.name} 全魔法免疫，完全无视了符卡【${card.name}】！`);
         continue;
       }
 
       const cStats = computeUnitStats(candidate, state, catalog);
-      if (cStats.magicResistance >= 1) {
+      if (!isMightPhysicalCard && cStats.magicResistance >= 1) {
         damageMap[candidate.id] = { damage: 0, kills: 0, grazed: false };
         state.actionLog.push(`${candidate.name} 凭 100% 魔法抗性，完全抵挡了符卡【${card.name}】！`);
         continue;
       }
-      let dmg = ((card.damageBase ?? 85) + casterStats.spellPower * 4.2) * castHook.damageMultiplier;
-      if (isDarkMagicVulnerable(candidate)) {
+      let dmg = isMightPhysicalCard
+        ? ((card.damageBase ?? 105) + casterStats.attack * 2.8) * castHook.damageMultiplier
+        : ((card.damageBase ?? 85) + casterStats.spellPower * 4.2) * castHook.damageMultiplier;
+      if (!isMightPhysicalCard && isDarkMagicVulnerable(candidate)) {
         dmg *= DARK_MAGIC_VULNERABILITY_MULT;
       }
       if (candidate.abilities.chaosResistant && card.alignment === 'chaos') {
         dmg *= 0.75;
       }
-      dmg *= 1 - cStats.magicResistance * 0.7;
+      if (!isMightPhysicalCard) {
+        dmg *= 1 - cStats.magicResistance * 0.7;
+      }
+      if (
+        candidate.abilities.berserkDuel &&
+        candidate.statusEffects?.duelTargetUnitId &&
+        unit.id !== candidate.statusEffects.duelTargetUnitId
+      ) {
+        dmg *= 0.9;
+      }
       let grazed = false;
       if (cStats.grazeChance > 0 && nextRandom(state.rng) < cStats.grazeChance * 0.65) {
         grazed = true;
@@ -597,7 +798,15 @@ function executeSpellCardCommand(
         grantGrazeReward(state, candidate, 4, catalog);
       }
       const finalDmg = Math.max(1, Math.round(dmg));
-      const kills = applyDamageToUnit(state, candidate, finalDmg, catalog, events);
+      const kills = applyDamageToUnit(
+        state,
+        candidate,
+        finalDmg,
+        catalog,
+        events,
+        true,
+        isMightPhysicalCard ? 'physical' : 'magic',
+      );
       damageMap[candidate.id] = { damage: finalDmg, kills, grazed };
       handlePostKillRewards(state, unit, candidate, kills);
     }

@@ -247,8 +247,9 @@ export function evaluateBestMoveOrDefend(
     return score;
   };
 
-  // 先评估留在原地（DEFEND）的基准分，再对比所有可达移动格（近战兵种仅在无路可走时才原地防御）
-  const stayScore = scoreTile(unit.pos) + (isBacklineHero || isRangedRole ? 10 : -40);
+  // 先评估留在原地（DEFEND）的基准分，再对比所有可达移动格（已贴身交战的近战单位不施加负分，防止绕敌来回踱步死循环）
+  const engagedNow = isEngagedInMelee(state, unit);
+  const stayScore = scoreTile(unit.pos) + (isBacklineHero || isRangedRole ? 10 : engagedNow ? 0 : -40);
 
   // 对远程/法系英雄在选出前 4 个候选格后附加清晰的视线检查加分（低开销高收益）
   const rawCandidates: Array<{ pos: HexCoord; score: number }> = [];

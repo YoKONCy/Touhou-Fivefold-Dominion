@@ -9,7 +9,7 @@
  * - `planning.ts`：高阶 WAIT 节奏规划、后排安全走位、高台拉扯与卡位 DEFEND
  */
 
-import type { CombatContentCatalog } from '@core/combatEngine';
+import { isEngagedInMelee, type CombatContentCatalog } from '@core/combatEngine';
 import type { BattleState, CombatCommand } from '@core/types';
 import { evaluateBestAttackAction } from './combatEvaluator';
 import { evaluateBestMoveOrDefend, evaluateTacticalWait } from './planning';
@@ -75,8 +75,9 @@ export function chooseTacticalAiCommand(
   const candidates: ScoredAiCommand[] = [];
   if (spellCardAction) candidates.push(spellCardAction);
   if (spellAction) candidates.push(spellAction);
-  // 攻击只有在净收益不是灾难性送头时才进入直选池（-20 以下宁可等待/换位/防御）
-  if (attackAction && attackAction.score > -20) candidates.push(attackAction);
+  // 攻击只有在净收益不是灾难性送头时才进入直选池（残局已贴身僵持的近战兵种主动搏命，避免无限对峙）
+  const attackFloor = unit.kind === 'creature' && isEngagedInMelee(state, unit) && state.round >= 8 ? -95 : -20;
+  if (attackAction && attackAction.score > attackFloor) candidates.push(attackAction);
   if (waitAction) candidates.push(waitAction);
 
   if (candidates.length > 0) {

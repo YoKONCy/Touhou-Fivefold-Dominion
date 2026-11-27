@@ -111,7 +111,7 @@ export function executeSingleUnitSpell(ctx: SpellCastContext): SpellBranchOutcom
     tUnit.statusEffects.schoolWards = { ...(tUnit.statusEffects.schoolWards ?? {}), [spell.wardSchool]: true };
     touchStatusFlag(tUnit, 'schoolWards');
     ctx.noteText = `${spell.name}!`;
-    state.actionLog.push(`🛡 ${unit.name} 为 ${tUnit.name} 展开「${spell.name}」（50% 对应系魔抗与防卫）！`);
+    state.actionLog.push(`🛡 ${unit.name} 为 ${tUnit.name} 展开「${spell.name}」（35% 对应系魔抗与防卫）！`);
   } else if (eff === 'retribution') {
     tUnit.statusEffects.retribution = true;
     touchStatusFlag(tUnit, 'retribution');
@@ -247,10 +247,11 @@ export function executeSingleUnitSpell(ctx: SpellCastContext): SpellBranchOutcom
     }
     tUnit.side = unit.side;
     tUnit.facing = unit.side === 'left' ? 'right' : 'left';
-    tUnit.statusEffects.hypnotizedRounds = 3 + mindDurationBonus;
+    // 催眠严格固定持续 3 回合（倒戈归入施法者阵营）
+    tUnit.statusEffects.hypnotizedRounds = 3;
     touchStatusFlag(tUnit, 'hypnotizedRounds');
-    ctx.noteText = '迷梦傀儡!';
-    state.actionLog.push(`🌀 ${unit.name} 发动「迷梦傀儡」，彻底魅惑 ${tUnit.name} 倒戈 ${3 + mindDurationBonus} 回合！`);
+    ctx.noteText = '迷梦傀儡 3回!';
+    state.actionLog.push(`🌀 ${unit.name} 发动「迷梦傀儡」，彻底魅惑 ${tUnit.name} 倒戈 3 回合！`);
   } else if (eff === 'aura_of_fear') {
     tUnit.statusEffects.auraOfFear = true;
     touchStatusFlag(tUnit, 'auraOfFear');
@@ -332,7 +333,7 @@ export function executeSingleUnitSpell(ctx: SpellCastContext): SpellBranchOutcom
       let effectivePower = raw;
       if (isDarkMagicVulnerable(tUnit)) effectivePower *= DARK_MAGIC_VULNERABILITY_MULT;
       if (!ignoresWards && tUnit.abilities.deathWard) effectivePower *= 0.5;
-      if (!ignoresWards && tUnit.statusEffects?.schoolWards?.death) effectivePower *= 0.5;
+      if (!ignoresWards && tUnit.statusEffects?.schoolWards?.death) effectivePower *= 0.65;
       effectivePower *= Math.max(0, 1 - tStats.magicResistance);
       const directKills =
         effectivePower <= 0

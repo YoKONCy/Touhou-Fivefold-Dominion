@@ -254,4 +254,36 @@ export const SPELL_CARDS: Record<string, SpellCardDef> = {
     description:
       '宣言专属符卡！投掷必中鲜红神枪贯穿 14 格六边形敌军并按总伤 30%（上限 75）汲取自身生命，同时展开 3 回合红雾领域（我方攻击 +15%、擦弹 +12%、幸运 +2，敌方防御 -15%）。',
   },
+
+  yuugi_big_four_step: {
+    id: 'yuugi_big_four_step',
+    name: '怪力乱神「三步必杀」',
+    subtitle: 'Three Steps of Destruction · 旧都鬼王震地贯通',
+    ownerHeroDefId: 'hero_yuugi',
+    alignment: 'might',
+    manaCost: 0,
+    chargeCost: 100,
+    targetType: 'hex_line',
+    lineLength: 10,
+    damageBase: 108,
+    fieldAura: {
+      id: 'aura_oni_banquet',
+      name: '武艺领域「大江山豪宴」',
+      durationRounds: 3,
+      themeColor: '#e87a3e',
+      accentColor: '#ffd95a',
+      pattern: 'hakke_star',
+      allyModifiers: [
+        { stat: 'attack', mode: 'percent', value: 0.2, sourceName: '符卡领域·大江山豪宴' },
+        { stat: 'defense', mode: 'percent', value: 0.1, sourceName: '符卡领域·大江山豪宴' },
+        { stat: 'morale', mode: 'flat', value: 2, sourceName: '符卡领域·大江山豪宴' },
+      ],
+      enemyModifiers: [
+        { stat: 'defense', mode: 'percent', value: -0.15, sourceName: '符卡震慑·大江山豪宴' },
+      ],
+    },
+    vfxKey: 'spellcard_marisa',
+    description:
+      '零灵力消耗宣言专属体术符卡！沿指定方向轰出贯穿 10 格的鬼神震地物理冲击，无视魔法免疫与魔抗，并在盘面展开 3 回合大江山豪宴领域，令我方攻击 +20%、防御 +10%、士气 +2 且敌方防御 -15%。',
+  },
 };

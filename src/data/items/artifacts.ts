@@ -98,6 +98,29 @@ export const ARTIFACTS: Record<string, ArtifactDef> = {
       { stat: 'grazeChance', mode: 'flat', value: 0.08, sourceName: '神器·鲜红红茶杯' },
     ],
   },
+  oni_shackle_chains: {
+    id: 'oni_shackle_chains',
+    name: '鬼王玄铁锁链',
+    slot: 'weapon',
+    setId: 'yuugi_oni_regalia',
+    description: '缠绕于星熊勇仪双腕的沉重旧都玄铁锁链，极大强化近战与投掷打击威势。',
+    modifiers: [
+      { stat: 'attack', mode: 'flat', value: 4, sourceName: '神器·鬼王玄铁锁链' },
+      { stat: 'defense', mode: 'flat', value: 1, sourceName: '神器·鬼王玄铁锁链' },
+    ],
+  },
+  hoshiguma_dish: {
+    id: 'hoshiguma_dish',
+    name: '星熊杯',
+    slot: 'accessory',
+    setId: 'yuugi_oni_regalia',
+    description: '盛满大江山烈酒的三足朱漆大杯，激荡鬼神豪气，稳固生命与护甲并振奋士气。',
+    modifiers: [
+      { stat: 'maxHp', mode: 'flat', value: 25, sourceName: '神器·星熊杯' },
+      { stat: 'defense', mode: 'flat', value: 3, sourceName: '神器·星熊杯' },
+      { stat: 'morale', mode: 'flat', value: 2, sourceName: '神器·星熊杯' },
+    ],
+  },
 };
 
 export const ARTIFACT_SETS: Record<string, ArtifactSetDef> = {
@@ -141,6 +164,17 @@ export const ARTIFACT_SETS: Record<string, ArtifactSetDef> = {
       { stat: 'maxHp', mode: 'flat', value: 25, sourceName: '套装·红魔公馆威仪' },
       { stat: 'luck', mode: 'flat', value: 2, sourceName: '套装·红魔公馆威仪' },
       { stat: 'speed', mode: 'flat', value: 1, sourceName: '套装·红魔公馆威仪' },
+    ],
+  },
+  yuugi_oni_regalia: {
+    id: 'yuugi_oni_regalia',
+    name: '山岳四天王威仪',
+    requiredCount: 2,
+    description: '套装激活：鬼神一滴不洒，生命上限 +35，攻击 +2，移动速度 +1。',
+    modifiers: [
+      { stat: 'maxHp', mode: 'flat', value: 35, sourceName: '套装·山岳四天王威仪' },
+      { stat: 'attack', mode: 'flat', value: 2, sourceName: '套装·山岳四天王威仪' },
+      { stat: 'speed', mode: 'flat', value: 1, sourceName: '套装·山岳四天王威仪' },
     ],
   },
 };
